@@ -5,7 +5,6 @@ class Yolcu(ABC):
 
     @abstractmethod
     def indirim_orani(self):
-        """İndirim oranını döndürmeli"""
         pass
 
 if __name__ == "__main__":
