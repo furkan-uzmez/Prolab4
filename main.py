@@ -12,5 +12,5 @@ else:
 
 taksi_veri = veri['taxi']
 
-taksi = Taksi(taksi_veri['openingFee'],taksi_veri['costPerKm'])
-
+Taksi.opening_fee = taksi_veri['openingFee']
+Taksi.cost_per_km = taksi_veri['costPerKm']
