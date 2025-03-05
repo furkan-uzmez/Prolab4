@@ -3,6 +3,7 @@ import folium
 from geopy.distance import geodesic
 from Yardımcı.durak import Durak
 from Yardımcı.konum import Konum
+from Yardımcı.displayer import Displayer
 from Arac.taksi import Taksi
 import json
 import os
@@ -22,16 +23,16 @@ taksi_veri = veri['taxi']
 durak = Durak()
 konum = Konum()
 taksi = Taksi()
+displayer = Displayer()
 
-taksi.opening_fee = taksi_veri['openingFee']
-taksi.cost_per_km = taksi_veri['costPerKm']
+taksi.set_opening_fee(taksi_veri['openingFee']) 
+taksi.set_cost_per_km(taksi_veri['costPerKm'])  
 
 durak.set_durak_verisi(veri['duraklar'])
 
-duraklar = []
-for durak_ in veri['duraklar']:
-    duraklar.append((durak_['lat'] , durak_['lon'] , durak_['name']))
+durak.set_duraklar()
 
+duraklar = durak.get_duraklar()
 
 @app.route("/", methods=["GET", "POST"])
 def home():
@@ -41,12 +42,7 @@ def home():
     harita = folium.Map(location=[40.7651, 29.9406], zoom_start=13)
 
     # Durakları haritaya ekleyin
-    for enlem, boylam, isim in duraklar:
-        folium.Marker(
-            location=[enlem, boylam],
-            popup=isim,
-            icon=folium.Icon(color="blue", icon="cloud")
-        ).add_to(harita)
+    displayer.display_duraklar(harita,duraklar)
 
     en_yakin = None
     mesafe = None
@@ -64,14 +60,11 @@ def home():
             
             print(en_yakin,mesafe)
 
-            konum.display_location(harita,kullanici_konumu)
+            # Kullanıcı konumunu haritada işaretleme
+            displayer.display_user_location(harita,kullanici_konumu)
             
             # En yakın durağı işaretleme
-            folium.Marker(
-                location=[en_yakin[0], en_yakin[1]],
-                popup=f"{en_yakin[2]} (En Yakın Durak - {mesafe:.2f} km)",
-                icon=folium.Icon(color="green", icon="info-sign")
-            ).add_to(harita)
+            displayer.display_nearest_durak(harita,en_yakin,mesafe)
         except ValueError:
             hata = "Lütfen geçerli bir enlem ve boylam girin!"
 

@@ -10,7 +10,12 @@ class Durak():
     def get_durak_verisi(self):
         return self.durak_verisi
     
-    def 
+    def set_duraklar(self):
+        for durak_ in self.durak_verisi:
+            self.duraklar.append((durak_['lat'] , durak_['lon'] , durak_['name']))
+
+    def get_duraklar(self):
+        return self.duraklar
 
     # En yakın durağı hesaplayan fonksiyon
     def en_yakin_durak(self,kullanici_konumu):
