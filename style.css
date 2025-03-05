@@ -1,0 +1,97 @@
+/* Sayfanın genel stili */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f4;
+    color: #333;
+}
+
+/* Başlık stili */
+h1 {
+    text-align: center;
+    color: #2C3E50;
+    margin-top: 20px;
+}
+
+/* Form stili */
+form {
+    width: 80%;
+    max-width: 600px;
+    margin: 20px auto;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Form elemanları stili */
+form label {
+    display: block;
+    margin: 10px 0 5px;
+    font-weight: bold;
+    color: #34495E;
+}
+
+form input {
+    width: 100%;
+    padding: 8px;
+    margin: 5px 0 15px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 16px;
+}
+
+form button {
+    background-color: #3498DB;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    font-size: 16px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+form button:hover {
+    background-color: #2980B9;
+}
+
+/* En yakın durak bilgisi stili */
+p {
+    text-align: center;
+    font-size: 18px;
+    color: #27AE60;
+    margin-top: 20px;
+}
+
+p strong {
+    font-size: 20px;
+}
+
+/* iframe harita stili */
+iframe {
+    display: block;
+    margin: 30px auto;
+    border: none;
+    border-radius: 8px;
+}
+
+/* Responsive tasarım - mobil uyumlu */
+@media (max-width: 768px) {
+    body {
+        padding: 10px;
+    }
+
+    form {
+        width: 100%;
+        padding: 15px;
+    }
+
+    h1 {
+        font-size: 24px;
+    }
+
+    form input, form button {
+        font-size: 14px;
+    }
+}

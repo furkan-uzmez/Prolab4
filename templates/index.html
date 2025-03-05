@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ulaşım Haritası</title>
+    <link rel="stylesheet" href="../style.css"/>
+</head>
+<body>
+    <h1>En Yakın Durak</h1>
+
+    <!-- Form Verisi Gönderme -->
+    <form method="POST">
+        <label>Enlem:</label>
+        <input type="text" name="enlem" required>
+        <label>Boylam:</label>
+        <input type="text" name="boylam" required>
+        <button type="submit">Gönder</button>
+    </form>
+
+    <!-- En yakın durak bilgisi gösterimi -->
+    {% if en_yakin %}
+        <p>En yakın durak: <strong>{{ en_yakin[2] }}</strong> ({{ mesafe|round(2) }} km uzaklıkta)</p>
+    {% endif %}
+
+    <!-- Harita iframe -->
+    <iframe src="{{ url_for('static', filename='harita.html') }}" width="100%" height="500px"></iframe>
+</body>
+</html>
