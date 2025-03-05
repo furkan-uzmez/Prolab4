@@ -3,21 +3,34 @@ import folium
 from geopy.distance import geodesic
 from Yardımcı.durak import Durak
 from Yardımcı.konum import Konum
-import main
+from Arac.taksi import Taksi
+import json
+import os
+
 app = Flask(__name__)
 
-# Duraklar listesi
-duraklar = [
-    (40.7651, 29.9406, "Sekapark"),
-    (40.7751, 29.9500, "Halkevi"),
-    (40.7568, 29.9212, "Otogar"),
-    (40.7410, 29.9255, "Yahya Kaptan"),
-    (40.7510, 29.9300, "Santral"),
-]
+file_path = "veriseti.json"
+if os.path.exists(file_path):
+    with open(file_path, "r", encoding="utf-8") as dosya:
+        veri = json.load(dosya)
+    print('Veri yüklendi')
+else:
+    print(f"File {file_path} does not exist.")
 
+taksi_veri = veri['taxi']
 
 durak = Durak()
 konum = Konum()
+taksi = Taksi()
+
+taksi.opening_fee = taksi_veri['openingFee']
+taksi.cost_per_km = taksi_veri['costPerKm']
+
+durak.set_durak_verisi(veri['duraklar'])
+
+duraklar = []
+for durak_ in veri['duraklar']:
+    duraklar.append((durak_['lat'] , durak_['lon'] , durak_['name']))
 
 
 @app.route("/", methods=["GET", "POST"])
@@ -43,20 +56,16 @@ def home():
         try:
             enlem = float(request.form["enlem"])
             boylam = float(request.form["boylam"])
-            kullanici_konumu = (enlem, boylam)
+            konum.set_konum(enlem,boylam)
+            kullanici_konumu = konum.get_konum()
 
             # En yakın durağı bulma
             en_yakin, mesafe = durak.en_yakin_durak(kullanici_konumu)
             
             print(en_yakin,mesafe)
 
-            # Kullanıcı konumunu haritada işaretleme
-            folium.Marker(
-                location=kullanici_konumu,
-                popup="Kullanıcı Konumu",
-                icon=folium.Icon(color="red", icon="user")
-            ).add_to(harita)
-
+            konum.display_location(harita,kullanici_konumu)
+            
             # En yakın durağı işaretleme
             folium.Marker(
                 location=[en_yakin[0], en_yakin[1]],
@@ -73,5 +82,4 @@ def home():
 
 
 if __name__ == "__main__":
-    main.main()
     app.run(debug=True)

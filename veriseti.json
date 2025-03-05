@@ -158,8 +158,8 @@
       "id": "tram_sekapark",
       "name": "Sekapark (Tram)",
       "type": "tram",
-      "lat": 40.76200,
-      "lon": 29.96550,
+      "lat": 40.761445,
+      "lon": 29.9085477,
       "sonDurak": false,
       "nextStops": [
         {
