@@ -1,7 +1,9 @@
 from flask import Flask, render_template, request
 import folium
 from geopy.distance import geodesic
-
+from Yardımcı.durak import Durak
+from Yardımcı.konum import Konum
+import main
 app = Flask(__name__)
 
 # Duraklar listesi
@@ -14,16 +16,8 @@ duraklar = [
 ]
 
 
-# En yakın durağı hesaplayan fonksiyon
-def en_yakin_durak(kullanici_konumu):
-    min_mesafe = float("inf")
-    en_yakin = None
-    for durak in duraklar:
-        mesafe = geodesic(kullanici_konumu, (durak[0], durak[1])).km
-        if mesafe < min_mesafe:
-            min_mesafe = mesafe
-            en_yakin = durak
-    return en_yakin, min_mesafe
+durak = Durak()
+konum = Konum()
 
 
 @app.route("/", methods=["GET", "POST"])
@@ -52,7 +46,9 @@ def home():
             kullanici_konumu = (enlem, boylam)
 
             # En yakın durağı bulma
-            en_yakin, mesafe = en_yakin_durak(kullanici_konumu)
+            en_yakin, mesafe = durak.en_yakin_durak(kullanici_konumu)
+            
+            print(en_yakin,mesafe)
 
             # Kullanıcı konumunu haritada işaretleme
             folium.Marker(
@@ -77,4 +73,5 @@ def home():
 
 
 if __name__ == "__main__":
+    main.main()
     app.run(debug=True)

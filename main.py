@@ -3,19 +3,20 @@ import os
 from Arac.arac import Arac
 from Arac.taksi import Taksi
 from Yardımcı.durak import Durak
-file_path = "veriseti.json"
-if os.path.exists(file_path):
-    with open(file_path, "r", encoding="utf-8") as dosya:
-        veri = json.load(dosya)
-    print('Veri yüklendi')
-else:
-    print(f"File {file_path} does not exist.")
+def main():
+    file_path = "veriseti.json"
+    if os.path.exists(file_path):
+        with open(file_path, "r", encoding="utf-8") as dosya:
+            veri = json.load(dosya)
+        print('Veri yüklendi')
+    else:
+        print(f"File {file_path} does not exist.")
 
-taksi_veri = veri['taxi']
+    taksi_veri = veri['taxi']
 
-Taksi.opening_fee = taksi_veri['openingFee']
-Taksi.cost_per_km = taksi_veri['costPerKm']
+    Taksi.opening_fee = taksi_veri['openingFee']
+    Taksi.cost_per_km = taksi_veri['costPerKm']
 
-Durak.durak_verisi = veri['duraklar']
+    Durak.durak_verisi = veri['duraklar']
 
-print(Durak.durak_verisi)
+    #print(Durak.durak_verisi)
