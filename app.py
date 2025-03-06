@@ -1,10 +1,9 @@
 from flask import Flask, render_template, request
 import folium
-from geopy.distance import geodesic
 from Yardımcı.durak import Durak
 from Yardımcı.konum import Konum
 from Yardımcı.displayer import Displayer
-from Arac.taksi import Taksi
+from Arac.arac import Taksi
 import json
 import os
 
@@ -52,8 +51,9 @@ def home():
         try:
             enlem = float(request.form["enlem"])
             boylam = float(request.form["boylam"])
-            konum.set_konum(enlem,boylam)
-            kullanici_konumu = konum.get_konum()
+            konum.baslangic_enlem , konum.baslangic_boylam = enlem , boylam
+            #konum.hedef_enlem , konum.hedef_boylam = hedef_enlem , hedef_boylam
+            kullanici_konumu = (konum.baslangic_enlem , konum.baslangic_boylam)
 
             # En yakın durağı bulma
             en_yakin, mesafe = durak.en_yakin_durak(kullanici_konumu)

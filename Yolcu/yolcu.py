@@ -7,5 +7,11 @@ class Yolcu(ABC):
     def indirim_orani(self):
         pass
 
-if __name__ == "__main__":
-    print("Hello")
+class Genel(Yolcu):
+    pass
+
+class Yasli(Yolcu):
+    pass
+
+class Ogrenci(Yolcu):
+    pass

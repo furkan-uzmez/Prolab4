@@ -1,12 +1,8 @@
-from dataclasses import dataclass
 class Konum():
-    enlem : float
-    boylam : float
+    def __init__(self):
+        self.baslangic_enlem = 0.0
+        self.baslangic_boylam = 0.0
+        self.hedef_enlem = 0.0
+        self.hedef_boylam = 0.0
     
-    def set_konum(self,enlem,boylam):
-        self.enlem = enlem
-        self.boylam = boylam
-
-    def get_konum(self):
-        return (self.enlem,self.boylam)
     
