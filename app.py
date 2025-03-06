@@ -25,14 +25,14 @@ konum = Konum()
 taksi = Taksi()
 displayer = Displayer()
 
-taksi.set_opening_fee(taksi_veri['openingFee']) 
-taksi.set_cost_per_km(taksi_veri['costPerKm'])  
+taksi.opening_fee = taksi_veri['openingFee'] 
+taksi.cost_per_km = taksi_veri['costPerKm']
 
-durak.set_durak_verisi(veri['duraklar'])
+durak.durak_verisi = veri['duraklar']
 
 durak.set_duraklar()
 
-duraklar = durak.get_duraklar()
+duraklar = durak.duraklar
 
 @app.route("/", methods=["GET", "POST"])
 def home():
