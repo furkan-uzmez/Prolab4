@@ -6,6 +6,13 @@ from Yardımcı.displayer import Displayer
 from Arac.arac import Taksi
 import json
 import os
+from dotenv import load_dotenv
+
+# .env dosyasını yükleyin
+load_dotenv()
+
+# API anahtarını çevresel değişkenden alın
+google_maps_api_key = os.getenv("GOOGLE_MAPS_API_KEY")
 
 app = Flask(__name__)
 
@@ -37,41 +44,35 @@ duraklar = durak.duraklar
 def home():
     print("Index.html çalıştırılıyor...")  # Debugging için
 
-    # Harita oluştur
-    harita = folium.Map(location=[40.7651, 29.9406], zoom_start=13)
 
-    # Durakları haritaya ekleyin
-    displayer.display_duraklar(harita,duraklar)
-
-    en_yakin = None
-    mesafe = None
+    # Varsayılan değerler
+    baslangic_enlem = 41.0082  # İstanbul için varsayılan değer
+    baslangic_boylam = 28.9784
+    hedef_enlem = 41.0082
+    hedef_boylam = 28.9784
     hata = None
 
     if request.method == "POST":
         try:
-            enlem = float(request.form["enlem"])
-            boylam = float(request.form["boylam"])
-            konum.baslangic_enlem , konum.baslangic_boylam = enlem , boylam
-            #konum.hedef_enlem , konum.hedef_boylam = hedef_enlem , hedef_boylam
-            kullanici_konumu = (konum.baslangic_enlem , konum.baslangic_boylam)
-
-            # En yakın durağı bulma
-            en_yakin, mesafe = durak.en_yakin_durak(kullanici_konumu)
+            baslangic_enlem = float(request.form["baslangic_enlem"])
+            baslangic_boylam = float(request.form["baslangic_boylam"])
+            hedef_enlem = float(request.form["hedef_enlem"])
+            hedef_boylam = float(request.form["hedef_boylam"])
             
-            print(en_yakin,mesafe)
-
-            # Kullanıcı konumunu haritada işaretleme
-            displayer.display_user_location(harita,kullanici_konumu)
-            
-            # En yakın durağı işaretleme
-            displayer.display_nearest_durak(harita,en_yakin,mesafe)
         except ValueError:
             hata = "Lütfen geçerli bir enlem ve boylam girin!"
+            return render_template("index.html", hata=hata)
 
-    # Haritayı statik klasörüne kaydedin
-    harita.save("static/harita.html")
 
-    return render_template("index.html", en_yakin=en_yakin, mesafe=mesafe, hata=hata)
+    return render_template("index.html",
+            baslangic_enlem=baslangic_enlem,
+            baslangic_boylam=baslangic_boylam,
+            hedef_enlem=hedef_enlem,
+            hedef_boylam=hedef_boylam,
+            api_key=google_maps_api_key,
+            duraklar=durak.durak_verisi,
+            hata = hata
+        )
 
 
 if __name__ == "__main__":
