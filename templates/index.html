@@ -4,26 +4,437 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ulaşım Haritası</title>
-    <link rel="stylesheet" href="../style.css"/>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Sen:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #eef2f7 0%, #b8c6db 100%);
+            transition: all 0.5s ease;
+            overflow-x: hidden;
+        }
+
+        body.dark-mode {
+            background: linear-gradient(135deg, #121212 0%, #2c3e50 100%);
+            color: #e0e0e0;
+        }
+
+        /* Top Navigation */
+        .top-bar {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            padding: 0.8rem 2rem;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(15px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.4s ease;
+        }
+
+        .dark-mode .top-bar {
+            background: rgba(25, 25, 25, 0.9);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        .top-bar h1 {
+  font-size: 1.4rem;
+  font-weight: 600;
+  background: linear-gradient(135deg, #1e90ff, #0073e6, #87cefa,darkblue);
+  background-size: 200% auto;
+  animation: shine 4s linear infinite;
+  transition: all 0.8s ease;
+  padding: 6px 16px;
+
+  /* Yazıya özel efekt */
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.top-bar h1:hover {
+  filter: brightness(1.2);
+  letter-spacing: 0.5px;
+  transform: translateY(-1px);
+}
+
+@keyframes shine {
+  to {
+    background-position: 200% center;
+  }
+}
+
+      /*  .top-bar h1 {
+    font-size: 1.4rem;
+    font-weight: 600;
+    background: linear-gradient(135deg, #1e90ff, #0073e6, #87cefa);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    transition: all 0.3s ease;
+}
+
+        .dark-mode .top-bar h1 {
+
+            font-size: 1.4rem;
+    font-weight: 600;
+    background: linear-gradient(135deg,   #87cefa,#0073e6,#1e90ff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    transition: all 0.3s ease;
+        }  */
+
+        /* Mode Toggle */
+        .mode-toggle {
+            display: flex;
+            align-items: center;
+        }
+
+        .mode-toggle button {
+            width: 2.8rem;
+            height: 2.8rem;
+            border-radius: 50%;
+            border: none;
+            color: white;
+            cursor: pointer;
+            transition: all 0.4s ease;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(315deg, #cacaca, #f0f0f0);
+            box-shadow:  -5px -5px 4px #9d9d9d,
+             5px 5px 4px gray;
+        }
+
+        .mode-toggle button:hover {
+            background: orange;
+            transform: scale(1.1);
+            box-shadow: 0px 5px 20px rgba(255, 140, 0, 0.7);
+        }
+
+        .dark-mode .mode-toggle button {
+            border-radius: 50%;
+            background: rgba(25, 25, 25, 0.9);
+            box-shadow:  -5px -5px 4px #9d9d9d,
+             5px 5px 4px #ffffff;
+        }
+
+        .dark-mode .mode-toggle button:hover{
+            background: #2c3e50;
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(30, 144, 255, 0.5);
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 1500px;
+            margin: 6rem auto; /* margin-top değeri artırıldı */
+            padding: 0 2rem;
+            display: grid;
+            grid-template-columns: 1fr 3fr;
+            gap: 2.5rem;
+            animation: fadeIn 0.6s ease-in;
+        }
+
+        /* Control Panel */
+        .panel {
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(12px);
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.08);
+            transition: all 0.4s ease;
+        }
+
+        .dark-mode .panel {
+            background: rgba(35, 35, 35, 0.92);
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.5);
+        }
+
+        .panel:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.12);
+
+        }
+
+        .panel h1 {
+    font-family: 'Sen', sans-serif;
+    font-size: 1.6rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    background: linear-gradient(90deg, #1e90ff, #00bfff, #0073e6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 1px 1px 8px rgba(30, 144, 255, 0.25);
+    text-align: center;
+    margin-bottom: 1.2rem;
+    position: relative;
+    padding-bottom: 8px;
+}
+
+.panel h1::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    bottom: 0;
+    width: 50px;
+    height: 3px;
+    background: linear-gradient(90deg, #1e90ff, #00bfff);
+    border-radius: 2px;
+    transform: translateX(-50%);
+    opacity: 0.8;
+}
+
+        .dark-mode .panel h1 {
+            color: #74c0fc;
+        }
+
+        .panel form {
+            display: flex;
+            flex-direction: column;
+            gap: 1.2rem;
+        }
+
+        .input-group {
+            position: relative;
+        }
+
+        .panel label {
+            position: absolute;
+            top: -0.6rem;
+            left: 1.2rem;
+            font-size: 0.85rem;
+            color: #555;
+            background: white;
+            padding: 0 0.4rem;
+            transition: all 0.3s ease;
+        }
+
+        .dark-mode .panel label {
+            color: #ccc;
+            background: #232323;
+        }
+
+        .panel input[type="text"] {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 20px;
+            font-size: 1rem;
+            background: transparent;
+            transition: all 0.3s ease;
+
+        }
+
+        .dark-mode .panel input[type="text"] {
+            border-color: #555;
+            color: #e0e0e0;
+        }
+
+        .panel input[type="text"]:focus {
+            outline: none;
+            animation: rotateShadow 2s infinite linear;
+        }
+
+        .panel button {
+            background: linear-gradient(135deg, #1e90ff, #74c0fc);
+            border: none;
+            padding: 1rem;
+            border-radius: 20px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+
+        }
+
+        .panel button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(30, 144, 255, 0.5);
+        }
+
+        .result-card {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            background: rgba(30, 144, 255, 0.12);
+            border-radius: 12px;
+            animation: slideUp 0.4s ease;
+        }
+
+        .dark-mode .result-card {
+            background: rgba(116, 192, 252, 0.12);
+        }
+
+        /* Map Section */
+        .map-container {
+            position: relative;
+            height: 85vh; /* Yükseklik biraz azaltıldı */
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.08);
+            transition: all 0.4s ease;
+        }
+
+        .map-container:hover {
+            transform: scale(1.015);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.12);
+        }
+
+        .map-overlay {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            display: flex;
+            gap: 0.5rem;
+        }
+
+
+
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            transition: all 0.5s ease;
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(25px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes rotateShadow {
+  0% {
+    box-shadow: -2px -2px 8px 1px #aa00ff, 2px 2px 8px 1px #3700ff;
+  }
+  25% {
+    box-shadow: -2px 2px 8px 1px #aa00ff, 2px -2px 8px 1px #3700ff;
+  }
+  50% {
+    box-shadow: 2px 2px 8px 1px #aa00ff, -2px -2px 8px 1px #3700ff;
+  }
+  75% {
+    box-shadow: 2px -2px 8px 1px #aa00ff, -2px 2px 8px 1px #3700ff;
+  }
+  100% {
+    box-shadow: -2px -2px 8px 1px #aa00ff, 2px 2px 8px 1px #3700ff;
+  }
+}
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+            .map-container {
+                height: 70vh;
+            }
+        }
+    </style>
 </head>
 <body>
-    <h1>En Yakın Durak</h1>
+    <div class="top-bar">
+        <h1>📍 Ulaşım Haritası</h1>
+        <div class="mode-toggle">
+            <button id="modeToggle">☀</button>
+        </div>
+    </div>
 
-    <!-- Form Verisi Gönderme -->
-    <form method="POST">
-        <label>Enlem:</label>
-        <input type="text" name="enlem" required>
-        <label>Boylam:</label>
-        <input type="text" name="boylam" required>
-        <button type="submit">Gönder</button>
-    </form>
+    <div class="container">
+        <div class="panel">
+            <h1>En Yakın Durak Bul</h1>
+            <form method="POST" id="locationForm">
+                <div class="input-group">
+                    <label>Enlem</label>
+                    <input type="text" name="enlem" required placeholder="Örn: 41.0082">
+                </div>
+                <div class="input-group">
+                    <label>Boylam</label>
+                    <input type="text" name="boylam" required placeholder="Örn: 28.9784">
+                </div>
+                <button type="submit">Ara</button>
+            </form>
+            {% if en_yakin %}
+                <div class="result-card">
+                    <p>En yakın durak: <strong>{{ en_yakin[2] }}</strong></p>
+                    <p>Mesafe: {{ mesafe|round(2) }} km</p>
+                </div>
+            {% endif %}
+        </div>
 
-    <!-- En yakın durak bilgisi gösterimi -->
-    {% if en_yakin %}
-        <p>En yakın durak: <strong>{{ en_yakin[2] }}</strong> ({{ mesafe|round(2) }} km uzaklıkta)</p>
-    {% endif %}
+        <div class="map-container">
+            <div class="map-overlay">
 
-    <!-- Harita iframe -->
-    <iframe src="{{ url_for('static', filename='harita.html') }}" width="100%" height="750px"></iframe>
+            </div>
+            <iframe id="mapFrame" src="{{ url_for('static', filename='harita.html') }}"></iframe>
+        </div>
+    </div>
+
+    <script>
+        // Dark Mode Toggle
+        const modeToggle = document.getElementById('modeToggle');
+        const mapFrame = document.getElementById('mapFrame');
+        modeToggle.addEventListener('click', () => {
+            document.body.classList.toggle('dark-mode');
+            modeToggle.textContent = document.body.classList.contains('dark-mode') ? '🌙' : '☀';
+        });
+
+        // Form Submission with Animation
+        const form = document.getElementById('locationForm');
+        form.addEventListener('submit', (e) => {
+            const button = form.querySelector('button');
+            button.textContent = 'Aranıyor...';
+            button.disabled = true;
+            setTimeout(() => {
+                button.textContent = 'Ara';
+                button.disabled = false;
+            }, 1000);
+        });
+
+        // Map Controls
+        function zoomIn() {
+            mapFrame.contentWindow.postMessage('zoomIn', '*');
+        }
+
+        function zoomOut() {
+            mapFrame.contentWindow.postMessage('zoomOut', '*');
+        }
+
+        // Auto-detect location (optional feature)
+        if (navigator.geolocation) {
+            const autoLocate = () => {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        document.querySelector('input[name="enlem"]').value = position.coords.latitude;
+                        document.querySelector('input[name="boylam"]').value = position.coords.longitude;
+                    },
+                    (error) => console.log('Konum alınamadı:', error)
+                );
+            };
+            // Uncomment to enable: autoLocate();
+        }
+    </script>
 </body>
 </html>
