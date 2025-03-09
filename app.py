@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request
+from flask import Flask, jsonify, render_template, request
 from Yardımcı.durak import Durak
 from Yardımcı.konum import Konum
 from Yardımcı.rotahesaplayıcı import RotaHesaplayici
@@ -28,7 +28,11 @@ taksi_veri = veri['taxi']
 durak = Durak()
 konum = Konum()
 taksi = Taksi()
-rota = RotaHesaplayici()
+
+with open("veriseti.json", "r", encoding="utf-8") as f:
+        data_json = f.read()
+
+rota = RotaHesaplayici(data_json)
 
 taksi.opening_fee = taksi_veri['openingFee'] 
 taksi.cost_per_km = taksi_veri['costPerKm']
@@ -44,22 +48,37 @@ def home():
     print("Index.html çalıştırılıyor...")  # Debugging için
 
     # Varsayılan değerler
-    baslangic_enlem = 41.0082  # İstanbul için varsayılan değer
-    baslangic_boylam = 28.9784
-    hedef_enlem = 41.0082
-    hedef_boylam = 28.9784
+    baslangic_enlem = 40.7669   # İstanbul için varsayılan değer
+    baslangic_boylam = 29.9169
+    hedef_enlem = 40.7669
+    hedef_boylam = 29.9169
     hata = None
     en_yakin = None
     
     if request.method == "POST":
+        print("POST request processing started")  # Debug: Confirm POST handling
+        data = request.form
+        print("Form data received:", dict(data))  # Debug: Log form data
         try:
-            baslangic_enlem = float(request.form["baslangic_enlem"])
-            baslangic_boylam = float(request.form["baslangic_boylam"])
-            hedef_enlem = float(request.form["hedef_enlem"])
-            hedef_boylam = float(request.form["hedef_boylam"])
+            baslangic_enlem = float(data.get('baslangic_enlem', baslangic_enlem))
+            baslangic_boylam = float(data.get('baslangic_boylam', baslangic_boylam))
+            hedef_enlem = float(data.get('hedef_enlem', hedef_enlem))
+            hedef_boylam = float(data.get('hedef_boylam', hedef_boylam))
+            print(f"Parsed coordinates: ({baslangic_enlem}, {baslangic_boylam}) to ({hedef_enlem}, {hedef_boylam})")
             
-            en_yakin = durak.en_yakin_durak((baslangic_enlem,baslangic_boylam),google_maps_api_key )
-            rota.rota_hesapla(en_yakin)
+            sonuc = rota.rota_bul_koordinatlarla(
+                baslangic_enlem, baslangic_boylam, hedef_enlem, hedef_boylam, "sure"
+            )
+            # Rota açıklamasını göster
+            rota.rota_aciklama_goster(sonuc)
+            
+            # JSON olarak kaydet (örnek)
+            with open("rota_sonuc.json", "w", encoding="utf-8") as f:
+                json.dump(sonuc, f, ensure_ascii=False, indent=2)
+            print("Rota 'rota_sonuc.json' dosyasına kaydedildi.")
+            
+            # For POST, return JSON response to frontend
+            return jsonify(sonuc)
         except ValueError:
            
             hata = "Lütfen geçerli bir enlem ve boylam girin!"

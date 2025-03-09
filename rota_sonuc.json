@@ -1,0 +1,138 @@
+{
+  "rota_bulundu": false,
+  "baslangic_koordinat": {
+    "lat": 40.782785,
+    "lon": 29.954364
+  },
+  "hedef_koordinat": {
+    "lat": 40.825675,
+    "lon": 29.928744
+  },
+  "baslangic_durak": {
+    "id": "bus_symbolavm",
+    "name": "Symbol AVM (Bus)",
+    "type": "bus",
+    "lat": 40.77788,
+    "lon": 29.94991,
+    "sonDurak": true,
+    "nextStops": [],
+    "transfer": null
+  },
+  "bitis_durak": {
+    "id": "bus_umuttepe",
+    "name": "Umuttepe (Bus)",
+    "type": "bus",
+    "lat": 40.82103,
+    "lon": 29.91843,
+    "sonDurak": true,
+    "nextStops": [],
+    "transfer": null
+  },
+  "toplam_mesafe_km": 1.6718345107954522,
+  "toplam_ucret": 0,
+  "toplam_sure_dk": 25.07751766193178,
+  "rota": [
+    {
+      "baslangic_durak": {
+        "id": "baslangic_nokta",
+        "name": "Başlangıç Noktası",
+        "lat": 40.782785,
+        "lon": 29.954364,
+        "type": "custom"
+      },
+      "bitis_durak": {
+        "id": "bus_symbolavm",
+        "name": "Symbol AVM (Bus)",
+        "type": "bus",
+        "lat": 40.77788,
+        "lon": 29.94991,
+        "sonDurak": true,
+        "nextStops": [],
+        "transfer": null
+      },
+      "mesafe": 0.6619024558916794,
+      "sure": 9.92853683837519,
+      "ucret": 0,
+      "baglanti_tipi": "walking"
+    },
+    {
+      "baslangic_durak": {
+        "id": "bus_umuttepe",
+        "name": "Umuttepe (Bus)",
+        "type": "bus",
+        "lat": 40.82103,
+        "lon": 29.91843,
+        "sonDurak": true,
+        "nextStops": [],
+        "transfer": null
+      },
+      "bitis_durak": {
+        "id": "hedef_nokta",
+        "name": "Hedef Noktası",
+        "lat": 40.825675,
+        "lon": 29.928744,
+        "type": "custom"
+      },
+      "mesafe": 1.0099320549037727,
+      "sure": 15.14898082355659,
+      "ucret": 0,
+      "baglanti_tipi": "walking"
+    }
+  ],
+  "waypoints": [
+    {
+      "id": "baslangic_nokta",
+      "name": "Başlangıç Noktası",
+      "lat": 40.782785,
+      "lon": 29.954364,
+      "type": "custom",
+      "is_start": true,
+      "is_end": false,
+      "mesafe_to_stop": 0.6619024558916794
+    },
+    {
+      "id": "bus_umuttepe",
+      "name": "Umuttepe (Bus)",
+      "lat": 40.82103,
+      "lon": 29.91843,
+      "type": "bus",
+      "is_start": false,
+      "is_end": false
+    },
+    {
+      "id": "hedef_nokta",
+      "name": "Hedef Noktası",
+      "lat": 40.825675,
+      "lon": 29.928744,
+      "type": "custom",
+      "is_start": false,
+      "is_end": true,
+      "mesafe_to_stop": 1.0099320549037727
+    }
+  ],
+  "taksi_alternatifi": {
+    "mesafe_km": 5.2340098197246325,
+    "ucret": 30.93603927889853,
+    "tahmini_sure_dk": 10.468019639449265,
+    "waypoints": [
+      {
+        "id": "baslangic_nokta",
+        "name": "Başlangıç Noktası",
+        "lat": 40.782785,
+        "lon": 29.954364,
+        "type": "taksi",
+        "is_start": true,
+        "is_end": false
+      },
+      {
+        "id": "hedef_nokta",
+        "name": "Hedef Noktası",
+        "lat": 40.825675,
+        "lon": 29.928744,
+        "type": "taksi",
+        "is_start": false,
+        "is_end": true
+      }
+    ]
+  }
+}
