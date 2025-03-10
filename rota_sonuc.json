@@ -1,80 +1,190 @@
 {
-  "rota_bulundu": false,
+  "rota_bulundu": true,
   "baslangic_koordinat": {
-    "lat": 40.782785,
-    "lon": 29.954364
+    "lat": 40.783622,
+    "lon": 29.951352
   },
   "hedef_koordinat": {
-    "lat": 40.825675,
-    "lon": 29.928744
+    "lat": 40.761979,
+    "lon": 29.938391
   },
   "baslangic_durak": {
-    "id": "bus_symbolavm",
-    "name": "Symbol AVM (Bus)",
+    "id": "bus_otogar",
+    "name": "Otogar (Bus)",
     "type": "bus",
-    "lat": 40.77788,
-    "lon": 29.94991,
-    "sonDurak": true,
-    "nextStops": [],
-    "transfer": null
+    "lat": 40.78259,
+    "lon": 29.94628,
+    "sonDurak": false,
+    "nextStops": [
+      {
+        "stopId": "bus_sekapark",
+        "mesafe": 3.5,
+        "sure": 10,
+        "ucret": 3.0
+      }
+    ],
+    "transfer": {
+      "transferStopId": "tram_otogar",
+      "transferSure": 2,
+      "transferUcret": 0.5
+    }
   },
   "bitis_durak": {
-    "id": "bus_umuttepe",
-    "name": "Umuttepe (Bus)",
-    "type": "bus",
-    "lat": 40.82103,
-    "lon": 29.91843,
+    "id": "tram_halkevi",
+    "name": "Halkevi (Tram)",
+    "type": "tram",
+    "lat": 40.7635,
+    "lon": 29.9387,
     "sonDurak": true,
     "nextStops": [],
-    "transfer": null
+    "transfer": {
+      "transferStopId": "bus_sekapark",
+      "transferSure": 5,
+      "transferUcret": 0.5
+    }
   },
-  "toplam_mesafe_km": 1.6718345107954522,
-  "toplam_ucret": 0,
-  "toplam_sure_dk": 25.07751766193178,
+  "toplam_mesafe_km": 6.913306636897539,
+  "toplam_ucret": 6.5,
+  "toplam_sure_dk": 29.199599553463074,
   "rota": [
     {
       "baslangic_durak": {
         "id": "baslangic_nokta",
         "name": "Başlangıç Noktası",
-        "lat": 40.782785,
-        "lon": 29.954364,
+        "lat": 40.783622,
+        "lon": 29.951352,
         "type": "custom"
       },
       "bitis_durak": {
-        "id": "bus_symbolavm",
-        "name": "Symbol AVM (Bus)",
+        "id": "bus_otogar",
+        "name": "Otogar (Bus)",
         "type": "bus",
-        "lat": 40.77788,
-        "lon": 29.94991,
-        "sonDurak": true,
-        "nextStops": [],
-        "transfer": null
+        "lat": 40.78259,
+        "lon": 29.94628,
+        "sonDurak": false,
+        "nextStops": [
+          {
+            "stopId": "bus_sekapark",
+            "mesafe": 3.5,
+            "sure": 10,
+            "ucret": 3.0
+          }
+        ],
+        "transfer": {
+          "transferStopId": "tram_otogar",
+          "transferSure": 2,
+          "transferUcret": 0.5
+        }
       },
-      "mesafe": 0.6619024558916794,
-      "sure": 9.92853683837519,
+      "mesafe": 0.4421886274368019,
+      "sure": 6.632829411552028,
       "ucret": 0,
       "baglanti_tipi": "walking"
     },
     {
       "baslangic_durak": {
-        "id": "bus_umuttepe",
-        "name": "Umuttepe (Bus)",
-        "type": "bus",
-        "lat": 40.82103,
-        "lon": 29.91843,
+        "id": "bus_otogar",
+        "name": "Otogar (Bus)",
+        "lat": 40.78259,
+        "lon": 29.94628,
+        "type": "bus"
+      },
+      "bitis_durak": {
+        "id": "tram_otogar",
+        "name": "Otogar (Tram)",
+        "lat": 40.78245,
+        "lon": 29.9461,
+        "type": "tram"
+      },
+      "mesafe": 0.1,
+      "sure": 2,
+      "ucret": 0.5,
+      "baglanti_tipi": "transfer"
+    },
+    {
+      "baslangic_durak": {
+        "id": "tram_otogar",
+        "name": "Otogar (Tram)",
+        "lat": 40.78245,
+        "lon": 29.9461,
+        "type": "tram"
+      },
+      "bitis_durak": {
+        "id": "tram_yahyakaptan",
+        "name": "Yahya Kaptan (Tram)",
+        "lat": 40.7716,
+        "lon": 29.9601,
+        "type": "tram"
+      },
+      "mesafe": 1.2,
+      "sure": 5,
+      "ucret": 2.5,
+      "baglanti_tipi": "tram"
+    },
+    {
+      "baslangic_durak": {
+        "id": "tram_yahyakaptan",
+        "name": "Yahya Kaptan (Tram)",
+        "lat": 40.7716,
+        "lon": 29.9601,
+        "type": "tram"
+      },
+      "bitis_durak": {
+        "id": "tram_sekapark",
+        "name": "Sekapark (Tram)",
+        "lat": 40.761445,
+        "lon": 29.9085477,
+        "type": "tram"
+      },
+      "mesafe": 2.0,
+      "sure": 6,
+      "ucret": 2.0,
+      "baglanti_tipi": "tram"
+    },
+    {
+      "baslangic_durak": {
+        "id": "tram_sekapark",
+        "name": "Sekapark (Tram)",
+        "lat": 40.761445,
+        "lon": 29.9085477,
+        "type": "tram"
+      },
+      "bitis_durak": {
+        "id": "tram_halkevi",
+        "name": "Halkevi (Tram)",
+        "lat": 40.7635,
+        "lon": 29.9387,
+        "type": "tram"
+      },
+      "mesafe": 3.0,
+      "sure": 7,
+      "ucret": 1.5,
+      "baglanti_tipi": "tram"
+    },
+    {
+      "baslangic_durak": {
+        "id": "tram_halkevi",
+        "name": "Halkevi (Tram)",
+        "type": "tram",
+        "lat": 40.7635,
+        "lon": 29.9387,
         "sonDurak": true,
         "nextStops": [],
-        "transfer": null
+        "transfer": {
+          "transferStopId": "bus_sekapark",
+          "transferSure": 5,
+          "transferUcret": 0.5
+        }
       },
       "bitis_durak": {
         "id": "hedef_nokta",
         "name": "Hedef Noktası",
-        "lat": 40.825675,
-        "lon": 29.928744,
+        "lat": 40.761979,
+        "lon": 29.938391,
         "type": "custom"
       },
-      "mesafe": 1.0099320549037727,
-      "sure": 15.14898082355659,
+      "mesafe": 0.1711180094607364,
+      "sure": 2.566770141911046,
       "ucret": 0,
       "baglanti_tipi": "walking"
     }
@@ -83,43 +193,79 @@
     {
       "id": "baslangic_nokta",
       "name": "Başlangıç Noktası",
-      "lat": 40.782785,
-      "lon": 29.954364,
+      "lat": 40.783622,
+      "lon": 29.951352,
       "type": "custom",
       "is_start": true,
       "is_end": false,
-      "mesafe_to_stop": 0.6619024558916794
+      "mesafe_to_stop": 0.4421886274368019
     },
     {
-      "id": "bus_umuttepe",
-      "name": "Umuttepe (Bus)",
-      "lat": 40.82103,
-      "lon": 29.91843,
+      "id": "bus_otogar",
+      "name": "Otogar (Bus)",
+      "lat": 40.78259,
+      "lon": 29.94628,
       "type": "bus",
+      "is_start": false,
+      "is_end": false
+    },
+    {
+      "id": "tram_otogar",
+      "name": "Otogar (Tram)",
+      "lat": 40.78245,
+      "lon": 29.9461,
+      "type": "tram",
+      "is_start": false,
+      "is_end": false
+    },
+    {
+      "id": "tram_yahyakaptan",
+      "name": "Yahya Kaptan (Tram)",
+      "lat": 40.7716,
+      "lon": 29.9601,
+      "type": "tram",
+      "is_start": false,
+      "is_end": false
+    },
+    {
+      "id": "tram_sekapark",
+      "name": "Sekapark (Tram)",
+      "lat": 40.761445,
+      "lon": 29.9085477,
+      "type": "tram",
+      "is_start": false,
+      "is_end": false
+    },
+    {
+      "id": "tram_halkevi",
+      "name": "Halkevi (Tram)",
+      "lat": 40.7635,
+      "lon": 29.9387,
+      "type": "tram",
       "is_start": false,
       "is_end": false
     },
     {
       "id": "hedef_nokta",
       "name": "Hedef Noktası",
-      "lat": 40.825675,
-      "lon": 29.928744,
+      "lat": 40.761979,
+      "lon": 29.938391,
       "type": "custom",
       "is_start": false,
       "is_end": true,
-      "mesafe_to_stop": 1.0099320549037727
+      "mesafe_to_stop": 0.1711180094607364
     }
   ],
   "taksi_alternatifi": {
-    "mesafe_km": 5.2340098197246325,
-    "ucret": 30.93603927889853,
-    "tahmini_sure_dk": 10.468019639449265,
+    "mesafe_km": 2.6425168539088197,
+    "ucret": 20.57006741563528,
+    "tahmini_sure_dk": 5.2850337078176395,
     "waypoints": [
       {
         "id": "baslangic_nokta",
         "name": "Başlangıç Noktası",
-        "lat": 40.782785,
-        "lon": 29.954364,
+        "lat": 40.783622,
+        "lon": 29.951352,
         "type": "taksi",
         "is_start": true,
         "is_end": false
@@ -127,8 +273,8 @@
       {
         "id": "hedef_nokta",
         "name": "Hedef Noktası",
-        "lat": 40.825675,
-        "lon": 29.928744,
+        "lat": 40.761979,
+        "lon": 29.938391,
         "type": "taksi",
         "is_start": false,
         "is_end": true

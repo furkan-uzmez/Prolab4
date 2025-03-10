@@ -29,10 +29,7 @@ durak = Durak()
 konum = Konum()
 taksi = Taksi()
 
-with open("veriseti.json", "r", encoding="utf-8") as f:
-        data_json = f.read()
-
-rota = RotaHesaplayici(data_json)
+rota = RotaHesaplayici(veri)
 
 taksi.opening_fee = taksi_veri['openingFee'] 
 taksi.cost_per_km = taksi_veri['costPerKm']
@@ -48,7 +45,7 @@ def home():
     print("Index.html çalıştırılıyor...")  # Debugging için
 
     # Varsayılan değerler
-    baslangic_enlem = 40.7669   # İstanbul için varsayılan değer
+    baslangic_enlem = 40.7669   # İzmit için varsayılan değer
     baslangic_boylam = 29.9169
     hedef_enlem = 40.7669
     hedef_boylam = 29.9169
@@ -79,8 +76,8 @@ def home():
             
             # For POST, return JSON response to frontend
             return jsonify(sonuc)
+        
         except ValueError:
-           
             hata = "Lütfen geçerli bir enlem ve boylam girin!"
             return render_template("index.html", hata=hata)
 

@@ -667,12 +667,13 @@
     <script>
         let map, markers = [], infoWindows = [], baslangicMarker, hedefMarker, clickMarker, nearestMarker;
         let directionsService, directionsRenderer;
+        let currentRouteMarkers = [];
+        let currentRoutePolylines = [];
     
         function initMap() {
-            // Initialize Directions Service and Renderer
             directionsService = new google.maps.DirectionsService();
             directionsRenderer = new google.maps.DirectionsRenderer({
-                suppressMarkers: false,  // Set to true if you want to hide A/B markers
+                suppressMarkers: false,
                 polylineOptions: {
                     strokeColor: '#4285F4',
                     strokeWeight: 5
@@ -680,7 +681,6 @@
             });
             console.log("Directions Service and Renderer initialized");
     
-            // Default center if Jinja2 variables are not provided
             const defaultCenter = { lat: 40.7669, lng: 29.9169 };
             const baslangicEnlem = {{ baslangic_enlem | default(40.7669) }};
             const baslangicBoylam = {{ baslangic_boylam | default(29.9169) }};
@@ -705,12 +705,11 @@
                 fullscreenControlOptions: { position: google.maps.ControlPosition.BOTTOM_RIGHT }
             });
     
-            directionsRenderer.setMap(map); // Attach renderer to map
+            directionsRenderer.setMap(map);
             console.log("Renderer attached to map");
     
             const bounds = new google.maps.LatLngBounds();
     
-            // Add stop markers
             durakVerisi.forEach(durak => {
                 const iconUrl = durak.type === 'bus'
                     ? 'https://img.icons8.com/color/48/000000/bus.png'
@@ -734,7 +733,6 @@
                 bounds.extend(marker.getPosition());
             });
     
-            // Add start marker
             baslangicMarker = new google.maps.Marker({
                 position: { lat: baslangicEnlem, lng: baslangicBoylam },
                 map: map,
@@ -743,7 +741,6 @@
             });
             bounds.extend(baslangicMarker.getPosition());
     
-            // Add destination marker
             hedefMarker = new google.maps.Marker({
                 position: { lat: hedefEnlem, lng: hedefBoylam },
                 map: map,
@@ -752,7 +749,6 @@
             });
             bounds.extend(hedefMarker.getPosition());
     
-            // Add nearest stop marker if provided
             if (nearestStop) {
                 nearestMarker = new google.maps.Marker({
                     position: { lat: nearestStop.lat, lng: nearestStop.lon },
@@ -776,41 +772,36 @@
                 bounds.extend(nearestMarker.getPosition());
             }
     
-            // Fit map to bounds
             map.fitBounds(bounds);
     
-            // Click event to place marker
             map.addListener('click', (event) => {
                 placeClickMarker(event.latLng);
                 document.getElementById('status-bar').textContent = 'Durum: Yeni konum seçildi';
             });
     
             setupEventListeners();
-            
-            // If we already have route data, try to draw initial route
+    
             if (hedefEnlem && hedefBoylam && nearestStop) {
-                clearPreviousRoutes
+                clearPreviousRoutes();
                 drawInitialRoute();
             }
         }
-        
-        // Add this function to draw initial route if data is available
+    
         function drawInitialRoute() {
-            clearPreviousRoutes()
+            clearPreviousRoutes();
             const durakVerisi = {{ duraklar|tojson | default('[]') }};
             const nearestStop = {{ nearest_stop | tojson | default('null') }};
             const baslangicEnlem = {{ baslangic_enlem | default(40.7669) }};
             const baslangicBoylam = {{ baslangic_boylam | default(29.9169) }};
             const hedefEnlem = {{ hedef_enlem }};
             const hedefBoylam = {{ hedef_boylam }};
-            
+    
             if (nearestStop && hedefEnlem && hedefBoylam) {
                 const waypoints = [
                     { lat: baslangicEnlem, lng: baslangicBoylam },
                     { lat: nearestStop.lat, lng: nearestStop.lon }
                 ];
-                
-                // Find closest destination stop if available
+    
                 const destStop = durakVerisi.reduce((closest, stop) => {
                     const distance = Math.sqrt(
                         Math.pow(stop.lat - hedefEnlem, 2) + 
@@ -820,14 +811,13 @@
                         { stop: stop, distance: distance } : 
                         closest;
                 }, { stop: null, distance: Infinity });
-                
+    
                 if (destStop.stop) {
                     waypoints.push({ lat: destStop.stop.lat, lng: destStop.stop.lon });
                 }
-                
+    
                 waypoints.push({ lat: hedefEnlem, lng: hedefBoylam });
-                
-                // Draw a simple line between stops for the initial load
+    
                 const routeLine = new google.maps.Polyline({
                     path: waypoints,
                     geodesic: true,
@@ -836,6 +826,7 @@
                     strokeWeight: 4,
                     map: map
                 });
+                currentRoutePolylines.push(routeLine);
             }
         }
     
@@ -850,14 +841,41 @@
             document.getElementById('selected-coordinates').textContent = `${location.lat().toFixed(6)}, ${location.lng().toFixed(6)}`;
             map.panTo(location);
         }
-        
-        // Add fallback function to draw direct lines between waypoints
+    
+        function clearPreviousRoutes() {
+            console.log("Clearing previous routes...");
+            
+            if (directionsRenderer) {
+                directionsRenderer.setDirections({routes: []});
+                directionsRenderer.setMap(null);
+                directionsRenderer.setMap(map);
+                console.log("DirectionsRenderer cleared");
+            }
+    
+            currentRouteMarkers.forEach(marker => {
+                if (marker && marker.setMap) {
+                    marker.setMap(null);
+                }
+            });
+            currentRouteMarkers = [];
+            console.log("Route markers cleared:", currentRouteMarkers.length);
+    
+            currentRoutePolylines.forEach(polyline => {
+                if (polyline && polyline.setMap) {
+                    polyline.setMap(null);
+                }
+            });
+            currentRoutePolylines = [];
+            console.log("Route polylines cleared:", currentRoutePolylines.length);
+        }
+    
         function drawDirectLine(waypoints) {
             if (!waypoints || waypoints.length < 2) return;
             
-            // Create a polyline between all waypoints
+            clearPreviousRoutes();
+            
             const path = waypoints.map(wp => ({
-                lat: wp.lat, 
+                lat: wp.lat,
                 lng: wp.lon || wp.lng
             }));
             
@@ -870,32 +888,15 @@
                 map: map
             });
             
-            // Fit to bounds
+            currentRoutePolylines.push(routeLine);
+            
             const bounds = new google.maps.LatLngBounds();
             path.forEach(point => bounds.extend(point));
             map.fitBounds(bounds);
             
             document.getElementById('status-bar').textContent = 'Durum: Basit rota gösterildi';
+            console.log("Direct line route drawn");
         }
-
-        // Function to clear previous routes from the map
-function clearPreviousRoutes() {
-  // Remove all route markers
-  currentRouteMarkers.forEach(marker => {
-    marker.remove(); // For Leaflet
-    // OR: marker.setMap(null); // For Google Maps
-  });
-  
-  // Remove all route polylines
-  currentRoutePolylines.forEach(polyline => {
-    polyline.remove(); // For Leaflet
-    // OR: polyline.setMap(null); // For Google Maps
-  });
-  
-  // Reset the arrays
-  currentRouteMarkers = [];
-  currentRoutePolylines = [];
-}
     
         function setupEventListeners() {
             document.getElementById('modeToggle').addEventListener('click', () => {
@@ -950,7 +951,7 @@ function clearPreviousRoutes() {
                     document.getElementById('selected-coordinates').textContent = 'Henüz seçilmedi';
                     document.getElementById('status-bar').textContent = 'Durum: İşaretler temizlendi';
                 }
-                directionsRenderer.setDirections({routes: []}); // Clear route
+                clearPreviousRoutes();
             });
     
             document.getElementById('set-start').addEventListener('click', () => {
@@ -991,13 +992,13 @@ function clearPreviousRoutes() {
                 .then(sonuc => {
                     button.textContent = 'Konumları Göster';
                     button.disabled = false;
-                    document.getElementById('status-bar').textContent = 'Durum: Rota gösterildi';
     
-                    // Update markers based on result
                     baslangicMarker.setPosition({lat: sonuc.baslangic_koordinat.lat, lng: sonuc.baslangic_koordinat.lon});
                     hedefMarker.setPosition({lat: sonuc.hedef_koordinat.lat, lng: sonuc.hedef_koordinat.lon});
-                    
-                    if (nearestMarker) nearestMarker.setMap(null);
+    
+                    if (nearestMarker) {
+                        nearestMarker.setMap(null);
+                    }
                     nearestMarker = new google.maps.Marker({
                         position: { lat: sonuc.baslangic_durak.lat, lng: sonuc.baslangic_durak.lon },
                         map: map,
@@ -1008,58 +1009,45 @@ function clearPreviousRoutes() {
                         },
                         animation: google.maps.Animation.BOUNCE
                     });
-                    
-                    // Clear existing routes
-                    directionsRenderer.setDirections({routes: []});
-                    
-                    // Draw the route using waypoints
+    
+                    clearPreviousRoutes();
+    
                     if (sonuc.waypoints && sonuc.waypoints.length >= 2) {
-                        console.log("Drawing route with waypoints:", sonuc.waypoints);
+                        console.log("Drawing new route with waypoints:", sonuc.waypoints);
                         
                         const waypointsArray = [];
-                        
-                        // Add intermediate waypoints (skip first and last)
                         if (sonuc.waypoints.length > 2) {
                             for (let i = 1; i < sonuc.waypoints.length - 1; i++) {
                                 waypointsArray.push({
-                                    location: new google.maps.LatLng(
-                                        sonuc.waypoints[i].lat,
-                                        sonuc.waypoints[i].lon
-                                    ),
+                                    location: new google.maps.LatLng(sonuc.waypoints[i].lat, sonuc.waypoints[i].lon),
                                     stopover: true
                                 });
                             }
                         }
-                        
-                        // Request the directions
+    
                         directionsService.route({
-                            origin: new google.maps.LatLng(
-                                sonuc.waypoints[0].lat, 
-                                sonuc.waypoints[0].lon
-                            ),
-                            destination: new google.maps.LatLng(
-                                sonuc.waypoints[sonuc.waypoints.length - 1].lat,
-                                sonuc.waypoints[sonuc.waypoints.length - 1].lon
-                            ),
+                            origin: new google.maps.LatLng(sonuc.waypoints[0].lat, sonuc.waypoints[0].lon),
+                            destination: new google.maps.LatLng(sonuc.waypoints[sonuc.waypoints.length - 1].lat, sonuc.waypoints[sonuc.waypoints.length - 1].lon),
                             waypoints: waypointsArray,
                             travelMode: google.maps.TravelMode.TRANSIT,
                             optimizeWaypoints: false
                         }, (result, status) => {
                             if (status === 'OK') {
                                 directionsRenderer.setDirections(result);
-                                console.log("Route rendered successfully");
+                                console.log("New route rendered successfully");
                                 
-                                // Fit map to all waypoints
+                                const route = result.routes[0];
+                                currentRoutePolylines.push(route.overview_polyline);
+                                
                                 const bounds = new google.maps.LatLngBounds();
                                 sonuc.waypoints.forEach(wp => {
                                     bounds.extend(new google.maps.LatLng(wp.lat, wp.lon));
                                 });
                                 map.fitBounds(bounds);
+                                document.getElementById('status-bar').textContent = 'Durum: Yeni rota gösterildi';
                             } else {
                                 console.error('Directions request failed:', status);
                                 document.getElementById('status-bar').textContent = 'Durum: Google Directions hata verdi, basit rota çiziliyor';
-                                
-                                // Fall back to direct line
                                 drawDirectLine(sonuc.waypoints);
                             }
                         });

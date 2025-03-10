@@ -4,8 +4,8 @@ import networkx as nx
 from typing import Dict, List, Tuple, Any
 
 class RotaHesaplayici:
-    def __init__(self, data_json: str):
-        self.data = json.loads(data_json)
+    def __init__(self, data: dict):
+        self.data = data
         self.duraklar = {durak["id"]: durak for durak in self.data["duraklar"]}
         self.city = self.data["city"]
         self.taxi = self.data["taxi"]
