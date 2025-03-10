@@ -1,0 +1,1185 @@
+<!DOCTYPE html>
+<html lang="tr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Toplu Taşıma Durakları Haritası</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Sen:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            min-height: 100vh;
+            transition: all 0.6s ease;
+            overflow-x: hidden;
+            --color: #E1E1E1;
+            background-color: #F3F3F3;
+            background-image: linear-gradient(0deg, transparent 24%, var(--color) 25%, var(--color) 26%, transparent 27%, transparent 74%, var(--color) 75%, var(--color) 76%, transparent 77%, transparent),
+                linear-gradient(90deg, transparent 24%, var(--color) 25%, var(--color) 26%, transparent 27%, transparent 74%, var(--color) 75%, var(--color) 76%, transparent 77%, transparent);
+            background-size: 55px 55px;
+        }
+
+        body.dark-mode {
+            --color: rgba(114, 114, 114, 0.3);
+            background-color: #191a1a;
+            background-image: linear-gradient(0deg, transparent 24%, var(--color) 25%, var(--color) 26%, transparent 27%,transparent 74%, var(--color) 75%, var(--color) 76%, transparent 77%,transparent),
+                linear-gradient(90deg, transparent 24%, var(--color) 25%, var(--color) 26%, transparent 27%,transparent 74%, var(--color) 75%, var(--color) 76%, transparent 77%,transparent);
+            background-size: 55px 55px;
+        }
+
+        .top-bar {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            padding: 1rem 2rem;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.7), rgba(230, 240, 255, 0.7));
+            backdrop-filter: blur(20px);
+            box-shadow: 0 4px 25px rgba(0, 0, 0, 0.05);
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.5s ease;
+        }
+
+        .dark-mode .top-bar {
+            background: linear-gradient(135deg, rgba(26, 32, 44, 0.7), rgba(45, 55, 72, 0.7));
+            box-shadow: 0 4px 25px rgba(0, 0, 0, 0.4);
+        }
+
+        .top-bar h1 {
+            font-size: 1.4rem;
+            font-weight: 600;
+            background: linear-gradient(135deg, #1e90ff, #0073e6, #87cefa, darkblue);
+            background-size: 200% auto;
+            animation: shine 4s linear infinite;
+            padding: 0.5rem 1rem;
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            transition: transform 0.5s ease;
+        }
+
+        .top-bar h1:hover {
+            transform: scale(1.05);
+        }
+
+        @keyframes shine {
+            to {
+                background-position: 200% center;
+            }
+        }
+
+        .top-bar-controls {
+            display: flex;
+            gap: 1.2rem;
+        }
+
+        .control-btn {
+            width: 3.2rem;
+            height: 3.2rem;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            transition: all 0.5s ease;
+            font-size: 1.4rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(145deg, #ffffff, #e6efff);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .control-btn::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(120deg, rgba(91, 134, 229, 0.2), transparent);
+            transform: translateX(-100%);
+            transition: transform 0.5s ease;
+        }
+
+        .control-btn:hover::after {
+            transform: translateX(100%);
+        }
+
+        .control-btn:hover {
+            transform: scale(1.1);
+            background: linear-gradient(145deg, #5b86e5, #36d1dc);
+            color: white;
+            box-shadow: 0 10px 25px rgba(91, 134, 229, 0.3);
+        }
+
+        .dark-mode .control-btn {
+            background: linear-gradient(145deg, #1a202c, #2d3748);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .dark-mode .control-btn:hover {
+            background: linear-gradient(145deg, #5b86e5, #36d1dc);
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 6rem auto;
+            padding: 0 2rem;
+            display: grid;
+            grid-template-columns: 1fr 3fr;
+            gap: 2.5rem;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        .map-container {
+            height: 85vh;
+            border-radius: 25px;
+            overflow: hidden;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.06);
+            transition: all 0.5s ease;
+            position: relative;
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.1), rgba(230, 240, 255, 0.1));
+        }
+
+        .map-container:hover {
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.1);
+            transform: translateY(-5px);
+        }
+
+        #map {
+            width: 100%;
+            height: 100%;
+        }
+
+        .gm-style .gm-control-active {
+            border-radius: 12px !important;
+            background: linear-gradient(145deg, #ffffff, #e6efff) !important;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+            transition: all 0.5s ease !important;
+            position: relative !important;
+            overflow: hidden !important;
+        }
+
+        .gm-style .gm-control-active::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(120deg, rgba(91, 134, 229, 0.2), transparent);
+            transform: translateX(-100%);
+            transition: transform 0.5s ease;
+        }
+
+        .gm-style .gm-control-active:hover::after {
+            transform: translateX(100%);
+        }
+
+        .gm-style .gm-control-active:hover {
+            transform: scale(1.1) !important;
+            background: linear-gradient(145deg, #5b86e5, #36d1dc) !important;
+            box-shadow: 0 8px 20px rgba(91, 134, 229, 0.3) !important;
+        }
+
+        .dark-mode .gm-style .gm-control-active {
+            background: linear-gradient(145deg, #1a202c, #2d3748) !important;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+        }
+
+        .dark-mode .gm-style .gm-control-active:hover {
+            background: linear-gradient(145deg, #5b86e5, #36d1dc) !important;
+        }
+
+        .gm-style .gm-style-mtc {
+            margin: 10px !important;
+        }
+
+        .gm-style .gm-style-mtc div {
+            border-radius: 12px !important;
+            background: linear-gradient(145deg, #ffffff, #e6efff) !important;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+            transition: all 0.5s ease !important;
+            position: relative !important;
+            overflow: hidden !important;
+            padding: 8px 12px !important;
+            font-family: 'Poppins', sans-serif !important;
+            font-weight: 500 !important;
+            color: #4a5568 !important;
+        }
+
+        .gm-style .gm-style-mtc div::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(120deg, rgba(91, 134, 229, 0.2), transparent);
+            transform: translateX(-100%);
+            transition: transform 0.5s ease;
+        }
+
+        .gm-style .gm-style-mtc div:hover::after {
+            transform: translateX(100%);
+        }
+
+        .gm-style .gm-style-mtc div:hover {
+            transform: scale(1.05) !important;
+            background: linear-gradient(145deg, #5b86e5, #36d1dc) !important;
+            box-shadow: 0 8px 20px rgba(91, 134, 229, 0.3) !important;
+            color: white !important;
+        }
+
+        .dark-mode .gm-style .gm-style-mtc div {
+            background: linear-gradient(145deg, #1a202c, #2d3748) !important;
+            color: #e2e8f0 !important;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+        }
+
+        .dark-mode .gm-style .gm-style-mtc div:hover {
+            background: linear-gradient(145deg, #5b86e5, #36d1dc) !important;
+            color: white !important;
+        }
+
+        .form-container {
+            height: 85vh;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(235, 245, 255, 0.9));
+            backdrop-filter: blur(15px);
+            padding: 2rem;
+            border-radius: 25px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.06);
+            transition: all 0.5s ease;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: #5b86e5 rgba(235, 245, 255, 0.9);
+        }
+
+        .form-container::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        .form-container::-webkit-scrollbar-track {
+            background: rgba(235, 245, 255, 0.9);
+            border-radius: 10px;
+        }
+
+        .form-container::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, #5b86e5, #36d1dc);
+            border-radius: 10px;
+        }
+
+        .dark-mode .form-container {
+            background: linear-gradient(135deg, rgba(26, 32, 44, 0.9), rgba(45, 55, 72, 0.9));
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+            scrollbar-color: #36d1dc rgba(45, 55, 72, 0.9);
+        }
+
+        .dark-mode .form-container::-webkit-scrollbar-track {
+            background: rgba(45, 55, 72, 0.9);
+        }
+
+        .form-container:hover {
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.1);
+            transform: translateY(-5px);
+        }
+
+        .form-container h2 {
+            font-family: 'Sen', sans-serif;
+            font-size: 1.9rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.8px;
+            background: linear-gradient(90deg, #5b86e5, #36d1dc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-align: center;
+            margin-bottom: 2rem;
+            position: relative;
+            padding-bottom: 12px;
+            transition: all 0.5s ease;
+        }
+
+        .form-container h2:hover {
+            transform: scale(1.03) translateY(-2px);
+        }
+
+        .form-container h2::after {
+            content: "";
+            position: absolute;
+            left: 50%;
+            bottom: 0;
+            width: 180px;
+            height: 4px;
+            background: linear-gradient(90deg, #5b86e5, #36d1dc);
+            border-radius: 2px;
+            transform: translateX(-50%);
+            opacity: 0.8;
+            transition: width 0.5s ease;
+        }
+
+        .form-container h2:hover::after {
+            width: 220px;
+        }
+
+        .form-container form {
+            display: flex;
+            flex-direction: column;
+            gap: 1.8rem;
+        }
+
+        .input-group {
+            position: relative;
+            animation: slideUp 0.6s ease-out;
+            transition: all 0.5s ease;
+        }
+
+        .input-group:hover {
+            transform: translateY(-3px);
+        }
+
+        .form-container label {
+            position: absolute;
+            top: -0.8rem;
+            left: 1.5rem;
+            font-size: 0.95rem;
+            color: #6b7280;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(235, 245, 255, 0.9));
+            padding: 0 0.6rem;
+            transition: all 0.4s ease;
+            z-index: 1;
+            border-radius: 8px;
+        }
+
+        .dark-mode .form-container label {
+            color: #cbd5e0;
+            background: linear-gradient(135deg, rgba(26, 32, 44, 0.9), rgba(45, 55, 72, 0.9));
+        }
+
+        .form-container input[type="text"] {
+            width: 100%;
+            padding: 1.3rem;
+            border: none;
+            border-radius: 15px;
+            font-size: 1rem;
+            background: linear-gradient(145deg, #ffffff, #f0f5ff);
+            box-shadow: inset 4px 4px 10px rgba(0, 0, 0, 0.05), inset -4px -4px 10px rgba(255, 255, 255, 0.8);
+            transition: all 0.5s ease;
+        }
+
+        .dark-mode .form-container input[type="text"] {
+            background: linear-gradient(145deg, #1a202c, #2d3748);
+            color: #e2e8f0;
+            box-shadow: inset 4px 4px 10px rgba(0, 0, 0, 0.3), inset -4px -4px 10px rgba(50, 60, 70, 0.3);
+        }
+
+        .form-container input[type="text"]:hover {
+            box-shadow: 0 0 12px rgba(91, 134, 229, 0.15);
+        }
+
+        .form-container input[type="text"]:focus {
+            background: linear-gradient(145deg, #f0f5ff, #ffffff);
+            box-shadow: 0 0 15px rgba(91, 134, 229, 0.4), inset 4px 4px 10px rgba(0, 0, 0, 0.05);
+            outline: none;
+            animation: rotateShadow 2s infinite linear;
+        }
+
+        .dark-mode .form-container input[type="text"]:focus {
+            background: linear-gradient(145deg, #2d3748, #1a202c);
+            box-shadow: 0 0 15px rgba(91, 134, 229, 0.4);
+        }
+
+        .form-container button, .quick-btn {
+            background: linear-gradient(135deg, #5b86e5, #36d1dc);
+            border: none;
+            padding: 1.2rem;
+            border-radius: 15px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 6px 15px rgba(91, 134, 229, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .form-container button:hover, .quick-btn:hover {
+            background: linear-gradient(135deg, #6b9aff, #4adce5);
+            box-shadow: 0 8px 20px rgba(91, 134, 229, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .dark-mode .form-container button, .dark-mode .quick-btn {
+            background: linear-gradient(135deg, #5b86e5, #36d1dc);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .dark-mode .form-container button:hover, .dark-mode .quick-btn:hover {
+            background: linear-gradient(135deg, #6b9aff, #4adce5);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .coordinate-display, .legend {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.8), rgba(235, 245, 255, 0.8));
+            border-radius: 20px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05);
+            transition: all 0.5s ease;
+            position: relative;
+        }
+
+        .dark-mode .coordinate-display, .dark-mode .legend {
+            background: linear-gradient(135deg, rgba(26, 32, 44, 0.8), rgba(45, 55, 72, 0.8));
+        }
+
+        .coordinate-display:hover, .legend:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.07);
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(235, 245, 255, 0.9));
+        }
+
+        .dark-mode .coordinate-display:hover, .dark-mode .legend:hover {
+            background: linear-gradient(135deg, rgba(36, 42, 54, 0.9), rgba(55, 65, 82, 0.9));
+        }
+
+        .legend-item {
+            margin: 10px 0;
+            display: flex;
+            align-items: center;
+            transition: all 0.5s ease;
+        }
+
+        .legend-item:hover {
+            transform: translateX(5px);
+            color: #5b86e5;
+        }
+
+        .dark-mode .legend-item:hover {
+            color: #36d1dc;
+        }
+
+        .legend-icon {
+            width: 22px;
+            height: 22px;
+            margin-right: 12px;
+            transition: transform 0.5s ease;
+        }
+
+        .legend-item:hover .legend-icon {
+            transform: scale(1.15);
+        }
+
+        .error {
+            color: #ff6b6b;
+            font-weight: 600;
+            padding: 0.8rem;
+            background: rgba(255, 107, 107, 0.1);
+            border-radius: 10px;
+            margin-top: 1rem;
+        }
+
+        .quick-actions {
+            margin-top: 2rem;
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .quick-btn {
+            flex: 1;
+            padding: 1rem;
+        }
+
+        .status-bar {
+            margin-top: 2rem;
+            padding: 1rem;
+            background: linear-gradient(135deg, rgba(91, 134, 229, 0.1), rgba(54, 209, 220, 0.1));
+            border-radius: 15px;
+            text-align: center;
+            font-size: 0.9rem;
+            color: #5b86e5;
+            transition: all 0.5s ease;
+            position: relative;
+        }
+
+        .dark-mode .status-bar {
+            background: linear-gradient(135deg, rgba(91, 134, 229, 0.2), rgba(54, 209, 220, 0.2));
+            color: #36d1dc;
+        }
+
+        .status-bar:hover {
+            transform: scale(1.02);
+            box-shadow: 0 6px 15px rgba(91, 134, 229, 0.2);
+        }
+
+        .status-bar::after {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            width: calc(100% + 4px);
+            height: calc(100% + 4px);
+            border-radius: 17px;
+            background: linear-gradient(45deg, rgba(91, 134, 229, 0), rgba(54, 209, 220, 0.2), rgba(91, 134, 229, 0));
+            animation: borderGlow 3s infinite ease-in-out;
+            z-index: -1;
+        }
+
+        @keyframes borderGlow {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 0.8; }
+        }
+
+        .theme-toggle-info {
+            margin-top: 1rem;
+            font-size: 0.85rem;
+            color: #718096;
+            text-align: center;
+            transition: all 0.5s ease;
+        }
+
+        .dark-mode .theme-toggle-info {
+            color: #a0aec0;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(91, 134, 229, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(91, 134, 229, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(91, 134, 229, 0); }
+        }
+
+        @keyframes rotateShadow {
+            0% { box-shadow: -2px -2px 8px 1px #0073e6, 2px 2px 8px 1px dodgerblue; }
+            25% { box-shadow: -2px 2px 8px 1px #0073e6, 2px -2px 8px 1px #74c0fc; }
+            50% { box-shadow: 2px 2px 8px 1px #0073e6, -2px -2px 8px 1px #74c0fc; }
+            75% { box-shadow: 2px -2px 8px 1px #0073e6, -2px 2px 8px 1px #74c0fc; }
+            100% { box-shadow: -2px -2px 8px 1px #0073e6, 2px 2px 8px 1px dodgerblue; }
+        }
+
+        @media (max-width: 1024px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+            .map-container, .form-container {
+                height: 70vh;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="top-bar">
+        <h1>📍 Toplu Taşıma Durakları</h1>
+        <div class="top-bar-controls">
+            <button class="control-btn" id="modeToggle" title="Karanlık Mod">☀️</button>
+            <button class="control-btn" id="resetMap" title="Haritayı Sıfırla">⟳</button>
+            <button class="control-btn" id="getLocation" title="Konumumu Bul">📍</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="form-container">
+            <h2>Konum Bilgileri</h2>
+            <form method="POST" id="locationForm">
+                <div class="input-group">
+                    <label for="baslangic_enlem">Başlangıç Enlemi:</label>
+                    <input type="text" name="baslangic_enlem" id="baslangic_enlem" value="{{ baslangic_enlem }}" required>
+                </div>
+                <div class="input-group">
+                    <label for="baslangic_boylam">Başlangıç Boylamı:</label>
+                    <input type="text" name="baslangic_boylam" id="baslangic_boylam" value="{{ baslangic_boylam }}" required>
+                </div>
+                <div class="input-group">
+                    <label for="hedef_enlem">Hedef Enlemi:</label>
+                    <input type="text" name="hedef_enlem" id="hedef_enlem" value="{{ hedef_enlem }}" required>
+                </div>
+                <div class="input-group">
+                    <label for="hedef_boylam">Hedef Boylamı:</label>
+                    <input type="text" name="hedef_boylam" id="hedef_boylam" value="{{ hedef_boylam }}" required>
+                </div>
+                <button type="submit">Konumları Göster</button>
+            </form>
+
+            {% if hata %}
+                <p class="error">{{ hata }}</p>
+            {% endif %}
+
+            <div class="coordinate-display">
+                <p>Tıklayarak Konum Seç:</p>
+                <p>Seçilen: <span id="selected-coordinates">Henüz seçilmedi</span></p>
+                <div class="quick-actions">
+                    <button class="quick-btn" id="set-start">Başlangıç Yap</button>
+                    <button class="quick-btn" id="set-destination">Hedef Yap</button>
+                </div>
+            </div>
+
+            <div class="legend">
+                <h3>Durak Türleri</h3>
+                <div class="legend-item">
+                    <img src="https://img.icons8.com/color/48/000000/bus.png" alt="Otobüs" class="legend-icon">
+                    Otobüs Durağı
+                </div>
+                <div class="legend-item">
+                    <img src="https://img.icons8.com/color/48/000000/tram.png" alt="Tramvay" class="legend-icon">
+                    Tramvay Durağı
+                </div>
+            </div>
+
+            <div class="quick-actions">
+                <button class="quick-btn" id="zoomIn">Yakınlaştır</button>
+                <button class="quick-btn" id="zoomOut">Uzaklaştır</button>
+                <button class="quick-btn" id="clearMarkers">İşaretleri Temizle</button>
+                <button class="quick-btn" id="filter-bus">Sadece Otobüs</button>
+                <button class="quick-btn" id="filter-tram">Sadece Tramvay</button>
+                <button class="quick-btn" id="filter-all">Tüm Duraklar</button>
+            </div>
+
+            <div class="status-bar" id="status-bar">
+                Durum: Harita Yüklendi
+            </div>
+
+            <div class="theme-toggle-info" id="theme-info">
+                Tema: Açık Mod
+            </div>
+        </div>
+
+        <div class="map-container">
+            <div id="map"></div>
+        </div>
+    </div>
+
+    <script>
+    let map, markers = [], infoWindows = [], baslangicMarker, hedefMarker, clickMarker, nearestMarker;
+    let directionsService, directionsRenderer;
+    let currentRouteMarkers = [];
+    let currentRoutePolylines = [];
+    let animationInterval;
+
+    function initMap() {
+        directionsService = new google.maps.DirectionsService();
+        directionsRenderer = new google.maps.DirectionsRenderer({
+            suppressMarkers: false,
+            polylineOptions: {
+                strokeColor: '#4285F4', // Google Maps varsayılan mavi rengi
+                strokeWeight: 5,
+                strokeOpacity: 1.0
+            }
+        });
+
+        const defaultCenter = { lat: 40.7669, lng: 29.9169 };
+        const baslangicEnlem = {{ baslangic_enlem | default(40.7669) }};
+        const baslangicBoylam = {{ baslangic_boylam | default(29.9169) }};
+        const hedefEnlem = {{ hedef_enlem }};
+        const hedefBoylam = {{ hedef_boylam }};
+        const durakVerisi = {{ duraklar|tojson | default('[]') }};
+        const nearestStop = {{ nearest_stop | tojson | default('null') }};
+
+        map = new google.maps.Map(document.getElementById('map'), {
+            center: { lat: baslangicEnlem, lng: baslangicBoylam },
+            zoom: 13,
+            mapTypeControl: true,
+            mapTypeControlOptions: {
+                style: google.maps.MapTypeControlStyle.HORIZONTAL_BAR,
+                position: google.maps.ControlPosition.TOP_RIGHT
+            },
+            zoomControl: true,
+            zoomControlOptions: { position: google.maps.ControlPosition.RIGHT_TOP },
+            streetViewControl: true,
+            streetViewControlOptions: { position: google.maps.ControlPosition.RIGHT_BOTTOM },
+            fullscreenControl: true,
+            fullscreenControlOptions: { position: google.maps.ControlPosition.BOTTOM_RIGHT },
+            styles: document.body.classList.contains('dark-mode') ? [
+                { elementType: "geometry", stylers: [{ color: "#242f3e" }] },
+                { elementType: "labels.text.stroke", stylers: [{ color: "#242f3e" }] },
+                { elementType: "labels.text.fill", stylers: [{ color: "#746855" }] },
+                { featureType: "administrative.locality", elementType: "labels.text.fill", stylers: [{ color: "#d59563" }] },
+                { featureType: "poi", elementType: "labels.text.fill", stylers: [{ color: "#d59563" }] },
+                { featureType: "poi.park", elementType: "geometry", stylers: [{ color: "#263c3f" }] },
+                { featureType: "poi.park", elementType: "labels.text.fill", stylers: [{ color: "#6b9a76" }] },
+                { featureType: "road", elementType: "geometry", stylers: [{ color: "#38414e" }] },
+                { featureType: "road", elementType: "geometry.stroke", stylers: [{ color: "#212a37" }] },
+                { featureType: "road", elementType: "labels.text.fill", stylers: [{ color: "#9ca5b3" }] },
+                { featureType: "road.highway", elementType: "geometry", stylers: [{ color: "#746855" }] },
+                { featureType: "road.highway", elementType: "geometry.stroke", stylers: [{ color: "#1f2835" }] },
+                { featureType: "road.highway", elementType: "labels.text.fill", stylers: [{ color: "#f3d19c" }] },
+                { featureType: "transit", elementType: "geometry", stylers: [{ color: "#2f3948" }] },
+                { featureType: "transit.station", elementType: "labels.text.fill", stylers: [{ color: "#d59563" }] },
+                { featureType: "water", elementType: "geometry", stylers: [{ color: "#17263c" }] },
+                { featureType: "water", elementType: "labels.text.fill", stylers: [{ color: "#515c6d" }] },
+                { featureType: "water", elementType: "labels.text.stroke", stylers: [{ color: "#17263c" }] }
+            ] : []
+        });
+
+        directionsRenderer.setMap(map);
+
+        const bounds = new google.maps.LatLngBounds();
+
+        durakVerisi.forEach(durak => {
+            const iconUrl = durak.type === 'bus'
+                ? 'https://img.icons8.com/color/48/000000/bus.png'
+                : 'https://img.icons8.com/color/48/000000/tram.png';
+            const marker = new google.maps.Marker({
+                position: { lat: durak.lat, lng: durak.lon },
+                map: map,
+                title: durak.name,
+                icon: { url: iconUrl, scaledSize: new google.maps.Size(32, 32) },
+                type: durak.type
+            });
+            const infoWindow = new google.maps.InfoWindow({
+                content: `<h3>${durak.name}</h3><p>Tür: ${durak.type === 'bus' ? 'Otobüs' : 'Tramvay'}</p><p>Konum: ${durak.lat.toFixed(6)}, ${durak.lon.toFixed(6)}</p>`
+            });
+            marker.addListener('click', () => {
+                infoWindows.forEach(window => window.close());
+                infoWindow.open(map, marker);
+                document.getElementById('status-bar').textContent = `Durum: ${durak.name} seçildi`;
+            });
+            markers.push(marker);
+            infoWindows.push(infoWindow);
+            bounds.extend(marker.getPosition());
+        });
+
+        baslangicMarker = new google.maps.Marker({
+            position: { lat: baslangicEnlem, lng: baslangicBoylam },
+            map: map,
+            title: 'Başlangıç Noktası',
+            icon: { url: 'https://img.icons8.com/color/48/000000/marker.png', scaledSize: new google.maps.Size(32, 32) }
+        });
+        bounds.extend(baslangicMarker.getPosition());
+
+        hedefMarker = new google.maps.Marker({
+            position: { lat: hedefEnlem, lng: hedefBoylam },
+            map: map,
+            title: 'Hedef Noktası',
+            icon: { url: 'https://img.icons8.com/color/48/000000/finish-flag.png', scaledSize: new google.maps.Size(32, 32) }
+        });
+        bounds.extend(hedefMarker.getPosition());
+
+        if (nearestStop) {
+            nearestMarker = new google.maps.Marker({
+                position: { lat: nearestStop.lat, lng: nearestStop.lon },
+                map: map,
+                title: nearestStop.name,
+                icon: {
+                    url: nearestStop.type === 'bus' ? 'https://img.icons8.com/color/48/000000/bus.png' : 'https://img.icons8.com/color/48/000000/tram.png',
+                    scaledSize: new google.maps.Size(40, 40)
+                },
+                animation: google.maps.Animation.BOUNCE
+            });
+            const nearestInfoWindow = new google.maps.InfoWindow({
+                content: `<h3>${nearestStop.name}</h3><p>Tür: ${nearestStop.type === 'bus' ? 'Otobüs' : 'Tramvay'}</p><p>Konum: ${nearestStop.lat.toFixed(6)}, ${nearestStop.lon.toFixed(6)}</p><p>Mesafe: ${nearestStop.distance_text || 'Bilinmiyor'}</p>`
+            });
+            nearestMarker.addListener('click', () => {
+                infoWindows.forEach(window => window.close());
+                nearestInfoWindow.open(map, nearestMarker);
+                document.getElementById('status-bar').textContent = `Durum: En yakın durak ${nearestStop.name} seçildi`;
+            });
+            infoWindows.push(nearestInfoWindow);
+            bounds.extend(nearestMarker.getPosition());
+        }
+
+        map.fitBounds(bounds);
+
+        map.addListener('click', (event) => {
+            placeClickMarker(event.latLng);
+            highlightNearestStop(event.latLng);
+            document.getElementById('status-bar').textContent = 'Durum: Yeni konum seçildi';
+        });
+
+        setupEventListeners();
+
+        if (hedefEnlem && hedefBoylam && nearestStop) {
+            drawInitialRoute();
+        }
+    }
+
+    function drawInitialRoute() {
+        clearPreviousRoutes();
+        const durakVerisi = {{ duraklar|tojson | default('[]') }};
+        const nearestStop = {{ nearest_stop | tojson | default('null') }};
+        const baslangicEnlem = {{ baslangic_enlem | default(40.7669) }};
+        const baslangicBoylam = {{ baslangic_boylam | default(29.9169) }};
+        const hedefEnlem = {{ hedef_enlem }};
+        const hedefBoylam = {{ hedef_boylam }};
+
+        if (nearestStop && hedefEnlem && hedefBoylam) {
+            const waypoints = [];
+            if (nearestStop) {
+                waypoints.push({
+                    location: new google.maps.LatLng(nearestStop.lat, nearestStop.lon),
+                    stopover: true
+                });
+            }
+
+            const destStop = durakVerisi.reduce((closest, stop) => {
+                const distance = Math.sqrt(
+                    Math.pow(stop.lat - hedefEnlem, 2) +
+                    Math.pow(stop.lon - hedefBoylam, 2)
+                );
+                return (distance < closest.distance) ? { stop: stop, distance: distance } : closest;
+            }, { stop: null, distance: Infinity });
+
+            if (destStop.stop) {
+                waypoints.push({
+                    location: new google.maps.LatLng(destStop.stop.lat, destStop.stop.lon),
+                    stopover: true
+                });
+            }
+
+            directionsService.route({
+                origin: new google.maps.LatLng(baslangicEnlem, baslangicBoylam),
+                destination: new google.maps.LatLng(hedefEnlem, hedefBoylam),
+                waypoints: waypoints,
+                travelMode: google.maps.TravelMode.TRANSIT, // veya WALKING/DRIVING seçebilirsiniz
+                optimizeWaypoints: false
+            }, (result, status) => {
+                if (status === 'OK') {
+                    directionsRenderer.setDirections(result);
+                    const bounds = new google.maps.LatLngBounds();
+                    result.routes[0].overview_path.forEach(point => bounds.extend(point));
+                    map.fitBounds(bounds);
+                    document.getElementById('status-bar').textContent = 'Durum: Google Maps rotası çizildi';
+                } else {
+                    console.error('Directions API hatası: ' + status);
+                    document.getElementById('status-bar').textContent = 'Durum: Rota çizilemedi, basit çizgi kullanılıyor';
+                    drawDirectLine([
+                        { lat: baslangicEnlem, lng: baslangicBoylam },
+                        { lat: nearestStop.lat, lng: nearestStop.lon },
+                        { lat: hedefEnlem, lng: hedefBoylam }
+                    ]);
+                }
+            });
+        }
+    }
+
+    function placeClickMarker(location) {
+        if (clickMarker) clickMarker.setMap(null);
+        clickMarker = new google.maps.Marker({
+            position: location,
+            map: map,
+            icon: { url: 'https://img.icons8.com/color/48/000000/map-pin.png', scaledSize: new google.maps.Size(32, 32) },
+            animation: google.maps.Animation.DROP
+        });
+        document.getElementById('selected-coordinates').textContent = `${location.lat().toFixed(6)}, ${location.lng().toFixed(6)}`;
+        map.panTo(location);
+    }
+
+    function clearPreviousRoutes() {
+        if (directionsRenderer) {
+            directionsRenderer.setDirections({ routes: [] });
+            directionsRenderer.setMap(null);
+            directionsRenderer.setMap(map);
+        }
+
+        currentRouteMarkers.forEach(marker => {
+            if (marker && marker.setMap) marker.setMap(null);
+        });
+        currentRouteMarkers = [];
+
+        currentRoutePolylines.forEach(polyline => {
+            if (polyline && polyline.setMap) polyline.setMap(null);
+        });
+        currentRoutePolylines = [];
+    }
+
+    function drawDirectLine(waypoints) {
+        if (!waypoints || waypoints.length < 2) return;
+
+        clearPreviousRoutes();
+
+        const path = waypoints.map(wp => ({
+            lat: wp.lat,
+            lng: wp.lon || wp.lng
+        }));
+
+        const routeLine = new google.maps.Polyline({
+            path: path,
+            geodesic: true,
+            strokeColor: '#4285F4', // Google Maps varsayılan mavi rengi
+            strokeOpacity: 1.0,
+            strokeWeight: 5, // Google Maps çizgi kalınlığına benzer
+            map: map
+        });
+
+        currentRoutePolylines.push(routeLine);
+
+        const bounds = new google.maps.LatLngBounds();
+        path.forEach(point => bounds.extend(point));
+        map.fitBounds(bounds);
+
+        let totalDistance = 0;
+        for (let i = 0; i < path.length - 1; i++) {
+            totalDistance += google.maps.geometry.spherical.computeDistanceBetween(
+                new google.maps.LatLng(path[i].lat, path[i].lng),
+                new google.maps.LatLng(path[i + 1].lat, path[i + 1].lng)
+            );
+        }
+        const distanceInKm = (totalDistance / 1000).toFixed(2);
+
+        document.getElementById('status-bar').innerHTML = `Durum: Basit rota gösterildi<br>Mesafe: ${distanceInKm} km`;
+    }
+
+    function highlightNearestStop(startPos) {
+        if (nearestMarker) {
+            nearestMarker.setAnimation(null);
+            nearestMarker.setIcon(nearestMarker.originalIcon);
+            clearInterval(animationInterval);
+        }
+
+        let minDistance = Infinity;
+        let nearestStop = null;
+
+        markers.forEach(marker => {
+            const markerPos = marker.getPosition();
+            const distance = google.maps.geometry.spherical.computeDistanceBetween(
+                new google.maps.LatLng(startPos.lat, startPos.lng),
+                markerPos
+            );
+            if (distance < minDistance) {
+                minDistance = distance;
+                nearestStop = marker;
+            }
+        });
+
+        if (nearestStop) {
+            nearestMarker = nearestStop;
+            nearestMarker.originalIcon = nearestStop.getIcon();
+            nearestMarker.setIcon({
+                url: nearestMarker.originalIcon.url,
+                scaledSize: new google.maps.Size(40, 40)
+            });
+            nearestMarker.setAnimation(google.maps.Animation.BOUNCE);
+
+            animationInterval = setInterval(() => {
+                const currentSize = nearestMarker.getIcon().scaledSize.width;
+                nearestMarker.setIcon({
+                    url: nearestMarker.originalIcon.url,
+                    scaledSize: new google.maps.Size(currentSize === 40 ? 32 : 40, currentSize === 40 ? 32 : 40)
+                });
+            }, 1000);
+
+            document.getElementById('status-bar').textContent = `Durum: En yakın durak: ${nearestStop.title} (${(minDistance / 1000).toFixed(2)} km)`;
+        }
+    }
+
+    function filterMarkers(type) {
+        markers.forEach(marker => {
+            if (type === 'all' || marker.type === type) {
+                marker.setVisible(true);
+            } else {
+                marker.setVisible(false);
+            }
+        });
+        document.getElementById('status-bar').textContent = `Durum: ${type === 'all' ? 'Tüm duraklar gösteriliyor' : 'Sadece ' + (type === 'bus' ? 'otobüs' : 'tramvay') + ' durakları gösteriliyor'}`;
+    }
+
+    function setupEventListeners() {
+        document.getElementById('modeToggle').addEventListener('click', () => {
+            document.body.classList.toggle('dark-mode');
+            const isDark = document.body.classList.contains('dark-mode');
+            document.getElementById('modeToggle').textContent = isDark ? '🌙' : '☀️';
+            document.getElementById('theme-info').textContent = `Tema: ${isDark ? 'Karanlık Mod' : 'Açık Mod'}`;
+            document.getElementById('status-bar').textContent = `Durum: ${isDark ? 'Karanlık' : 'Açık'} mod aktif`;
+            map.setOptions({
+                styles: isDark ? [
+                    { elementType: "geometry", stylers: [{ color: "#242f3e" }] },
+                    { elementType: "labels.text.stroke", stylers: [{ color: "#242f3e" }] },
+                    { elementType: "labels.text.fill", stylers: [{ color: "#746855" }] },
+                    { featureType: "administrative.locality", elementType: "labels.text.fill", stylers: [{ color: "#d59563" }] },
+                    { featureType: "poi", elementType: "labels.text.fill", stylers: [{ color: "#d59563" }] },
+                    { featureType: "poi.park", elementType: "geometry", stylers: [{ color: "#263c3f" }] },
+                    { featureType: "poi.park", elementType: "labels.text.fill", stylers: [{ color: "#6b9a76" }] },
+                    { featureType: "road", elementType: "geometry", stylers: [{ color: "#38414e" }] },
+                    { featureType: "road", elementType: "geometry.stroke", stylers: [{ color: "#212a37" }] },
+                    { featureType: "road", elementType: "labels.text.fill", stylers: [{ color: "#9ca5b3" }] },
+                    { featureType: "road.highway", elementType: "geometry", stylers: [{ color: "#746855" }] },
+                    { featureType: "road.highway", elementType: "geometry.stroke", stylers: [{ color: "#1f2835" }] },
+                    { featureType: "road.highway", elementType: "labels.text.fill", stylers: [{ color: "#f3d19c" }] },
+                    { featureType: "transit", elementType: "geometry", stylers: [{ color: "#2f3948" }] },
+                    { featureType: "transit.station", elementType: "labels.text.fill", stylers: [{ color: "#d59563" }] },
+                    { featureType: "water", elementType: "geometry", stylers: [{ color: "#17263c" }] },
+                    { featureType: "water", elementType: "labels.text.fill", stylers: [{ color: "#515c6d" }] },
+                    { featureType: "water", elementType: "labels.text.stroke", stylers: [{ color: "#17263c" }] }
+                ] : []
+            });
+        });
+
+        document.getElementById('resetMap').addEventListener('click', () => {
+            map.setCenter({ lat: {{ baslangic_enlem | default(40.7669) }}, lng: {{ baslangic_boylam | default(29.9169) }} });
+            map.setZoom(13);
+            document.getElementById('status-bar').textContent = 'Durum: Harita sıfırlandı';
+        });
+
+        document.getElementById('getLocation').addEventListener('click', () => {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const pos = { lat: position.coords.latitude, lng: position.coords.longitude };
+                        placeClickMarker(pos);
+                        map.setCenter(pos);
+                        map.setZoom(15);
+                        highlightNearestStop(pos);
+                        document.getElementById('status-bar').textContent = 'Durum: Mevcut konum bulundu';
+                    },
+                    (error) => {
+                        alert('Konum alınamadı: ' + error.message);
+                        document.getElementById('status-bar').textContent = 'Durum: Konum alınamadı';
+                    }
+                );
+            } else {
+                alert('Tarayıcınız konumu desteklemiyor.');
+                document.getElementById('status-bar').textContent = 'Durum: Konum desteklenmiyor';
+            }
+        });
+
+        document.getElementById('zoomIn').addEventListener('click', () => {
+            map.setZoom(map.getZoom() + 1);
+            document.getElementById('status-bar').textContent = `Durum: Yakınlaştırma (${map.getZoom()})`;
+        });
+
+        document.getElementById('zoomOut').addEventListener('click', () => {
+            map.setZoom(map.getZoom() - 1);
+            document.getElementById('status-bar').textContent = `Durum: Uzaklaştırma (${map.getZoom()})`;
+        });
+
+        document.getElementById('clearMarkers').addEventListener('click', () => {
+            if (clickMarker) {
+                clickMarker.setMap(null);
+                clickMarker = null;
+                document.getElementById('selected-coordinates').textContent = 'Henüz seçilmedi';
+                if (nearestMarker) {
+                    nearestMarker.setAnimation(null);
+                    nearestMarker.setIcon(nearestMarker.originalIcon);
+                    clearInterval(animationInterval);
+                }
+                document.getElementById('status-bar').textContent = 'Durum: İşaretler temizlendi';
+            }
+            clearPreviousRoutes();
+        });
+
+        document.getElementById('set-start').addEventListener('click', () => {
+            if (clickMarker) {
+                const pos = clickMarker.getPosition();
+                document.getElementById('baslangic_enlem').value = pos.lat().toFixed(6);
+                document.getElementById('baslangic_boylam').value = pos.lng().toFixed(6);
+                baslangicMarker.setPosition(pos);
+                animateMarker(baslangicMarker);
+                highlightNearestStop(pos);
+                document.getElementById('status-bar').textContent = 'Durum: Başlangıç noktası ayarlandı';
+            }
+        });
+
+        document.getElementById('set-destination').addEventListener('click', () => {
+            if (clickMarker) {
+                const pos = clickMarker.getPosition();
+                document.getElementById('hedef_enlem').value = pos.lat().toFixed(6);
+                document.getElementById('hedef_boylam').value = pos.lng().toFixed(6);
+                hedefMarker.setPosition(pos);
+                animateMarker(hedefMarker);
+                document.getElementById('status-bar').textContent = 'Durum: Hedef noktası ayarlandı';
+            }
+        });
+
+        document.getElementById('filter-bus').addEventListener('click', () => filterMarkers('bus'));
+        document.getElementById('filter-tram').addEventListener('click', () => filterMarkers('tram'));
+        document.getElementById('filter-all').addEventListener('click', () => filterMarkers('all'));
+
+        document.getElementById('locationForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const button = e.target.querySelector('button');
+            button.textContent = 'Yükleniyor...';
+            button.disabled = true;
+            document.getElementById('status-bar').textContent = 'Durum: Rota hesaplanıyor...';
+
+            const formData = new FormData(e.target);
+            fetch('/', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(sonuc => {
+                button.textContent = 'Konumları Göster';
+                button.disabled = false;
+
+                baslangicMarker.setPosition({lat: sonuc.baslangic_koordinat.lat, lng: sonuc.baslangic_koordinat.lon});
+                hedefMarker.setPosition({lat: sonuc.hedef_koordinat.lat, lng: sonuc.hedef_koordinat.lon});
+
+                if (nearestMarker) nearestMarker.setMap(null);
+                nearestMarker = new google.maps.Marker({
+                    position: { lat: sonuc.baslangic_durak.lat, lng: sonuc.baslangic_durak.lon },
+                    map: map,
+                    title: sonuc.baslangic_durak.name,
+                    icon: {
+                        url: sonuc.baslangic_durak.type === 'bus' ? 'https://img.icons8.com/color/48/000000/bus.png' : 'https://img.icons8.com/color/48/000000/tram.png',
+                        scaledSize: new google.maps.Size(40, 40)
+                    },
+                    animation: google.maps.Animation.BOUNCE
+                });
+
+                clearPreviousRoutes();
+
+                if (sonuc.waypoints && sonuc.waypoints.length >= 2) {
+                    const waypointsArray = [];
+                    if (sonuc.waypoints.length > 2) {
+                        for (let i = 1; i < sonuc.waypoints.length - 1; i++) {
+                            waypointsArray.push({
+                                location: new google.maps.LatLng(sonuc.waypoints[i].lat, sonuc.waypoints[i].lon),
+                                stopover: true
+                            });
+                        }
+                    }
+
+                    directionsService.route({
+                        origin: new google.maps.LatLng(sonuc.waypoints[0].lat, sonuc.waypoints[0].lon),
+                        destination: new google.maps.LatLng(sonuc.waypoints[sonuc.waypoints.length - 1].lat, sonuc.waypoints[sonuc.waypoints.length - 1].lon),
+                        waypoints: waypointsArray,
+                        travelMode: google.maps.TravelMode.TRANSIT,
+                        optimizeWaypoints: false
+                    }, (result, status) => {
+                        if (status === 'OK') {
+                            directionsRenderer.setDirections(result);
+                            const bounds = new google.maps.LatLngBounds();
+                            sonuc.waypoints.forEach(wp => {
+                                bounds.extend(new google.maps.LatLng(wp.lat, wp.lon));
+                            });
+                            map.fitBounds(bounds);
+                            document.getElementById('status-bar').textContent = 'Durum: Yeni rota gösterildi';
+                        } else {
+                            document.getElementById('status-bar').textContent = 'Durum: Google Directions hata verdi, basit rota çiziliyor';
+                            drawDirectLine(sonuc.waypoints);
+                        }
+                    });
+                } else {
+                    document.getElementById('status-bar').textContent = 'Durum: Geçerli durak bulunamadı';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                button.textContent = 'Konumları Göster';
+                button.disabled = false;
+                document.getElementById('status-bar').textContent = 'Durum: Hata oluştu';
+            });
+        });
+    }
+
+    function animateMarker(marker) {
+        marker.setAnimation(google.maps.Animation.BOUNCE);
+        setTimeout(() => marker.setAnimation(null), 2000);
+    }
+</script>
+    <script th:src="@{'https://maps.googleapis.com/maps/api/js?key=' + ${api_key} + '&callback=initMap'}" async defer></script>
+</body>
+</html>
