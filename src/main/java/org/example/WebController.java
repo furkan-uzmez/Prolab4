@@ -2,10 +2,13 @@ package org.example;
 
 import org.example.Data.Data;
 import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+
+import java.io.IOException;
 
 @Controller
 public class WebController {
@@ -14,8 +17,8 @@ public class WebController {
 
     private final Data data;
 
-    public WebController(Data data) {
-        this.data = data;
+    public WebController() throws IOException {
+        this.data = new Data();
     }
 
     @GetMapping("/")
@@ -26,7 +29,7 @@ public class WebController {
 
             // Assuming veriseti.json contains the stops (duraklar)
             // Pass the JSON data directly to the model
-            model.addAttribute("duraklar", jsonData.toString());
+            model.addAttribute("duraklar", jsonData.getJSONArray("duraklar").toString());
 
             // Default coordinates (replace with actual values if needed)
             model.addAttribute("baslangic_enlem", 40.7669);

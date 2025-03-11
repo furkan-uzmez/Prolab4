@@ -3,10 +3,9 @@ package org.example.Data;
 import org.json.JSONObject;
 import org.springframework.stereotype.Component;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 @Component
 public class Data {
@@ -22,19 +21,9 @@ public class Data {
     }
 
     public static JSONObject set_data(String filename) throws IOException {
-        // Load the file as a classpath resource
-        try (InputStream inputStream = Data.class.getClassLoader().getResourceAsStream(filename)) {
-            if (inputStream == null) {
-                throw new IOException("File not found: " + filename);
-            }
-            BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
-            StringBuilder stringBuilder = new StringBuilder();
-            String line;
-            while ((line = reader.readLine()) != null) {
-                stringBuilder.append(line);
-            }
-            // Convert the string to a JSONObject
-            return new JSONObject(stringBuilder.toString());
-        }
+        // Dosyanın içeriğini oku
+        String jsonString = new String(Files.readAllBytes(Paths.get(filename)));
+
+        return new JSONObject(jsonString);
     }
 }
