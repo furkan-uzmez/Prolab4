@@ -78,59 +78,96 @@
 
         .top-bar-controls {
             display: flex;
-            gap: 1.2rem;
+            gap: 1rem;
+            position: relative;
+            padding: 0.5rem;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(15px);
+            border-radius: 50px;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.1), 0 5px 15px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+        }
+
+        .dark-mode .top-bar-controls {
+            background: rgba(26, 32, 44, 0.3);
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.4), 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .top-bar-controls::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(91, 134, 229, 0.2) 0%, transparent 70%);
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            pointer-events: none;
+            animation: gooeyPulse 6s infinite ease-in-out;
+        }
+
+        .top-bar-controls:hover::before {
+            opacity: 0.6;
+        }
+
+        @keyframes gooeyPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
         }
 
         .control-btn {
-            width: 3.2rem;
-            height: 3.2rem;
+            width: 2.8rem;
+            height: 2.8rem;
             border-radius: 50%;
             border: none;
             cursor: pointer;
-            transition: all 0.5s ease;
-            font-size: 1.4rem;
+            font-size: 1.2rem;
             display: flex;
             align-items: center;
             justify-content: center;
-            background: linear-gradient(145deg, #ffffff, #e6efff);
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.8), rgba(230, 240, 255, 0.8));
             position: relative;
-            overflow: hidden;
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+            transition: all 0.4s ease;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            z-index: 1;
+        }
+
+        .dark-mode .control-btn {
+            background: linear-gradient(145deg, rgba(45, 55, 72, 0.8), rgba(26, 32, 44, 0.8));
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .control-btn:hover {
+            transform: translateY(-3px) scale(1.1);
+            background: linear-gradient(145deg, #5b86e5, #36d1dc);
+            color: white;
+            box-shadow: 0 6px 20px rgba(91, 134, 229, 0.4);
+        }
+
+        .control-btn:active {
+            transform: scale(0.95);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
         }
 
         .control-btn::after {
             content: '';
             position: absolute;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(120deg, rgba(91, 134, 229, 0.2), transparent);
-            transform: translateX(-100%);
-            transition: transform 0.5s ease;
+            width: 150%;
+            height: 150%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.3) 10%, transparent 70%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
         }
 
         .control-btn:hover::after {
-            transform: translateX(100%);
-        }
-
-        .control-btn:hover {
-            transform: scale(1.1);
-            background: linear-gradient(145deg, #5b86e5, #36d1dc);
-            color: white;
-            box-shadow: 0 10px 25px rgba(91, 134, 229, 0.3);
-        }
-
-        .dark-mode .control-btn {
-            background: linear-gradient(145deg, #1a202c, #2d3748);
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
-        }
-
-        .dark-mode .control-btn:hover {
-            background: linear-gradient(145deg, #5b86e5, #36d1dc);
+            opacity: 1;
         }
 
         .container {
             max-width: 1600px;
-            margin: 6rem auto;
+            margin: 7rem auto;
             padding: 0 2rem;
             display: grid;
             grid-template-columns: 1fr 3fr;
@@ -363,7 +400,7 @@
             width: 100%;
             padding: 1.3rem;
             border: none;
-            border-radius: 15px;
+            border-radius: 30px;
             font-size: 1rem;
             background: linear-gradient(145deg, #ffffff, #f0f5ff);
             box-shadow: inset 4px 4px 10px rgba(0, 0, 0, 0.05), inset -4px -4px 10px rgba(255, 255, 255, 0.8);
@@ -396,7 +433,7 @@
             background: linear-gradient(135deg, #5b86e5, #36d1dc);
             border: none;
             padding: 1.2rem;
-            border-radius: 15px;
+            border-radius: 30px;
             color: white;
             font-weight: 600;
             cursor: pointer;
@@ -447,6 +484,10 @@
             background: linear-gradient(135deg, rgba(36, 42, 54, 0.9), rgba(55, 65, 82, 0.9));
         }
 
+        .dark-mode .legend{
+            color: white;
+        }
+
         .legend-item {
             margin: 10px 0;
             display: flex;
@@ -459,8 +500,16 @@
             color: #5b86e5;
         }
 
+        .dark-mode .legend-item{
+            color: white;
+        }
+
         .dark-mode .legend-item:hover {
             color: #36d1dc;
+        }
+
+        .dark-mode .coordinate-display {
+            color: white;
         }
 
         .legend-icon {
@@ -486,13 +535,44 @@
         .quick-actions {
             margin-top: 2rem;
             display: flex;
+            flex-direction: column;
             gap: 1rem;
-            flex-wrap: wrap;
+            align-items: stretch;
         }
 
         .quick-btn {
-            flex: 1;
+            width: 100%;
             padding: 1rem;
+            font-size: 1rem;
+            text-align: center;
+            background: linear-gradient(135deg, #5b86e5, #36d1dc);
+            border: none;
+            border-radius: 15px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 6px 15px rgba(91, 134, 229, 0.2);
+            position: relative;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+
+        .quick-btn:hover {
+            background: linear-gradient(135deg, #6b9aff, #4adce5);
+            box-shadow: 0 8px 20px rgba(91, 134, 229, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .dark-mode .quick-btn {
+            background: linear-gradient(135deg, #5b86e5, #36d1dc);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .dark-mode .quick-btn:hover {
+            background: linear-gradient(135deg, #6b9aff, #4adce5);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+            transform: translateY(-2px);
         }
 
         .status-bar {
@@ -585,7 +665,7 @@
 <div class="top-bar">
     <h1>📍 Toplu Taşıma Durakları</h1>
     <div class="top-bar-controls">
-        <button class="control-btn" id="modeToggle" title="Karanlık Mod">☀️</button>
+        <button class="control-btn" id="modeToggle" title="Karanlık Mod">☀</button>
         <button class="control-btn" id="resetMap" title="Haritayı Sıfırla">⟳</button>
         <button class="control-btn" id="getLocation" title="Konumumu Bul">📍</button>
     </div>
@@ -594,25 +674,27 @@
 <div class="container">
     <div class="form-container">
         <h2>Konum Bilgileri</h2>
-        <form method="POST" id="locationForm">
+        <form method="POST" id="locationForm" th:action="@{/}">
             <div class="input-group">
                 <label for="baslangic_enlem">Başlangıç Enlemi:</label>
-                <input type="text" name="baslangic_enlem" id="baslangic_enlem" th:value="${baslangic_enlem}" required>
+                <input type="text" name="baslangic_enlem" id="baslangic_enlem" th:value="${baslangic_enlem}" placeholder="Örn: 40.7669" required>
             </div>
             <div class="input-group">
                 <label for="baslangic_boylam">Başlangıç Boylamı:</label>
-                <input type="text" name="baslangic_boylam" id="baslangic_boylam" th:value="${baslangic_boylam}" required>
+                <input type="text" name="baslangic_boylam" id="baslangic_boylam" th:value="${baslangic_boylam}" placeholder="Örn: 29.9169" required>
             </div>
             <div class="input-group">
                 <label for="hedef_enlem">Hedef Enlemi:</label>
-                <input type="text" name="hedef_enlem" id="hedef_enlem" th:value="${hedef_enlem}" required>
+                <input type="text" name="hedef_enlem" id="hedef_enlem" th:value="${hedef_enlem}" placeholder="Örn: 40.7769" required>
             </div>
             <div class="input-group">
                 <label for="hedef_boylam">Hedef Boylamı:</label>
-                <input type="text" name="hedef_boylam" id="hedef_boylam" th:value="${hedef_boylam}" required>
+                <input type="text" name="hedef_boylam" id="hedef_boylam" th:value="${hedef_boylam}" placeholder="Örn: 29.9269" required>
             </div>
             <button type="submit">Konumları Göster</button>
         </form>
+
+        <div th:if="${hata}" class="error" th:text="${hata}"></div>
 
         <div class="coordinate-display">
             <p>Tıklayarak Konum Seç:</p>
@@ -626,11 +708,11 @@
         <div class="legend">
             <h3>Durak Türleri</h3>
             <div class="legend-item">
-                <img src="https://img.icons8.com/color/48/000000/bus.png" alt="Otobüs" class="legend-icon">
+                <img src="https://img.icons8.com/color/48/000000/bus.png" alt="Otobüs" class="legend-icon" th:src="@{https://img.icons8.com/color/48/000000/bus.png}">
                 Otobüs Durağı
             </div>
             <div class="legend-item">
-                <img src="https://img.icons8.com/color/48/000000/tram.png" alt="Tramvay" class="legend-icon">
+                <img src="https://img.icons8.com/color/48/000000/tram.png" alt="Tramvay" class="legend-icon" th:src="@{https://img.icons8.com/color/48/000000/tram.png}">
                 Tramvay Durağı
             </div>
         </div>
@@ -664,10 +746,10 @@
     let currentRouteMarkers = [];
     let currentRoutePolylines = [];
     let animationInterval;
+    /* Route data from the model */
+    const routeData = /*[[${routeData}]]*/ null; // Embed routeData from the model
 
-    window.initMap = function() {
-        console.log("initMap started");
-
+    function initMap() {
         directionsService = new google.maps.DirectionsService();
         directionsRenderer = new google.maps.DirectionsRenderer({
             suppressMarkers: false,
@@ -679,27 +761,12 @@
         });
 
         const defaultCenter = { lat: 40.7669, lng: 29.9169 };
-        const baslangicEnlem = parseFloat([[${baslangic_enlem}]]) || 40.7669;
-        const baslangicBoylam = parseFloat([[${baslangic_boylam}]]) || 29.9169;
-        const hedefEnlem = parseFloat([[${hedef_enlem}]]) || 40.7670;
-        const hedefBoylam = parseFloat([[${hedef_boylam}]]) || 29.9170;
-
-        // Log the raw duraklar value for debugging
-        const rawDuraklar = [[${duraklar}]];
-        console.log("Raw duraklar:", rawDuraklar);
-
-        let durakVerisi;
-        try {
-            durakVerisi = JSON.parse(rawDuraklar || '[]');
-        } catch (e) {
-            console.error("Error parsing duraklar JSON:", e);
-            durakVerisi = [];
-        }
+        const baslangicEnlem = parseFloat([[${baslangic_enlem}]]);
+        const baslangicBoylam = parseFloat([[${baslangic_boylam}]]);
+        const hedefEnlem = parseFloat([[${hedef_enlem}]] || null);
+        const hedefBoylam = parseFloat([[${hedef_boylam}]] || null);
+        const durakVerisi = JSON.parse([[${duraklar}]] || '[]');
         const nearestStop = [[${nearest_stop}]] || null;
-
-        console.log("Coordinates:", { baslangicEnlem, baslangicBoylam, hedefEnlem, hedefBoylam });
-        console.log("Durak Verisi:", durakVerisi);
-        console.log("Nearest Stop:", nearestStop);
 
         map = new google.maps.Map(document.getElementById('map'), {
             center: { lat: baslangicEnlem, lng: baslangicBoylam },
@@ -737,18 +804,11 @@
             ] : []
         });
 
-        console.log("Map initialized");
-
         directionsRenderer.setMap(map);
 
         const bounds = new google.maps.LatLngBounds();
 
-        durakVerisi.forEach((durak, index) => {
-            console.log("Processing durak", index, durak);
-            if (!durak.lat || !durak.lon) {
-                console.error("Invalid durak coordinates:", durak);
-                return;
-            }
+        durakVerisi.forEach(durak => {
             const iconUrl = durak.type === 'bus'
                 ? 'https://img.icons8.com/color/48/000000/bus.png'
                 : 'https://img.icons8.com/color/48/000000/tram.png';
@@ -772,8 +832,6 @@
             bounds.extend(marker.getPosition());
         });
 
-        console.log("Markers added:", markers.length);
-
         baslangicMarker = new google.maps.Marker({
             position: { lat: baslangicEnlem, lng: baslangicBoylam },
             map: map,
@@ -782,17 +840,15 @@
         });
         bounds.extend(baslangicMarker.getPosition());
 
-        console.log("Başlangıç marker added");
-
-        hedefMarker = new google.maps.Marker({
-            position: { lat: hedefEnlem, lng: hedefBoylam },
-            map: map,
-            title: 'Hedef Noktası',
-            icon: { url: 'https://img.icons8.com/color/48/000000/finish-flag.png', scaledSize: new google.maps.Size(32, 32) }
-        });
-        bounds.extend(hedefMarker.getPosition());
-
-        console.log("Hedef marker added");
+        if (hedefEnlem && hedefBoylam) {
+            hedefMarker = new google.maps.Marker({
+                position: { lat: hedefEnlem, lng: hedefBoylam },
+                map: map,
+                title: 'Hedef Noktası',
+                icon: { url: 'https://img.icons8.com/color/48/000000/finish-flag.png', scaledSize: new google.maps.Size(32, 32) }
+            });
+            bounds.extend(hedefMarker.getPosition());
+        }
 
         if (nearestStop) {
             nearestMarker = new google.maps.Marker({
@@ -815,12 +871,9 @@
             });
             infoWindows.push(nearestInfoWindow);
             bounds.extend(nearestMarker.getPosition());
-            console.log("Nearest stop marker added");
         }
 
         map.fitBounds(bounds);
-
-        console.log("Map bounds set");
 
         map.addListener('click', (event) => {
             placeClickMarker(event.latLng);
@@ -830,21 +883,23 @@
 
         setupEventListeners();
 
+        if (routeData) {
+            initializeRoute(routeData);
+        }
+
         if (hedefEnlem && hedefBoylam && nearestStop) {
             drawInitialRoute();
         }
-
-        document.getElementById('status-bar').textContent = 'Durum: Harita Yüklendi';
-    };
+    }
 
     function drawInitialRoute() {
         clearPreviousRoutes();
         const durakVerisi = JSON.parse([[${duraklar}]] || '[]');
         const nearestStop = [[${nearest_stop}]] || null;
-        const baslangicEnlem = parseFloat([[${baslangic_enlem}]]) || 40.7669;
-        const baslangicBoylam = parseFloat([[${baslangic_boylam}]]) || 29.9169;
-        const hedefEnlem = parseFloat([[${hedef_enlem}]]) || 40.7670;
-        const hedefBoylam = parseFloat([[${hedef_boylam}]]) || 29.9170;
+        const baslangicEnlem = parseFloat([[${baslangic_enlem}]] || 40.7669);
+        const baslangicBoylam = parseFloat([[${baslangic_boylam}]] || 29.9169);
+        const hedefEnlem = parseFloat([[${hedef_enlem}]] || null);
+        const hedefBoylam = parseFloat([[${hedef_boylam}]] || null);
 
         if (nearestStop && hedefEnlem && hedefBoylam) {
             const waypoints = [];
@@ -976,7 +1031,7 @@
         markers.forEach(marker => {
             const markerPos = marker.getPosition();
             const distance = google.maps.geometry.spherical.computeDistanceBetween(
-                new google.maps.LatLng(startPos.lat, startPos.lng),
+                new google.maps.LatLng(startPos.lat(), startPos.lng()),
                 markerPos
             );
             if (distance < minDistance) {
@@ -1021,7 +1076,7 @@
         document.getElementById('modeToggle').addEventListener('click', () => {
             document.body.classList.toggle('dark-mode');
             const isDark = document.body.classList.contains('dark-mode');
-            document.getElementById('modeToggle').textContent = isDark ? '🌙' : '☀️';
+            document.getElementById('modeToggle').textContent = isDark ? '🌙' : '☀';
             document.getElementById('theme-info').textContent = `Tema: ${isDark ? 'Karanlık Mod' : 'Açık Mod'}`;
             document.getElementById('status-bar').textContent = `Durum: ${isDark ? 'Karanlık' : 'Açık'} mod aktif`;
             map.setOptions({
@@ -1049,7 +1104,7 @@
         });
 
         document.getElementById('resetMap').addEventListener('click', () => {
-            map.setCenter({ lat: parseFloat([[${baslangic_enlem}]]) || 40.7669, lng: parseFloat([[${baslangic_boylam}]]) || 29.9169 });
+            map.setCenter({ lat: parseFloat([[${baslangic_enlem}]] || 40.7669), lng: parseFloat([[${baslangic_boylam}]] || 29.9169) });
             map.setZoom(13);
             document.getElementById('status-bar').textContent = 'Durum: Harita sıfırlandı';
         });
@@ -1118,7 +1173,16 @@
                 const pos = clickMarker.getPosition();
                 document.getElementById('hedef_enlem').value = pos.lat().toFixed(6);
                 document.getElementById('hedef_boylam').value = pos.lng().toFixed(6);
-                hedefMarker.setPosition(pos);
+                if (!hedefMarker) {
+                    hedefMarker = new google.maps.Marker({
+                        position: pos,
+                        map: map,
+                        title: 'Hedef Noktası',
+                        icon: { url: 'https://img.icons8.com/color/48/000000/finish-flag.png', scaledSize: new google.maps.Size(32, 32) }
+                    });
+                } else {
+                    hedefMarker.setPosition(pos);
+                }
                 animateMarker(hedefMarker);
                 document.getElementById('status-bar').textContent = 'Durum: Hedef noktası ayarlandı';
             }
@@ -1127,6 +1191,80 @@
         document.getElementById('filter-bus').addEventListener('click', () => filterMarkers('bus'));
         document.getElementById('filter-tram').addEventListener('click', () => filterMarkers('tram'));
         document.getElementById('filter-all').addEventListener('click', () => filterMarkers('all'));
+
+        function initializeRoute(sonuc) {
+            console.log("initializeRoute called with:", sonuc);
+
+            if (!baslangicMarker) {
+                baslangicMarker = new google.maps.Marker({
+                    position: { lat: sonuc.baslangic_koordinat.lat, lng: sonuc.baslangic_koordinat.lon },
+                    map: map,
+                    title: 'Başlangıç Noktası',
+                    icon: { url: 'https://img.icons8.com/color/48/000000/marker.png', scaledSize: new google.maps.Size(32, 32) }
+                });
+            } else {
+                baslangicMarker.setPosition({ lat: sonuc.baslangic_koordinat.lat, lng: sonuc.baslangic_koordinat.lon });
+            }
+
+            if (!hedefMarker) {
+                hedefMarker = new google.maps.Marker({
+                    position: { lat: sonuc.hedef_koordinat.lat, lng: sonuc.hedef_koordinat.lon },
+                    map: map,
+                    title: 'Hedef Noktası',
+                    icon: { url: 'https://img.icons8.com/color/48/000000/finish-flag.png', scaledSize: new google.maps.Size(32, 32) }
+                });
+            } else {
+                hedefMarker.setPosition({ lat: sonuc.hedef_koordinat.lat, lng: sonuc.hedef_koordinat.lon });
+            }
+
+            clearPreviousRoutes();
+
+            sonuc.waypoints.forEach((wp, index) => {
+                if (index !== 0 && index !== sonuc.waypoints.length - 1) {
+                    const marker = new google.maps.Marker({
+                        position: { lat: wp.lat, lng: wp.lon },
+                        map: map,
+                        title: `Waypoint ${index + 1}`,
+                        icon: { url: 'https://img.icons8.com/color/48/000000/marker.png', scaledSize: new google.maps.Size(28, 28) }
+                    });
+                    currentRouteMarkers.push(marker);
+                }
+            });
+
+            if (sonuc.waypoints && sonuc.waypoints.length >= 2) {
+                const waypointsArray = [];
+                if (sonuc.waypoints.length > 2) {
+                    for (let i = 1; i < sonuc.waypoints.length - 1; i++) {
+                        waypointsArray.push({
+                            location: new google.maps.LatLng(sonuc.waypoints[i].lat, sonuc.waypoints[i].lon),
+                            stopover: true
+                        });
+                    }
+                }
+
+                directionsService.route({
+                    origin: new google.maps.LatLng(sonuc.waypoints[0].lat, sonuc.waypoints[0].lon),
+                    destination: new google.maps.LatLng(sonuc.waypoints[sonuc.waypoints.length - 1].lat, sonuc.waypoints[sonuc.waypoints.length - 1].lon),
+                    waypoints: waypointsArray,
+                    travelMode: google.maps.TravelMode.DRIVING,
+                    optimizeWaypoints: false
+                }, (result, status) => {
+                    console.log("Directions status:", status);
+                    if (status === 'OK') {
+                        directionsRenderer.setDirections(result);
+                        const bounds = new google.maps.LatLngBounds();
+                        sonuc.waypoints.forEach(wp => bounds.extend(new google.maps.LatLng(wp.lat, wp.lon)));
+                        map.fitBounds(bounds);
+                        document.getElementById('status-bar').textContent = 'Durum: Rota yüklendi';
+                    } else {
+                        console.log("Falling back to drawDirectLine due to:", status);
+                        drawDirectLine(sonuc.waypoints);
+                    }
+                });
+            } else {
+                document.getElementById('status-bar').textContent = 'Durum: Geçerli durak bulunamadı';
+            }
+        }
 
         document.getElementById('locationForm').addEventListener('submit', (e) => {
             e.preventDefault();
@@ -1138,27 +1276,50 @@
             const formData = new FormData(e.target);
             fetch('/', {
                 method: 'POST',
-                body: formData
+                body: formData,
+                headers: { 'Accept': 'application/json' }
             })
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        return response.text().then(text => {
+                            throw new Error(`Server error: ${response.status} - ${text}`);
+                        });
+                    }
+                    return response.json();
+                })
                 .then(sonuc => {
+                    console.log("Fetch result:", sonuc);
                     button.textContent = 'Konumları Göster';
                     button.disabled = false;
 
-                    baslangicMarker.setPosition({lat: sonuc.baslangic_koordinat.lat, lng: sonuc.baslangic_koordinat.lon});
-                    hedefMarker.setPosition({lat: sonuc.hedef_koordinat.lat, lng: sonuc.hedef_koordinat.lon});
+                    baslangicMarker.setPosition({ lat: parseFloat(sonuc.baslangic_koordinat.lat), lng: parseFloat(sonuc.baslangic_koordinat.lon) });
+                    if (!hedefMarker) {
+                        hedefMarker = new google.maps.Marker({
+                            position: { lat: parseFloat(sonuc.hedef_koordinat.lat), lng: parseFloat(sonuc.hedef_koordinat.lon) },
+                            map: map,
+                            title: 'Hedef Noktası',
+                            icon: { url: 'https://img.icons8.com/color/48/000000/finish-flag.png', scaledSize: new google.maps.Size(32, 32) }
+                        });
+                    } else {
+                        hedefMarker.setPosition({ lat: parseFloat(sonuc.hedef_koordinat.lat), lng: parseFloat(sonuc.hedef_koordinat.lon) });
+                    }
 
-                    if (nearestMarker) nearestMarker.setMap(null);
-                    nearestMarker = new google.maps.Marker({
-                        position: { lat: sonuc.baslangic_durak.lat, lng: sonuc.baslangic_durak.lon },
-                        map: map,
-                        title: sonuc.baslangic_durak.name,
-                        icon: {
-                            url: sonuc.baslangic_durak.type === 'bus' ? 'https://img.icons8.com/color/48/000000/bus.png' : 'https://img.icons8.com/color/48/000000/tram.png',
-                            scaledSize: new google.maps.Size(40, 40)
-                        },
-                        animation: google.maps.Animation.BOUNCE
-                    });
+                    // Check if baslangic_durak exists before using it
+                    if (sonuc.baslangic_durak && sonuc.baslangic_durak.lat && sonuc.baslangic_durak.lon) {
+                        if (nearestMarker) nearestMarker.setMap(null);
+                        nearestMarker = new google.maps.Marker({
+                            position: { lat: sonuc.baslangic_durak.lat, lng: sonuc.baslangic_durak.lon },
+                            map: map,
+                            title: sonuc.baslangic_durak.name || 'Başlangıç Durak',
+                            icon: {
+                                url: sonuc.baslangic_durak.type === 'bus' ? 'https://img.icons8.com/color/48/000000/bus.png' : 'https://img.icons8.com/color/48/000000/tram.png',
+                                scaledSize: new google.maps.Size(40, 40)
+                            },
+                            animation: google.maps.Animation.BOUNCE
+                        });
+                    } else {
+                        console.warn("baslangic_durak is missing or incomplete:", sonuc.baslangic_durak);
+                    }
 
                     clearPreviousRoutes();
 
@@ -1180,6 +1341,7 @@
                             travelMode: google.maps.TravelMode.TRANSIT,
                             optimizeWaypoints: false
                         }, (result, status) => {
+                            console.log("Directions status:", status);
                             if (status === 'OK') {
                                 directionsRenderer.setDirections(result);
                                 const bounds = new google.maps.LatLngBounds();
@@ -1189,6 +1351,7 @@
                                 map.fitBounds(bounds);
                                 document.getElementById('status-bar').textContent = 'Durum: Yeni rota gösterildi';
                             } else {
+                                console.log("Falling back to drawDirectLine due to:", status);
                                 document.getElementById('status-bar').textContent = 'Durum: Google Directions hata verdi, basit rota çiziliyor';
                                 drawDirectLine(sonuc.waypoints);
                             }
@@ -1198,10 +1361,10 @@
                     }
                 })
                 .catch(error => {
-                    console.error('Error:', error);
+                    console.error('Fetch error:', error);
                     button.textContent = 'Konumları Göster';
                     button.disabled = false;
-                    document.getElementById('status-bar').textContent = 'Durum: Hata oluştu';
+                    document.getElementById('status-bar').textContent = 'Durum: Hata oluştu: ' + error.message;
                 });
         });
     }
@@ -1212,6 +1375,6 @@
     }
 </script>
 
-<script th:src="@{https://maps.googleapis.com/maps/api/js(key=${googleMapsApiKey}, callback=initMap, loading=async)}" async defer></script>
+<script th:src="@{https://maps.googleapis.com/maps/api/js(key=${googleMapsApiKey}, callback=initMap, loading=async)}" async defer></script>>
 </body>
 </html>

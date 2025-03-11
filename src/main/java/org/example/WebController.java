@@ -6,8 +6,15 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 
 @Controller
 public class WebController {
@@ -15,20 +22,23 @@ public class WebController {
     private String googleMapsApiKey;
 
     private final Data data;
+    private final Durak durak;
+    private final Rota rota;
 
     public WebController() throws IOException {
         this.data = new Data();
+        this.durak = new Durak();
+        this.rota = new Rota(this.data.get_data().toString());
     }
 
     @GetMapping("/")
     public String home(Model model) {
-
         try {
             JSONObject jsonData = data.get_data();
+            durak.setDurak_veri(jsonData.getJSONArray("duraklar"));
 
-            // Assuming veriseti.json contains the stops (duraklar)
             // Pass the JSON data directly to the model
-            model.addAttribute("duraklar", jsonData.getJSONArray("duraklar").toString());
+            model.addAttribute("duraklar", durak.getDurak_veri());
 
             // Default coordinates (replace with actual values if needed)
             model.addAttribute("baslangic_enlem", 40.7669);
@@ -43,5 +53,21 @@ public class WebController {
             model.addAttribute("mesaj", "Error loading JSON: " + e.getMessage());
         }
         return "index";
+    }
+
+    // POST isteğini destekler
+    @PostMapping(value = "/", produces = "application/json")
+    @ResponseBody
+    public Map<String, Object> handlePostRequest(
+            @RequestParam("baslangic_enlem") double baslangicEnlem,
+            @RequestParam("baslangic_boylam") double baslangicBoylam,
+            @RequestParam("hedef_enlem") double hedefEnlem,
+            @RequestParam("hedef_boylam") double hedefBoylam,
+            Model model) {
+
+        Map<String, Object> rota_koordinatlar = rota.rotaBulKoordinatlarla(baslangicEnlem,baslangicBoylam,hedefEnlem,hedefBoylam,"sure");
+        System.out.println(rota_koordinatlar);
+
+        return rota_koordinatlar;
     }
 }
