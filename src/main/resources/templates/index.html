@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Toplu Taşıma Durakları Haritası</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Sen:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet" th:href="@{https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap}">
+    <link href="https://fonts.googleapis.com/css2?family=Sen:wght@400;700&display=swap" rel="stylesheet" th:href="@{https://fonts.googleapis.com/css2?family=Sen:wght@400;700&display=swap}">
     <style>
         * {
             margin: 0;
@@ -21,7 +21,7 @@
             --color: #E1E1E1;
             background-color: #F3F3F3;
             background-image: linear-gradient(0deg, transparent 24%, var(--color) 25%, var(--color) 26%, transparent 27%, transparent 74%, var(--color) 75%, var(--color) 76%, transparent 77%, transparent),
-                linear-gradient(90deg, transparent 24%, var(--color) 25%, var(--color) 26%, transparent 27%, transparent 74%, var(--color) 75%, var(--color) 76%, transparent 77%, transparent);
+            linear-gradient(90deg, transparent 24%, var(--color) 25%, var(--color) 26%, transparent 27%, transparent 74%, var(--color) 75%, var(--color) 76%, transparent 77%, transparent);
             background-size: 55px 55px;
         }
 
@@ -29,7 +29,7 @@
             --color: rgba(114, 114, 114, 0.3);
             background-color: #191a1a;
             background-image: linear-gradient(0deg, transparent 24%, var(--color) 25%, var(--color) 26%, transparent 27%,transparent 74%, var(--color) 75%, var(--color) 76%, transparent 77%,transparent),
-                linear-gradient(90deg, transparent 24%, var(--color) 25%, var(--color) 26%, transparent 27%,transparent 74%, var(--color) 75%, var(--color) 76%, transparent 77%,transparent);
+            linear-gradient(90deg, transparent 24%, var(--color) 25%, var(--color) 26%, transparent 27%,transparent 74%, var(--color) 75%, var(--color) 76%, transparent 77%,transparent);
             background-size: 55px 55px;
         }
 
@@ -582,111 +582,124 @@
     </style>
 </head>
 <body>
-    <div class="top-bar">
-        <h1>📍 Toplu Taşıma Durakları</h1>
-        <div class="top-bar-controls">
-            <button class="control-btn" id="modeToggle" title="Karanlık Mod">☀️</button>
-            <button class="control-btn" id="resetMap" title="Haritayı Sıfırla">⟳</button>
-            <button class="control-btn" id="getLocation" title="Konumumu Bul">📍</button>
-        </div>
+<div class="top-bar">
+    <h1>📍 Toplu Taşıma Durakları</h1>
+    <div class="top-bar-controls">
+        <button class="control-btn" id="modeToggle" title="Karanlık Mod">☀️</button>
+        <button class="control-btn" id="resetMap" title="Haritayı Sıfırla">⟳</button>
+        <button class="control-btn" id="getLocation" title="Konumumu Bul">📍</button>
     </div>
+</div>
 
-    <div class="container">
-        <div class="form-container">
-            <h2>Konum Bilgileri</h2>
-            <form method="POST" id="locationForm">
-                <div class="input-group">
-                    <label for="baslangic_enlem">Başlangıç Enlemi:</label>
-                    <input type="text" name="baslangic_enlem" id="baslangic_enlem" value="{{ baslangic_enlem }}" required>
-                </div>
-                <div class="input-group">
-                    <label for="baslangic_boylam">Başlangıç Boylamı:</label>
-                    <input type="text" name="baslangic_boylam" id="baslangic_boylam" value="{{ baslangic_boylam }}" required>
-                </div>
-                <div class="input-group">
-                    <label for="hedef_enlem">Hedef Enlemi:</label>
-                    <input type="text" name="hedef_enlem" id="hedef_enlem" value="{{ hedef_enlem }}" required>
-                </div>
-                <div class="input-group">
-                    <label for="hedef_boylam">Hedef Boylamı:</label>
-                    <input type="text" name="hedef_boylam" id="hedef_boylam" value="{{ hedef_boylam }}" required>
-                </div>
-                <button type="submit">Konumları Göster</button>
-            </form>
-
-            {% if hata %}
-                <p class="error">{{ hata }}</p>
-            {% endif %}
-
-            <div class="coordinate-display">
-                <p>Tıklayarak Konum Seç:</p>
-                <p>Seçilen: <span id="selected-coordinates">Henüz seçilmedi</span></p>
-                <div class="quick-actions">
-                    <button class="quick-btn" id="set-start">Başlangıç Yap</button>
-                    <button class="quick-btn" id="set-destination">Hedef Yap</button>
-                </div>
+<div class="container">
+    <div class="form-container">
+        <h2>Konum Bilgileri</h2>
+        <form method="POST" id="locationForm">
+            <div class="input-group">
+                <label for="baslangic_enlem">Başlangıç Enlemi:</label>
+                <input type="text" name="baslangic_enlem" id="baslangic_enlem" th:value="${baslangic_enlem}" required>
             </div>
-
-            <div class="legend">
-                <h3>Durak Türleri</h3>
-                <div class="legend-item">
-                    <img src="https://img.icons8.com/color/48/000000/bus.png" alt="Otobüs" class="legend-icon">
-                    Otobüs Durağı
-                </div>
-                <div class="legend-item">
-                    <img src="https://img.icons8.com/color/48/000000/tram.png" alt="Tramvay" class="legend-icon">
-                    Tramvay Durağı
-                </div>
+            <div class="input-group">
+                <label for="baslangic_boylam">Başlangıç Boylamı:</label>
+                <input type="text" name="baslangic_boylam" id="baslangic_boylam" th:value="${baslangic_boylam}" required>
             </div>
+            <div class="input-group">
+                <label for="hedef_enlem">Hedef Enlemi:</label>
+                <input type="text" name="hedef_enlem" id="hedef_enlem" th:value="${hedef_enlem}" required>
+            </div>
+            <div class="input-group">
+                <label for="hedef_boylam">Hedef Boylamı:</label>
+                <input type="text" name="hedef_boylam" id="hedef_boylam" th:value="${hedef_boylam}" required>
+            </div>
+            <button type="submit">Konumları Göster</button>
+        </form>
 
+        <div class="coordinate-display">
+            <p>Tıklayarak Konum Seç:</p>
+            <p>Seçilen: <span id="selected-coordinates">Henüz seçilmedi</span></p>
             <div class="quick-actions">
-                <button class="quick-btn" id="zoomIn">Yakınlaştır</button>
-                <button class="quick-btn" id="zoomOut">Uzaklaştır</button>
-                <button class="quick-btn" id="clearMarkers">İşaretleri Temizle</button>
-                <button class="quick-btn" id="filter-bus">Sadece Otobüs</button>
-                <button class="quick-btn" id="filter-tram">Sadece Tramvay</button>
-                <button class="quick-btn" id="filter-all">Tüm Duraklar</button>
-            </div>
-
-            <div class="status-bar" id="status-bar">
-                Durum: Harita Yüklendi
-            </div>
-
-            <div class="theme-toggle-info" id="theme-info">
-                Tema: Açık Mod
+                <button class="quick-btn" id="set-start">Başlangıç Yap</button>
+                <button class="quick-btn" id="set-destination">Hedef Yap</button>
             </div>
         </div>
 
-        <div class="map-container">
-            <div id="map"></div>
+        <div class="legend">
+            <h3>Durak Türleri</h3>
+            <div class="legend-item">
+                <img src="https://img.icons8.com/color/48/000000/bus.png" alt="Otobüs" class="legend-icon">
+                Otobüs Durağı
+            </div>
+            <div class="legend-item">
+                <img src="https://img.icons8.com/color/48/000000/tram.png" alt="Tramvay" class="legend-icon">
+                Tramvay Durağı
+            </div>
+        </div>
+
+        <div class="quick-actions">
+            <button class="quick-btn" id="zoomIn">Yakınlaştır</button>
+            <button class="quick-btn" id="zoomOut">Uzaklaştır</button>
+            <button class="quick-btn" id="clearMarkers">İşaretleri Temizle</button>
+            <button class="quick-btn" id="filter-bus">Sadece Otobüs</button>
+            <button class="quick-btn" id="filter-tram">Sadece Tramvay</button>
+            <button class="quick-btn" id="filter-all">Tüm Duraklar</button>
+        </div>
+
+        <div class="status-bar" id="status-bar">
+            Durum: Harita Yüklendi
+        </div>
+
+        <div class="theme-toggle-info" id="theme-info">
+            Tema: Açık Mod
         </div>
     </div>
 
-    <script>
+    <div class="map-container">
+        <div id="map"></div>
+    </div>
+</div>
+
+<script th:inline="javascript">
     let map, markers = [], infoWindows = [], baslangicMarker, hedefMarker, clickMarker, nearestMarker;
     let directionsService, directionsRenderer;
     let currentRouteMarkers = [];
     let currentRoutePolylines = [];
     let animationInterval;
 
-    function initMap() {
+    window.initMap = function() {
+        console.log("initMap started");
+
         directionsService = new google.maps.DirectionsService();
         directionsRenderer = new google.maps.DirectionsRenderer({
             suppressMarkers: false,
             polylineOptions: {
-                strokeColor: '#4285F4', // Google Maps varsayılan mavi rengi
+                strokeColor: '#4285F4',
                 strokeWeight: 5,
                 strokeOpacity: 1.0
             }
         });
 
         const defaultCenter = { lat: 40.7669, lng: 29.9169 };
-        const baslangicEnlem = {{ baslangic_enlem | default(40.7669) }};
-        const baslangicBoylam = {{ baslangic_boylam | default(29.9169) }};
-        const hedefEnlem = {{ hedef_enlem }};
-        const hedefBoylam = {{ hedef_boylam }};
-        const durakVerisi = {{ duraklar|tojson | default('[]') }};
-        const nearestStop = {{ nearest_stop | tojson | default('null') }};
+        const baslangicEnlem = parseFloat([[${baslangic_enlem}]]) || 40.7669;
+        const baslangicBoylam = parseFloat([[${baslangic_boylam}]]) || 29.9169;
+        const hedefEnlem = parseFloat([[${hedef_enlem}]]) || 40.7670;
+        const hedefBoylam = parseFloat([[${hedef_boylam}]]) || 29.9170;
+
+        // Log the raw duraklar value for debugging
+        const rawDuraklar = [[${duraklar}]];
+        console.log("Raw duraklar:", rawDuraklar);
+
+        let durakVerisi;
+        try {
+            durakVerisi = JSON.parse(rawDuraklar || '[]');
+        } catch (e) {
+            console.error("Error parsing duraklar JSON:", e);
+            durakVerisi = [];
+        }
+        const nearestStop = [[${nearest_stop}]] || null;
+
+        console.log("Coordinates:", { baslangicEnlem, baslangicBoylam, hedefEnlem, hedefBoylam });
+        console.log("Durak Verisi:", durakVerisi);
+        console.log("Nearest Stop:", nearestStop);
 
         map = new google.maps.Map(document.getElementById('map'), {
             center: { lat: baslangicEnlem, lng: baslangicBoylam },
@@ -724,11 +737,18 @@
             ] : []
         });
 
+        console.log("Map initialized");
+
         directionsRenderer.setMap(map);
 
         const bounds = new google.maps.LatLngBounds();
 
-        durakVerisi.forEach(durak => {
+        durakVerisi.forEach((durak, index) => {
+            console.log("Processing durak", index, durak);
+            if (!durak.lat || !durak.lon) {
+                console.error("Invalid durak coordinates:", durak);
+                return;
+            }
             const iconUrl = durak.type === 'bus'
                 ? 'https://img.icons8.com/color/48/000000/bus.png'
                 : 'https://img.icons8.com/color/48/000000/tram.png';
@@ -752,6 +772,8 @@
             bounds.extend(marker.getPosition());
         });
 
+        console.log("Markers added:", markers.length);
+
         baslangicMarker = new google.maps.Marker({
             position: { lat: baslangicEnlem, lng: baslangicBoylam },
             map: map,
@@ -760,6 +782,8 @@
         });
         bounds.extend(baslangicMarker.getPosition());
 
+        console.log("Başlangıç marker added");
+
         hedefMarker = new google.maps.Marker({
             position: { lat: hedefEnlem, lng: hedefBoylam },
             map: map,
@@ -767,6 +791,8 @@
             icon: { url: 'https://img.icons8.com/color/48/000000/finish-flag.png', scaledSize: new google.maps.Size(32, 32) }
         });
         bounds.extend(hedefMarker.getPosition());
+
+        console.log("Hedef marker added");
 
         if (nearestStop) {
             nearestMarker = new google.maps.Marker({
@@ -789,9 +815,12 @@
             });
             infoWindows.push(nearestInfoWindow);
             bounds.extend(nearestMarker.getPosition());
+            console.log("Nearest stop marker added");
         }
 
         map.fitBounds(bounds);
+
+        console.log("Map bounds set");
 
         map.addListener('click', (event) => {
             placeClickMarker(event.latLng);
@@ -804,16 +833,18 @@
         if (hedefEnlem && hedefBoylam && nearestStop) {
             drawInitialRoute();
         }
-    }
+
+        document.getElementById('status-bar').textContent = 'Durum: Harita Yüklendi';
+    };
 
     function drawInitialRoute() {
         clearPreviousRoutes();
-        const durakVerisi = {{ duraklar|tojson | default('[]') }};
-        const nearestStop = {{ nearest_stop | tojson | default('null') }};
-        const baslangicEnlem = {{ baslangic_enlem | default(40.7669) }};
-        const baslangicBoylam = {{ baslangic_boylam | default(29.9169) }};
-        const hedefEnlem = {{ hedef_enlem }};
-        const hedefBoylam = {{ hedef_boylam }};
+        const durakVerisi = JSON.parse([[${duraklar}]] || '[]');
+        const nearestStop = [[${nearest_stop}]] || null;
+        const baslangicEnlem = parseFloat([[${baslangic_enlem}]]) || 40.7669;
+        const baslangicBoylam = parseFloat([[${baslangic_boylam}]]) || 29.9169;
+        const hedefEnlem = parseFloat([[${hedef_enlem}]]) || 40.7670;
+        const hedefBoylam = parseFloat([[${hedef_boylam}]]) || 29.9170;
 
         if (nearestStop && hedefEnlem && hedefBoylam) {
             const waypoints = [];
@@ -843,7 +874,7 @@
                 origin: new google.maps.LatLng(baslangicEnlem, baslangicBoylam),
                 destination: new google.maps.LatLng(hedefEnlem, hedefBoylam),
                 waypoints: waypoints,
-                travelMode: google.maps.TravelMode.TRANSIT, // veya WALKING/DRIVING seçebilirsiniz
+                travelMode: google.maps.TravelMode.TRANSIT,
                 optimizeWaypoints: false
             }, (result, status) => {
                 if (status === 'OK') {
@@ -908,9 +939,9 @@
         const routeLine = new google.maps.Polyline({
             path: path,
             geodesic: true,
-            strokeColor: '#4285F4', // Google Maps varsayılan mavi rengi
+            strokeColor: '#4285F4',
             strokeOpacity: 1.0,
-            strokeWeight: 5, // Google Maps çizgi kalınlığına benzer
+            strokeWeight: 5,
             map: map
         });
 
@@ -1018,7 +1049,7 @@
         });
 
         document.getElementById('resetMap').addEventListener('click', () => {
-            map.setCenter({ lat: {{ baslangic_enlem | default(40.7669) }}, lng: {{ baslangic_boylam | default(29.9169) }} });
+            map.setCenter({ lat: parseFloat([[${baslangic_enlem}]]) || 40.7669, lng: parseFloat([[${baslangic_boylam}]]) || 29.9169 });
             map.setZoom(13);
             document.getElementById('status-bar').textContent = 'Durum: Harita sıfırlandı';
         });
@@ -1109,69 +1140,69 @@
                 method: 'POST',
                 body: formData
             })
-            .then(response => response.json())
-            .then(sonuc => {
-                button.textContent = 'Konumları Göster';
-                button.disabled = false;
+                .then(response => response.json())
+                .then(sonuc => {
+                    button.textContent = 'Konumları Göster';
+                    button.disabled = false;
 
-                baslangicMarker.setPosition({lat: sonuc.baslangic_koordinat.lat, lng: sonuc.baslangic_koordinat.lon});
-                hedefMarker.setPosition({lat: sonuc.hedef_koordinat.lat, lng: sonuc.hedef_koordinat.lon});
+                    baslangicMarker.setPosition({lat: sonuc.baslangic_koordinat.lat, lng: sonuc.baslangic_koordinat.lon});
+                    hedefMarker.setPosition({lat: sonuc.hedef_koordinat.lat, lng: sonuc.hedef_koordinat.lon});
 
-                if (nearestMarker) nearestMarker.setMap(null);
-                nearestMarker = new google.maps.Marker({
-                    position: { lat: sonuc.baslangic_durak.lat, lng: sonuc.baslangic_durak.lon },
-                    map: map,
-                    title: sonuc.baslangic_durak.name,
-                    icon: {
-                        url: sonuc.baslangic_durak.type === 'bus' ? 'https://img.icons8.com/color/48/000000/bus.png' : 'https://img.icons8.com/color/48/000000/tram.png',
-                        scaledSize: new google.maps.Size(40, 40)
-                    },
-                    animation: google.maps.Animation.BOUNCE
-                });
-
-                clearPreviousRoutes();
-
-                if (sonuc.waypoints && sonuc.waypoints.length >= 2) {
-                    const waypointsArray = [];
-                    if (sonuc.waypoints.length > 2) {
-                        for (let i = 1; i < sonuc.waypoints.length - 1; i++) {
-                            waypointsArray.push({
-                                location: new google.maps.LatLng(sonuc.waypoints[i].lat, sonuc.waypoints[i].lon),
-                                stopover: true
-                            });
-                        }
-                    }
-
-                    directionsService.route({
-                        origin: new google.maps.LatLng(sonuc.waypoints[0].lat, sonuc.waypoints[0].lon),
-                        destination: new google.maps.LatLng(sonuc.waypoints[sonuc.waypoints.length - 1].lat, sonuc.waypoints[sonuc.waypoints.length - 1].lon),
-                        waypoints: waypointsArray,
-                        travelMode: google.maps.TravelMode.TRANSIT,
-                        optimizeWaypoints: false
-                    }, (result, status) => {
-                        if (status === 'OK') {
-                            directionsRenderer.setDirections(result);
-                            const bounds = new google.maps.LatLngBounds();
-                            sonuc.waypoints.forEach(wp => {
-                                bounds.extend(new google.maps.LatLng(wp.lat, wp.lon));
-                            });
-                            map.fitBounds(bounds);
-                            document.getElementById('status-bar').textContent = 'Durum: Yeni rota gösterildi';
-                        } else {
-                            document.getElementById('status-bar').textContent = 'Durum: Google Directions hata verdi, basit rota çiziliyor';
-                            drawDirectLine(sonuc.waypoints);
-                        }
+                    if (nearestMarker) nearestMarker.setMap(null);
+                    nearestMarker = new google.maps.Marker({
+                        position: { lat: sonuc.baslangic_durak.lat, lng: sonuc.baslangic_durak.lon },
+                        map: map,
+                        title: sonuc.baslangic_durak.name,
+                        icon: {
+                            url: sonuc.baslangic_durak.type === 'bus' ? 'https://img.icons8.com/color/48/000000/bus.png' : 'https://img.icons8.com/color/48/000000/tram.png',
+                            scaledSize: new google.maps.Size(40, 40)
+                        },
+                        animation: google.maps.Animation.BOUNCE
                     });
-                } else {
-                    document.getElementById('status-bar').textContent = 'Durum: Geçerli durak bulunamadı';
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                button.textContent = 'Konumları Göster';
-                button.disabled = false;
-                document.getElementById('status-bar').textContent = 'Durum: Hata oluştu';
-            });
+
+                    clearPreviousRoutes();
+
+                    if (sonuc.waypoints && sonuc.waypoints.length >= 2) {
+                        const waypointsArray = [];
+                        if (sonuc.waypoints.length > 2) {
+                            for (let i = 1; i < sonuc.waypoints.length - 1; i++) {
+                                waypointsArray.push({
+                                    location: new google.maps.LatLng(sonuc.waypoints[i].lat, sonuc.waypoints[i].lon),
+                                    stopover: true
+                                });
+                            }
+                        }
+
+                        directionsService.route({
+                            origin: new google.maps.LatLng(sonuc.waypoints[0].lat, sonuc.waypoints[0].lon),
+                            destination: new google.maps.LatLng(sonuc.waypoints[sonuc.waypoints.length - 1].lat, sonuc.waypoints[sonuc.waypoints.length - 1].lon),
+                            waypoints: waypointsArray,
+                            travelMode: google.maps.TravelMode.TRANSIT,
+                            optimizeWaypoints: false
+                        }, (result, status) => {
+                            if (status === 'OK') {
+                                directionsRenderer.setDirections(result);
+                                const bounds = new google.maps.LatLngBounds();
+                                sonuc.waypoints.forEach(wp => {
+                                    bounds.extend(new google.maps.LatLng(wp.lat, wp.lon));
+                                });
+                                map.fitBounds(bounds);
+                                document.getElementById('status-bar').textContent = 'Durum: Yeni rota gösterildi';
+                            } else {
+                                document.getElementById('status-bar').textContent = 'Durum: Google Directions hata verdi, basit rota çiziliyor';
+                                drawDirectLine(sonuc.waypoints);
+                            }
+                        });
+                    } else {
+                        document.getElementById('status-bar').textContent = 'Durum: Geçerli durak bulunamadı';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    button.textContent = 'Konumları Göster';
+                    button.disabled = false;
+                    document.getElementById('status-bar').textContent = 'Durum: Hata oluştu';
+                });
         });
     }
 
@@ -1180,6 +1211,7 @@
         setTimeout(() => marker.setAnimation(null), 2000);
     }
 </script>
-    <script th:src="@{'https://maps.googleapis.com/maps/api/js?key=' + ${api_key} + '&callback=initMap'}" async defer></script>
+
+<script th:src="@{https://maps.googleapis.com/maps/api/js(key=${googleMapsApiKey}, callback=initMap, loading=async)}" async defer></script>
 </body>
 </html>
