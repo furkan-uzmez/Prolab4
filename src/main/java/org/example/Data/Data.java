@@ -1,13 +1,15 @@
 package org.example.Data;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
-@Component
+@Service
 public class Data {
 
     private JSONObject veri;
@@ -26,4 +28,5 @@ public class Data {
 
         return new JSONObject(jsonString);
     }
+
 }

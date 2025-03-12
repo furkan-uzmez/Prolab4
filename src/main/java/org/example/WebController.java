@@ -31,7 +31,6 @@ public class WebController {
 
     public WebController() throws IOException {
         this.data = new Data();
-        this.durak = new Durak();
         GraphBuilder graphBuilder = new DefaultGraphBuilder();
         Graph<String, Rota.KenarOzellikleri> graph = graphBuilder.buildGraph(new ObjectMapper().readTree(this.data.get_data().toString()));
         PathFinder pathFinder = new DijkstraPathFinder(graph);
@@ -39,15 +38,16 @@ public class WebController {
         RoutePrinter routePrinter = new ConsoleRoutePrinter("Izmit");
         DistanceCalculator distanceCalculator = new HaversineDistanceCalculator();
         Taxi taksi = new Taxi(new ObjectMapper().readTree(this.data.get_data().toString()).get("taxi"));
-        this.rota = new Rota(this.data.get_data().toString(), graphBuilder, pathFinder, waypointGenerator,
-                routePrinter, distanceCalculator, taksi);
+        this.durak = new Durak(data.get_data(),new ObjectMapper(),distanceCalculator);
+        this.rota = new Rota( graphBuilder, pathFinder, waypointGenerator,
+                routePrinter, distanceCalculator, taksi,this.durak);
     }
 
     @GetMapping("/")
     public String home(Model model) {
         try {
-            JSONObject jsonData = data.get_data();
-            durak.setDurak_veri(jsonData.getJSONArray("duraklar"));
+            //System.out.println(durak.getDurak_veri());
+            //System.out.println(durak.get_node_data());
 
             // Pass the JSON data directly to the model
             model.addAttribute("duraklar", durak.getDurak_veri());

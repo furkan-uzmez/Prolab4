@@ -3,6 +3,7 @@ package org.example.Rota;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.example.Durak;
 import org.example.Vehicle.Taxi;
 import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultWeightedEdge;
@@ -11,6 +12,8 @@ import org.example.IRota.*;
 import java.util.*;
 
 public class Rota {
+
+
     public static class KenarOzellikleri extends DefaultWeightedEdge {
         private double mesafe;
         private double sure;
@@ -41,35 +44,30 @@ public class Rota {
     private final Taxi taksi;
     private final ObjectMapper objectMapper;
     private final Map<String, JsonNode> duraklar;
-    private final String city;
     private final Graph<String, KenarOzellikleri> graph;
+    private final Durak durak;
 
-    public Rota(String data, GraphBuilder graphBuilder, PathFinder pathFinder,
+    public Rota(GraphBuilder graphBuilder, PathFinder pathFinder,
                 WaypointGenerator waypointGenerator, RoutePrinter routePrinter,
-                DistanceCalculator distanceCalculator, Taxi taksi) throws JsonProcessingException {
+                DistanceCalculator distanceCalculator, Taxi taksi,Durak durak) throws JsonProcessingException {
+
         this.objectMapper = new ObjectMapper();
-        JsonNode jsonData = this.objectMapper.readTree(data);
-        this.duraklar = new HashMap<>();
-
-        for (JsonNode durak : jsonData.get("duraklar")) {
-            duraklar.put(durak.get("id").asText(), durak);
-        }
-
-        this.city = jsonData.get("city").asText();
+        this.durak = durak;
+        this.duraklar = durak.get_hashmap_duraklar();
         this.taksi = taksi;
         this.graphBuilder = graphBuilder;
         this.pathFinder = pathFinder;
         this.waypointGenerator = waypointGenerator;
         this.routePrinter = routePrinter;
         this.distanceCalculator = distanceCalculator;
-        this.graph = graphBuilder.buildGraph(jsonData);
+        this.graph = graphBuilder.buildGraph(durak.get_node_data());
     }
 
     public Map<String, Object> findRouteWithCoordinates(double startLat, double startLon,
                                                         double endLat, double endLon,
                                                         String optimization) {
-        Map.Entry<String, Double> startStop = findNearestStop(startLat, startLon);
-        Map.Entry<String, Double> endStop = findNearestStop(endLat, endLon);
+        Map.Entry<String, Double> startStop = durak.findNearestStop(startLat, startLon);
+        Map.Entry<String, Double> endStop = durak.findNearestStop(endLat, endLon);
 
         String startId = startStop.getKey();
         double startDistance = startStop.getValue();
@@ -80,43 +78,63 @@ public class Rota {
             throw new IllegalArgumentException("En yakın durak bulunamadı.");
         }
 
-        List<Map<String, Object>> transitSegments = pathFinder.findBestPath(startId, endId, optimization);
+        List<Map<String, Object>> transitSegments;
         List<Map<String, Object>> route = new ArrayList<>();
         List<Map<String, Object>> waypoints;
         double totalDistance, totalTime, totalCost;
         boolean routeFound;
 
-        // Eğer toplu taşıma rotası yoksa, sadece taksiyle gidilecek
-        if (transitSegments.isEmpty() && !startId.equals(endId)) {
-            // Toplu taşıma yok, sadece taksi alternatifi kullanılacak
+        // Başlangıç durağının nextStops'unu kontrol et
+        JsonNode startStopData = duraklar.get(startId);
+        boolean hasNextStops = startStopData.has("nextStops") && startStopData.get("nextStops").size() > 0;
+
+        if (!hasNextStops || startId.equals(endId)) {
+            // Başlangıç durağında nextStops yoksa veya aynı duraksa, direkt taksi
             double taxiDistance = distanceCalculator.calculateDistance(startLat, startLon, endLat, endLon);
             Map<String, Object> taxiAlternative = taksi.createTaxiAlternative(startLat, startLon, endLat, endLon, taxiDistance);
 
-            routeFound = false; // Toplu taşıma rotası bulunamadı
+            routeFound = false;
             totalDistance = taxiDistance;
             totalTime = (Double) taxiAlternative.get("tahmini_sure_dk");
             totalCost = (Double) taxiAlternative.get("ucret");
 
-            // Waypoints sadece başlangıç ve hedef noktalarını içerir
             waypoints = new ArrayList<>();
             waypoints.add(createWaypoint("baslangic_nokta", "Başlangıç Noktası", startLat, startLon, true, false, 0.0));
             waypoints.add(createWaypoint("hedef_nokta", "Hedef Noktası", endLat, endLon, false, true, 0.0));
         } else {
-            // Toplu taşıma rotası varsa, normal akış
-            Map<String, Object> startSegment = createWalkingSegment(startLat, startLon, startId, startDistance, true);
-            Map<String, Object> endSegment = createWalkingSegment(endLat, endLon, endId, endDistance, false);
+            // Toplu taşıma rotası ara
+            transitSegments = pathFinder.findBestPath(startId, endId, optimization);
 
-            route.add(startSegment);
-            route.addAll(transitSegments);
-            route.add(endSegment);
+            if (transitSegments.isEmpty()) {
+                // Toplu taşıma rotası bulunamadıysa taksi
+                double taxiDistance = distanceCalculator.calculateDistance(startLat, startLon, endLat, endLon);
+                Map<String, Object> taxiAlternative = taksi.createTaxiAlternative(startLat, startLon, endLat, endLon, taxiDistance);
 
-            totalDistance = route.stream().mapToDouble(s -> (double) s.get("mesafe")).sum();
-            totalTime = route.stream().mapToDouble(s -> (double) s.get("sure")).sum();
-            totalCost = route.stream().mapToDouble(s -> (double) s.get("ucret")).sum();
+                routeFound = false;
+                totalDistance = taxiDistance;
+                totalTime = (Double) taxiAlternative.get("tahmini_sure_dk");
+                totalCost = (Double) taxiAlternative.get("ucret");
 
-            waypoints = waypointGenerator.generateWaypoints(route, startLat, startLon, endLat, endLon,
-                    startDistance, endDistance, endId);
-            routeFound = true;
+                waypoints = new ArrayList<>();
+                waypoints.add(createWaypoint("baslangic_nokta", "Başlangıç Noktası", startLat, startLon, true, false, 0.0));
+                waypoints.add(createWaypoint("hedef_nokta", "Hedef Noktası", endLat, endLon, false, true, 0.0));
+            } else {
+                // Toplu taşıma rotası bulundu
+                Map<String, Object> startSegment = createWalkingSegment(startLat, startLon, startId, startDistance, true);
+                Map<String, Object> endSegment = createWalkingSegment(endLat, endLon, endId, endDistance, false);
+
+                route.add(startSegment);
+                route.addAll(transitSegments);
+                route.add(endSegment);
+
+                totalDistance = route.stream().mapToDouble(s -> (double) s.get("mesafe")).sum();
+                totalTime = route.stream().mapToDouble(s -> (double) s.get("sure")).sum();
+                totalCost = route.stream().mapToDouble(s -> (double) s.get("ucret")).sum();
+
+                waypoints = waypointGenerator.generateWaypoints(route, startLat, startLon, endLat, endLon,
+                        startDistance, endDistance, endId);
+                routeFound = true;
+            }
         }
 
         Map<String, Object> result = new HashMap<>();
@@ -135,24 +153,6 @@ public class Rota {
         result.put("taksi_alternatifi", taksi.createTaxiAlternative(startLat, startLon, endLat, endLon, taxiDistance));
 
         return result;
-    }
-
-    private Map.Entry<String, Double> findNearestStop(double lat, double lon) {
-        double minDistance = Double.POSITIVE_INFINITY;
-        String nearestStopId = null;
-
-        for (Map.Entry<String, JsonNode> entry : duraklar.entrySet()) {
-            JsonNode stop = entry.getValue();
-            double distance = distanceCalculator.calculateDistance(lat, lon,
-                    stop.get("lat").asDouble(),
-                    stop.get("lon").asDouble());
-            if (distance < minDistance) {
-                minDistance = distance;
-                nearestStopId = entry.getKey();
-            }
-        }
-
-        return new AbstractMap.SimpleEntry<>(nearestStopId, minDistance);
     }
 
     private Map<String, Object> createWalkingSegment(double lat, double lon, String stopId,
