@@ -1,6 +1,11 @@
 package org.example;
-
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.example.IRota.*;
 import org.example.Data.Data;
+import org.example.Mesafe.HaversineDistanceCalculator;
+import org.example.Rota.*;
+import org.example.Vehicle.Taxi;
+import org.jgrapht.Graph;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
@@ -14,7 +19,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 
 @Controller
 public class WebController {
@@ -28,7 +32,15 @@ public class WebController {
     public WebController() throws IOException {
         this.data = new Data();
         this.durak = new Durak();
-        this.rota = new Rota(this.data.get_data().toString());
+        GraphBuilder graphBuilder = new DefaultGraphBuilder();
+        Graph<String, Rota.KenarOzellikleri> graph = graphBuilder.buildGraph(new ObjectMapper().readTree(this.data.get_data().toString()));
+        PathFinder pathFinder = new DijkstraPathFinder(graph);
+        WaypointGenerator waypointGenerator = new DefaultWaypointGenerator(new ObjectMapper(), new HashMap<>());
+        RoutePrinter routePrinter = new ConsoleRoutePrinter("Izmit");
+        DistanceCalculator distanceCalculator = new HaversineDistanceCalculator();
+        Taxi taksi = new Taxi(new ObjectMapper().readTree(this.data.get_data().toString()).get("taxi"));
+        this.rota = new Rota(this.data.get_data().toString(), graphBuilder, pathFinder, waypointGenerator,
+                routePrinter, distanceCalculator, taksi);
     }
 
     @GetMapping("/")
@@ -65,8 +77,10 @@ public class WebController {
             @RequestParam("hedef_boylam") double hedefBoylam,
             Model model) {
 
-        Map<String, Object> rota_koordinatlar = rota.rotaBulKoordinatlarla(baslangicEnlem,baslangicBoylam,hedefEnlem,hedefBoylam,"sure");
-        System.out.println(rota_koordinatlar);
+        Map<String, Object> rota_koordinatlar = rota.findRouteWithCoordinates(baslangicEnlem,baslangicBoylam,hedefEnlem,hedefBoylam,"sure");
+        System.out.println("Tam rota: " + rota_koordinatlar);
+        System.out.println("Waypoints: " + rota_koordinatlar.get("waypoints"));
+        System.out.println("Bitiş durağı: " + rota_koordinatlar.get("bitis_durak"));
 
         return rota_koordinatlar;
     }
