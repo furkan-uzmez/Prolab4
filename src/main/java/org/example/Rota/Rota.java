@@ -78,65 +78,39 @@ public class Rota {
             throw new IllegalArgumentException("En yakın durak bulunamadı.");
         }
 
-        List<Map<String, Object>> transitSegments;
+        // Toplu taşıma rotası
+        List<Map<String, Object>> transitSegments = pathFinder.findBestPath(startId, endId, optimization);
         List<Map<String, Object>> route = new ArrayList<>();
         List<Map<String, Object>> waypoints;
-        double totalDistance, totalTime, totalCost;
-        boolean routeFound;
+        double totalDistance = 0.0;
+        double totalTime = 0.0;
+        double totalCost = 0.0;
+        boolean routeFound = !transitSegments.isEmpty();
 
-        // Başlangıç durağının nextStops'unu kontrol et
-        JsonNode startStopData = duraklar.get(startId);
-        boolean hasNextStops = startStopData.has("nextStops") && startStopData.get("nextStops").size() > 0;
+        System.out.println(transitSegments);
+        // Toplu taşıma rotası bulunduysa
+        Map<String, Object> startSegment = createWalkingSegment(startLat, startLon, startId, startDistance, true);
+        Map<String, Object> endSegment = createWalkingSegment(endLat, endLon, endId, endDistance, false);
 
-        if (!hasNextStops || startId.equals(endId)) {
-            // Başlangıç durağında nextStops yoksa veya aynı duraksa, direkt taksi
-            double taxiDistance = distanceCalculator.calculateDistance(startLat, startLon, endLat, endLon);
-            Map<String, Object> taxiAlternative = taksi.createTaxiAlternative(startLat, startLon, endLat, endLon, taxiDistance);
+        System.out.println("endSegment:"+endSegment);
 
-            routeFound = false;
-            totalDistance = taxiDistance;
-            totalTime = (Double) taxiAlternative.get("tahmini_sure_dk");
-            totalCost = (Double) taxiAlternative.get("ucret");
+        route.add(startSegment);
+        route.addAll(transitSegments);
+        route.add(endSegment);
 
-            waypoints = new ArrayList<>();
-            waypoints.add(createWaypoint("baslangic_nokta", "Başlangıç Noktası", startLat, startLon, true, false, 0.0));
-            waypoints.add(createWaypoint("hedef_nokta", "Hedef Noktası", endLat, endLon, false, true, 0.0));
-        } else {
-            // Toplu taşıma rotası ara
-            transitSegments = pathFinder.findBestPath(startId, endId, optimization);
+        totalDistance = route.stream().mapToDouble(s -> (double) s.get("mesafe")).sum();
+        totalTime = route.stream().mapToDouble(s -> (double) s.get("sure")).sum();
+        totalCost = route.stream().mapToDouble(s -> (double) s.get("ucret")).sum();
 
-            if (transitSegments.isEmpty()) {
-                // Toplu taşıma rotası bulunamadıysa taksi
-                double taxiDistance = distanceCalculator.calculateDistance(startLat, startLon, endLat, endLon);
-                Map<String, Object> taxiAlternative = taksi.createTaxiAlternative(startLat, startLon, endLat, endLon, taxiDistance);
+        waypoints = waypointGenerator.generateWaypoints(route, startLat, startLon, endLat, endLon,
+                    startDistance, endDistance, endId);
 
-                routeFound = false;
-                totalDistance = taxiDistance;
-                totalTime = (Double) taxiAlternative.get("tahmini_sure_dk");
-                totalCost = (Double) taxiAlternative.get("ucret");
 
-                waypoints = new ArrayList<>();
-                waypoints.add(createWaypoint("baslangic_nokta", "Başlangıç Noktası", startLat, startLon, true, false, 0.0));
-                waypoints.add(createWaypoint("hedef_nokta", "Hedef Noktası", endLat, endLon, false, true, 0.0));
-            } else {
-                // Toplu taşıma rotası bulundu
-                Map<String, Object> startSegment = createWalkingSegment(startLat, startLon, startId, startDistance, true);
-                Map<String, Object> endSegment = createWalkingSegment(endLat, endLon, endId, endDistance, false);
+        // Taksi alternatifi (her zaman oluşturuluyor)
+        double taxiDistance = distanceCalculator.calculateDistance(startLat, startLon, endLat, endLon);
+        Map<String, Object> taxiAlternative = taksi.createAlternative(startLat, startLon, endLat, endLon, taxiDistance);
 
-                route.add(startSegment);
-                route.addAll(transitSegments);
-                route.add(endSegment);
-
-                totalDistance = route.stream().mapToDouble(s -> (double) s.get("mesafe")).sum();
-                totalTime = route.stream().mapToDouble(s -> (double) s.get("sure")).sum();
-                totalCost = route.stream().mapToDouble(s -> (double) s.get("ucret")).sum();
-
-                waypoints = waypointGenerator.generateWaypoints(route, startLat, startLon, endLat, endLon,
-                        startDistance, endDistance, endId);
-                routeFound = true;
-            }
-        }
-
+        // Sonuç objesi
         Map<String, Object> result = new HashMap<>();
         result.put("rota_bulundu", routeFound);
         result.put("baslangic_koordinat", Map.of("lat", startLat, "lon", startLon));
@@ -148,9 +122,7 @@ public class Rota {
         result.put("toplam_sure_dk", totalTime);
         result.put("rota", route);
         result.put("waypoints", waypoints);
-
-        double taxiDistance = distanceCalculator.calculateDistance(startLat, startLon, endLat, endLon);
-        result.put("taksi_alternatifi", taksi.createTaxiAlternative(startLat, startLon, endLat, endLon, taxiDistance));
+        result.put("taksi_alternatifi", taxiAlternative);
 
         return result;
     }

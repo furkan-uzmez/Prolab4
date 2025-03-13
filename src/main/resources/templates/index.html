@@ -1003,29 +1003,13 @@
 
 <script th:inline="javascript">
     let map, markers = [], infoWindows = [], baslangicMarker, hedefMarker, clickMarker, nearestMarker;
-    let directionsService, directionsRenderer;
     let currentRouteMarkers = [];
     let currentRoutePolylines = [];
     let animationInterval;
     const routeData = /*[[${routeData}]]*/ null;
-
+    const GOOGLE_API_KEY = /*[[${googleMapsApiKey}]]*/ 'YOUR_API_KEY_HERE'; // API anahtarınızı buraya ekleyin
 
     function initMap() {
-        directionsService = new google.maps.DirectionsService();
-        directionsRenderer = new google.maps.DirectionsRenderer({
-            suppressMarkers: false,
-            polylineOptions: {
-                strokeColor: '#4285F4',
-                strokeWeight: 6,
-                strokeOpacity: 1.0,
-                icons: [{
-                    icon: { path: google.maps.SymbolPath.CIRCLE, scale: 3, fillColor: '#ffffff', fillOpacity: 1, strokeColor: '#4285F4' },
-                    offset: '0%',
-                    repeat: '20px'
-                }]
-            }
-        });
-
         const defaultCenter = { lat: 40.7669, lng: 29.9169 };
         const baslangicEnlem = parseFloat([[${baslangic_enlem}]] || 40.7669);
         const baslangicBoylam = parseFloat([[${baslangic_boylam}]] || 29.9169);
@@ -1069,8 +1053,6 @@
                 { featureType: "water", elementType: "labels.text.stroke", stylers: [{ color: "#17263c" }] }
             ] : []
         });
-
-        directionsRenderer.setMap(map);
 
         const bounds = new google.maps.LatLngBounds();
 
@@ -1187,52 +1169,12 @@
         const hedefBoylam = parseFloat([[${hedef_boylam}]] || null);
 
         if (nearestStop && hedefEnlem && hedefBoylam) {
-            const waypoints = [];
-            if (nearestStop) {
-                waypoints.push({
-                    location: new google.maps.LatLng(nearestStop.lat, nearestStop.lon),
-                    stopover: true
-                });
-            }
-
-            const destStop = durakVerisi.reduce((closest, stop) => {
-                const distance = Math.sqrt(
-                    Math.pow(stop.lat - hedefEnlem, 2) +
-                    Math.pow(stop.lon - hedefBoylam, 2)
-                );
-                return (distance < closest.distance) ? { stop: stop, distance: distance } : closest;
-            }, { stop: null, distance: Infinity });
-
-            if (destStop.stop) {
-                waypoints.push({
-                    location: new google.maps.LatLng(destStop.stop.lat, destStop.stop.lon),
-                    stopover: true
-                });
-            }
-
-            directionsService.route({
-                origin: new google.maps.LatLng(baslangicEnlem, baslangicBoylam),
-                destination: new google.maps.LatLng(hedefEnlem, hedefBoylam),
-                waypoints: waypoints,
-                travelMode: google.maps.TravelMode.TRANSIT,
-                optimizeWaypoints: false
-            }, (result, status) => {
-                if (status === 'OK') {
-                    directionsRenderer.setDirections(result);
-                    const bounds = new google.maps.LatLngBounds();
-                    result.routes[0].overview_path.forEach(point => bounds.extend(point));
-                    map.fitBounds(bounds);
-                    document.getElementById('status-bar').textContent = 'Durum: Google Maps rotası çizildi';
-                } else {
-                    console.error('Directions API hatası: ' + status);
-                    document.getElementById('status-bar').textContent = 'Durum: Rota çizilemedi, basit çizgi kullanılıyor';
-                    drawDirectLine([
-                        { lat: baslangicEnlem, lng: baslangicBoylam },
-                        { lat: nearestStop.lat, lng: nearestStop.lon },
-                        { lat: hedefEnlem, lng: hedefBoylam }
-                    ]);
-                }
-            });
+            const transitPath = [
+                { lat: baslangicEnlem, lng: baslangicBoylam },
+                { lat: nearestStop.lat, lng: nearestStop.lon },
+                { lat: hedefEnlem, lng: hedefBoylam }
+            ];
+            drawRoute(transitPath, false); // Toplu taşıma rotası
         }
     }
 
@@ -1252,12 +1194,6 @@
     }
 
     function clearPreviousRoutes() {
-        if (directionsRenderer) {
-            directionsRenderer.setDirections({ routes: [] });
-            directionsRenderer.setMap(null);
-            directionsRenderer.setMap(map);
-        }
-
         currentRouteMarkers.forEach(marker => {
             if (marker && marker.setMap) marker.setMap(null);
         });
@@ -1269,25 +1205,22 @@
         currentRoutePolylines = [];
     }
 
-    function drawDirectLine(waypoints) {
-        if (!waypoints || waypoints.length < 2) return;
-
-        clearPreviousRoutes();
-
-        const path = waypoints.map(wp => ({
-            lat: wp.lat,
-            lng: wp.lon || wp.lng
-        }));
+    function drawRoute(path, isTaxi = false) {
+        const validPath = path.filter(p => p && typeof p.lat === 'number' && !isNaN(p.lat) && typeof p.lng === 'number' && !isNaN(p.lng));
+        if (validPath.length < 2) {
+            document.getElementById('status-bar').textContent = 'Durum: Geçerli rota çizilemedi';
+            return;
+        }
 
         const routeLine = new google.maps.Polyline({
-            path: path,
+            path: validPath,
             geodesic: true,
-            strokeColor: '#4285F4',
+            strokeColor: isTaxi ? '#FFA500' : '#4285F4', // Taksi turuncu, toplu taşıma mavi
             strokeOpacity: 1.0,
             strokeWeight: 6,
             map: map,
             icons: [{
-                icon: { path: google.maps.SymbolPath.CIRCLE, scale: 3, fillColor: '#ffffff', fillOpacity: 1, strokeColor: '#4285F4' },
+                icon: { path: google.maps.SymbolPath.CIRCLE, scale: 3, fillColor: '#ffffff', fillOpacity: 1, strokeColor: isTaxi ? '#FFA500' : '#4285F4' },
                 offset: '0%',
                 repeat: '20px'
             }]
@@ -1296,25 +1229,24 @@
         currentRoutePolylines.push(routeLine);
 
         const bounds = new google.maps.LatLngBounds();
-        path.forEach(point => bounds.extend(point));
+        validPath.forEach(point => bounds.extend(point));
         map.fitBounds(bounds);
 
         let totalDistance = 0;
-        for (let i = 0; i < path.length - 1; i++) {
+        for (let i = 0; i < validPath.length - 1; i++) {
             totalDistance += google.maps.geometry.spherical.computeDistanceBetween(
-                new google.maps.LatLng(path[i].lat, path[i].lng),
-                new google.maps.LatLng(path[i + 1].lat, path[i + 1].lng)
+                new google.maps.LatLng(validPath[i].lat, validPath[i].lng),
+                new google.maps.LatLng(validPath[i + 1].lat, validPath[i + 1].lng)
             );
         }
         const distanceInKm = (totalDistance / 1000).toFixed(2);
-
-        document.getElementById('status-bar').innerHTML = `Durum: Basit rota gösterildi<br>Mesafe: ${distanceInKm} km`;
+        document.getElementById('status-bar').innerHTML = `Durum: ${isTaxi ? 'Taksi rotası' : 'Toplu taşıma rotası'} çizildi<br>Mesafe: ${distanceInKm} km`;
     }
 
     function highlightNearestStop(startPos) {
         if (nearestMarker) {
             nearestMarker.setAnimation(null);
-            nearestMarker.setIcon(nearestMarker.originalIcon);
+            if (nearestMarker.originalIcon) nearestMarker.setIcon(nearestMarker.originalIcon);
             clearInterval(animationInterval);
         }
 
@@ -1335,7 +1267,10 @@
 
         if (nearestStop) {
             nearestMarker = nearestStop;
-            nearestMarker.originalIcon = nearestStop.getIcon();
+            nearestMarker.originalIcon = nearestMarker.getIcon() || {
+                url: nearestMarker.type === 'bus' ? 'https://img.icons8.com/color/48/000000/bus.png' : 'https://img.icons8.com/color/48/000000/tram.png',
+                scaledSize: new google.maps.Size(34, 34)
+            };
             nearestMarker.setIcon({
                 url: nearestMarker.originalIcon.url,
                 scaledSize: new google.maps.Size(42, 42)
@@ -1531,50 +1466,39 @@
 
             clearPreviousRoutes();
 
-            sonuc.waypoints.forEach((wp, index) => {
-                if (index !== 0 && index !== sonuc.waypoints.length - 1) {
-                    const marker = new google.maps.Marker({
-                        position: { lat: wp.lat, lng: wp.lon },
-                        map: map,
-                        title: `Waypoint ${index + 1}`,
-                        icon: { url: 'https://img.icons8.com/color/48/000000/marker.png', scaledSize: new google.maps.Size(30, 30) }
-                    });
-                    currentRouteMarkers.push(marker);
-                }
-            });
-
-            if (sonuc.waypoints && sonuc.waypoints.length >= 2) {
-                const waypointsArray = [];
-                if (sonuc.waypoints.length > 2) {
-                    for (let i = 1; i < sonuc.waypoints.length - 1; i++) {
-                        waypointsArray.push({
-                            location: new google.maps.LatLng(sonuc.waypoints[i].lat, sonuc.waypoints[i].lon),
-                            stopover: true
-                        });
-                    }
-                }
-
-                directionsService.route({
-                    origin: new google.maps.LatLng(sonuc.waypoints[0].lat, sonuc.waypoints[0].lon),
-                    destination: new google.maps.LatLng(sonuc.waypoints[sonuc.waypoints.length - 1].lat, sonuc.waypoints[sonuc.waypoints.length - 1].lon),
-                    waypoints: waypointsArray,
-                    travelMode: google.maps.TravelMode.TRANSIT,
-                    optimizeWaypoints: false
-                }, (result, status) => {
-                    console.log("Directions status:", status);
-                    if (status === 'OK') {
-                        directionsRenderer.setDirections(result);
-                        const bounds = new google.maps.LatLngBounds();
-                        sonuc.waypoints.forEach(wp => bounds.extend(new google.maps.LatLng(wp.lat, wp.lon)));
-                        map.fitBounds(bounds);
-                        document.getElementById('status-bar').textContent = 'Durum: Rota yüklendi';
-                    } else {
-                        console.log("Falling back to drawDirectLine due to:", status);
-                        drawDirectLine(sonuc.waypoints);
-                    }
+            // Toplu taşıma rotası
+            if (sonuc.rota_bulundu && sonuc.rota && sonuc.rota.length > 0) {
+                const transitPath = [];
+                sonuc.rota.forEach(segment => {
+                    const baslangic = segment.baslangic_durak.id === "baslangic_nokta"
+                        ? { lat: sonuc.baslangic_koordinat.lat, lng: sonuc.baslangic_koordinat.lon }
+                        : { lat: segment.baslangic_durak.lat || sonuc.baslangic_durak.lat, lng: segment.baslangic_durak.lon || sonuc.baslangic_durak.lon };
+                    const bitis = segment.bitis_durak.id === "hedef_nokta"
+                        ? { lat: sonuc.hedef_koordinat.lat, lng: sonuc.hedef_koordinat.lon }
+                        : { lat: segment.bitis_durak.lat || sonuc.bitis_durak.lat, lng: segment.bitis_durak.lon || sonuc.bitis_durak.lon };
+                    transitPath.push(baslangic);
+                    if (segment.bitis_durak.id !== "hedef_nokta") transitPath.push(bitis);
                 });
+                drawRoute(transitPath, false); // Toplu taşıma rotası
             } else {
-                document.getElementById('status-bar').textContent = 'Durum: Geçerli durak bulunamadı';
+                document.getElementById('status-bar').textContent = 'Durum: Geçerli toplu taşıma rotası bulunamadı';
+            }
+
+            // Taksi rotası (waypoints ile)
+            if (sonuc.taksi_alternatifi && sonuc.taksi_alternatifi.waypoints && sonuc.taksi_alternatifi.waypoints.length > 0) {
+                const taxiPath = sonuc.taksi_alternatifi.waypoints.map(point => ({
+                    lat: point.lat,
+                    lng: point.lon || point.lng // Backend'de lon veya lng olabilir
+                }));
+                drawRoute(taxiPath, true); // Taksi rotası
+            } else if (sonuc.taksi_alternatifi && sonuc.taksi_alternatifi.baslangic && sonuc.taksi_alternatifi.bitis) {
+                const taxiPath = [
+                    { lat: sonuc.taksi_alternatifi.baslangic.lat, lng: sonuc.taksi_alternatifi.baslangic.lon || sonuc.taksi_alternatifi.baslangic.lng },
+                    { lat: sonuc.taksi_alternatifi.bitis.lat, lng: sonuc.taksi_alternatifi.bitis.lon || sonuc.taksi_alternatifi.bitis.lng }
+                ];
+                drawRoute(taxiPath, true); // Taksi rotası
+            } else {
+                console.log('Taksi alternatifi verisi eksik veya geçersiz:', sonuc.taksi_alternatifi);
             }
         }
 
@@ -1591,93 +1515,104 @@
                 body: formData,
                 headers: { 'Accept': 'application/json' }
             })
-                .then(response => {
-                    if (!response.ok) {
-                        return response.text().then(text => {
-                            throw new Error(`Server error: ${response.status} - ${text}`);
-                        });
-                    }
-                    return response.json();
-                })
-                .then(sonuc => {
-                    console.log("Fetch result:", sonuc);
-                    button.textContent = 'Konumları Göster';
-                    button.disabled = false;
+            .then(response => {
+                if (!response.ok) {
+                    return response.text().then(text => {
+                        throw new Error(`Server error: ${response.status} - ${text}`);
+                    });
+                }
+                return response.json();
+            })
+            .then(sonuc => {
+                console.log("Fetch result:", sonuc);
+                button.textContent = 'Konumları Göster';
+                button.disabled = false;
 
-                    baslangicMarker.setPosition({ lat: parseFloat(sonuc.baslangic_koordinat.lat), lng: parseFloat(sonuc.baslangic_koordinat.lon) });
-                    if (!hedefMarker) {
-                        hedefMarker = new google.maps.Marker({
-                            position: { lat: parseFloat(sonuc.hedef_koordinat.lat), lng: parseFloat(sonuc.hedef_koordinat.lon) },
-                            map: map,
-                            title: 'Hedef Noktası',
-                            icon: { url: 'https://img.icons8.com/color/48/000000/finish-flag.png', scaledSize: new google.maps.Size(36, 36) },
-                            animation: google.maps.Animation.DROP
-                        });
-                    } else {
-                        hedefMarker.setPosition({ lat: parseFloat(sonuc.hedef_koordinat.lat), lng: parseFloat(sonuc.hedef_koordinat.lon) });
-                    }
+                baslangicMarker.setPosition({ lat: parseFloat(sonuc.baslangic_koordinat.lat), lng: parseFloat(sonuc.baslangic_koordinat.lon) });
+                if (!hedefMarker) {
+                    hedefMarker = new google.maps.Marker({
+                        position: { lat: parseFloat(sonuc.hedef_koordinat.lat), lng: parseFloat(sonuc.hedef_koordinat.lon) },
+                        map: map,
+                        title: 'Hedef Noktası',
+                        icon: { url: 'https://img.icons8.com/color/48/000000/finish-flag.png', scaledSize: new google.maps.Size(36, 36) },
+                        animation: google.maps.Animation.DROP
+                    });
+                } else {
+                    hedefMarker.setPosition({ lat: parseFloat(sonuc.hedef_koordinat.lat), lng: parseFloat(sonuc.hedef_koordinat.lon) });
+                }
 
-                    if (sonuc.baslangic_durak && sonuc.baslangic_durak.lat && sonuc.baslangic_durak.lon) {
-                        if (nearestMarker) nearestMarker.setMap(null);
-                        nearestMarker = new google.maps.Marker({
-                            position: { lat: sonuc.baslangic_durak.lat, lng: sonuc.baslangic_durak.lon },
-                            map: map,
-                            title: sonuc.baslangic_durak.name || 'Başlangıç Durak',
-                            icon: {
-                                url: sonuc.baslangic_durak.type === 'bus' ? 'https://img.icons8.com/color/48/000000/bus.png' : 'https://img.icons8.com/color/48/000000/tram.png',
-                                scaledSize: new google.maps.Size(40, 40)
-                            },
-                            animation: google.maps.Animation.BOUNCE
-                        });
-                    } else {
-                        console.warn("baslangic_durak is missing or incomplete:", sonuc.baslangic_durak);
-                    }
+                let baslangicDurakMarker;
+                if (sonuc.baslangic_durak && sonuc.baslangic_durak.lat && sonuc.baslangic_durak.lon) {
+                    if (nearestMarker) nearestMarker.setMap(null);
+                    baslangicDurakMarker = new google.maps.Marker({
+                        position: { lat: sonuc.baslangic_durak.lat, lng: sonuc.baslangic_durak.lon },
+                        map: map,
+                        title: sonuc.baslangic_durak.name || 'Başlangıç Durak',
+                        icon: {
+                            url: sonuc.baslangic_durak.type === 'bus' ? 'https://img.icons8.com/color/48/000000/bus.png' : 'https://img.icons8.com/color/48/000000/tram.png',
+                            scaledSize: new google.maps.Size(40, 40)
+                        },
+                        animation: google.maps.Animation.BOUNCE
+                    });
+                }
 
-                    clearPreviousRoutes();
+                let bitisDurakMarker;
+                if (sonuc.bitis_durak && sonuc.bitis_durak.lat && sonuc.bitis_durak.lon) {
+                    bitisDurakMarker = new google.maps.Marker({
+                        position: { lat: sonuc.bitis_durak.lat, lng: sonuc.bitis_durak.lon },
+                        map: map,
+                        title: sonuc.bitis_durak.name || 'Bitiş Durak',
+                        icon: {
+                            url: sonuc.bitis_durak.type === 'bus' ? 'https://img.icons8.com/color/48/000000/bus.png' : 'https://img.icons8.com/color/48/000000/tram.png',
+                            scaledSize: new google.maps.Size(40, 40)
+                        },
+                        animation: google.maps.Animation.BOUNCE
+                    });
+                }
 
-                    if (sonuc.waypoints && sonuc.waypoints.length >= 2) {
-                        const waypointsArray = [];
-                        if (sonuc.waypoints.length > 2) {
-                            for (let i = 1; i < sonuc.waypoints.length - 1; i++) {
-                                waypointsArray.push({
-                                    location: new google.maps.LatLng(sonuc.waypoints[i].lat, sonuc.waypoints[i].lon),
-                                    stopover: true
-                                });
-                            }
-                        }
+                clearPreviousRoutes();
 
-                        directionsService.route({
-                            origin: new google.maps.LatLng(sonuc.waypoints[0].lat, sonuc.waypoints[0].lon),
-                            destination: new google.maps.LatLng(sonuc.waypoints[sonuc.waypoints.length - 1].lat, sonuc.waypoints[sonuc.waypoints.length - 1].lon),
-                            waypoints: waypointsArray,
-                            travelMode: google.maps.TravelMode.TRANSIT,
-                            optimizeWaypoints: false
-                        }, (result, status) => {
-                            console.log("Directions status:", status);
-                            if (status === 'OK') {
-                                directionsRenderer.setDirections(result);
-                                const bounds = new google.maps.LatLngBounds();
-                                sonuc.waypoints.forEach(wp => {
-                                    bounds.extend(new google.maps.LatLng(wp.lat, wp.lon));
-                                });
-                                map.fitBounds(bounds);
-                                document.getElementById('status-bar').textContent = 'Durum: Yeni rota gösterildi';
-                            } else {
-                                console.log("Falling back to drawDirectLine due to:", status);
-                                document.getElementById('status-bar').textContent = 'Durum: Google Directions hata verdi, basit rota çiziliyor';
-                                drawDirectLine(sonuc.waypoints);
-                            }
-                        });
-                    } else {
-                        document.getElementById('status-bar').textContent = 'Durum: Geçerli durak bulunamadı';
-                    }
-                })
-                .catch(error => {
-                    console.error('Fetch error:', error);
-                    button.textContent = 'Konumları Göster';
-                    button.disabled = false;
-                    document.getElementById('status-bar').textContent = 'Durum: Hata oluştu: ' + error.message;
-                });
+                // Toplu taşıma rotası
+                if (sonuc.rota_bulundu && sonuc.rota && sonuc.rota.length > 0) {
+                    const transitPath = [];
+                    sonuc.rota.forEach(segment => {
+                        const baslangic = segment.baslangic_durak.id === "baslangic_nokta"
+                            ? { lat: sonuc.baslangic_koordinat.lat, lng: sonuc.baslangic_koordinat.lon }
+                            : { lat: segment.baslangic_durak.lat || sonuc.baslangic_durak.lat, lng: segment.baslangic_durak.lon || sonuc.baslangic_durak.lon };
+                        const bitis = segment.bitis_durak.id === "hedef_nokta"
+                            ? { lat: sonuc.hedef_koordinat.lat, lng: sonuc.hedef_koordinat.lon }
+                            : { lat: segment.bitis_durak.lat || sonuc.bitis_durak.lat, lng: segment.bitis_durak.lon || sonuc.bitis_durak.lon };
+                        transitPath.push(baslangic);
+                        transitPath.push(bitis);
+                    });
+                    drawRoute(transitPath, false); // Toplu taşıma rotası
+                } else {
+                    document.getElementById('status-bar').textContent = 'Durum: Geçerli toplu taşıma rotası bulunamadı';
+                }
+
+                // Taksi rotası (waypoints ile)
+                if (sonuc.taksi_alternatifi && sonuc.taksi_alternatifi.waypoints && sonuc.taksi_alternatifi.waypoints.length > 0) {
+                    const taxiPath = sonuc.taksi_alternatifi.waypoints.map(point => ({
+                        lat: point.lat,
+                        lng: point.lon || point.lng // Backend'de lon veya lng olabilir
+                    }));
+                    drawRoute(taxiPath, true); // Taksi rotası
+                } else if (sonuc.taksi_alternatifi && sonuc.taksi_alternatifi.baslangic && sonuc.taksi_alternatifi.bitis) {
+                    const taxiPath = [
+                        { lat: sonuc.taksi_alternatifi.baslangic.lat, lng: sonuc.taksi_alternatifi.baslangic.lon || sonuc.taksi_alternatifi.baslangic.lng },
+                        { lat: sonuc.taksi_alternatifi.bitis.lat, lng: sonuc.taksi_alternatifi.bitis.lon || sonuc.taksi_alternatifi.bitis.lng }
+                    ];
+                    drawRoute(taxiPath, true); // Taksi rotası
+                } else {
+                    console.log('Taksi alternatifi verisi eksik veya geçersiz:', sonuc.taksi_alternatifi);
+                }
+            })
+            .catch(error => {
+                console.error('Fetch error:', error);
+                button.textContent = 'Konumları Göster';
+                button.disabled = false;
+                document.getElementById('status-bar').textContent = 'Durum: Hata oluştu: ' + error.message;
+            });
         });
     }
 
@@ -1685,8 +1620,13 @@
         marker.setAnimation(google.maps.Animation.BOUNCE);
         setTimeout(() => marker.setAnimation(null), 2000);
     }
+
+    function createParticles() {
+        console.log('Particles oluşturuluyor (yer tutucu)');
+        // Bu fonksiyonu kullanıyorsanız, orijinal kodunuza göre ekleyin
+    }
 </script>
 
-<script th:src="@{https://maps.googleapis.com/maps/api/js(key=${googleMapsApiKey}, callback=initMap, loading=async)}" async defer></script>
+<script th:src="@{https://maps.googleapis.com/maps/api/js(key=${googleMapsApiKey},libraries=geometry,callback=initMap,loading=async)}" async defer></script>
 </body>
 </html>

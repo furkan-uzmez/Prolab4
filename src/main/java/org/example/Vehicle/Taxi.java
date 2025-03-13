@@ -7,7 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class Taxi{
+public class Taxi implements Arac{
     private final JsonNode taxiData;
     private final double openingFee;
     private final double costPerKm;
@@ -22,9 +22,10 @@ public class Taxi{
         return openingFee + (distanceKm * costPerKm);
     }
 
-    public Map<String, Object> createTaxiAlternative(double startLat, double startLon,
-                                                     double endLat, double endLon,
-                                                     double distanceKm) {
+    @Override
+    public Map<String, Object> createAlternative(double startLat, double startLon,
+                                                 double endLat, double endLon,
+                                                 double distanceKm) {
         Map<String, Object> taxiAlternative = new HashMap<>();
 
         double taxiFare = calculateTaxiFare(distanceKm);

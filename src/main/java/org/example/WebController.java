@@ -31,14 +31,14 @@ public class WebController {
 
     public WebController() throws IOException {
         this.data = new Data();
+        DistanceCalculator distanceCalculator = new HaversineDistanceCalculator();
+        this.durak = new Durak(data.get_data(),new ObjectMapper(),distanceCalculator);
         GraphBuilder graphBuilder = new DefaultGraphBuilder();
         Graph<String, Rota.KenarOzellikleri> graph = graphBuilder.buildGraph(new ObjectMapper().readTree(this.data.get_data().toString()));
-        PathFinder pathFinder = new DijkstraPathFinder(graph);
+        PathFinder pathFinder = new DijkstraPathFinder(graph,this.durak.get_hashmap_duraklar());
         WaypointGenerator waypointGenerator = new DefaultWaypointGenerator(new ObjectMapper(), new HashMap<>());
         RoutePrinter routePrinter = new ConsoleRoutePrinter("Izmit");
-        DistanceCalculator distanceCalculator = new HaversineDistanceCalculator();
         Taxi taksi = new Taxi(new ObjectMapper().readTree(this.data.get_data().toString()).get("taxi"));
-        this.durak = new Durak(data.get_data(),new ObjectMapper(),distanceCalculator);
         this.rota = new Rota( graphBuilder, pathFinder, waypointGenerator,
                 routePrinter, distanceCalculator, taksi,this.durak);
     }

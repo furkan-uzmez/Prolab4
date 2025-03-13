@@ -33,7 +33,7 @@ public class DefaultGraphBuilder implements GraphBuilder {
                 }
             }
 
-            if (stop.has("transfer") && stop.hasNonNull("transferStopId")) {
+            if (stop.has("transfer") && stop.get("transfer").hasNonNull("transferStopId")){
                 String transferStopId = stop.get("transfer").get("transferStopId").asText();
                 Rota.KenarOzellikleri edge = new Rota.KenarOzellikleri(
                         0.1,

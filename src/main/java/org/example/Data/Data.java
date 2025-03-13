@@ -1,5 +1,6 @@
 package org.example.Data;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.stereotype.Component;
@@ -8,11 +9,14 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Map;
 
 @Service
 public class Data {
 
     private JSONObject veri;
+
+    private Map<String, JsonNode> duraklar;
 
     public Data() throws IOException {
         this.veri = set_data("veriseti.json");
@@ -28,5 +32,6 @@ public class Data {
 
         return new JSONObject(jsonString);
     }
+
 
 }
