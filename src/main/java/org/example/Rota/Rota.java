@@ -16,7 +16,7 @@ import java.util.*;
 public class Rota {
 
 
-    public static class KenarOzellikleri extends DefaultWeightedEdge {
+    /*public static class KenarOzellikleri extends DefaultWeightedEdge {
         private double mesafe;
         private double sure;
         private double ucret;
@@ -35,7 +35,7 @@ public class Rota {
         public double getSure() { return sure; }
         public double getUcret() { return ucret; }
         public String getBaglanti_tipi() { return baglanti_tipi; }
-    }
+    }*/
 
     private final GraphBuilder graphBuilder;
     private final PathFinder pathFinder;
@@ -45,7 +45,7 @@ public class Rota {
     private final Taxi taksi;
     private final ObjectMapper objectMapper;
     private final Map<String, JsonNode> duraklar;
-    private final Graph<String, KenarOzellikleri> graph;
+    private final Graph<String, EdgeFeatures> graph;
     private final Durak durak;
 
     public Rota(GraphBuilder graphBuilder, PathFinder pathFinder,
@@ -88,12 +88,12 @@ public class Rota {
         double totalCost = 0.0;
         boolean routeFound = !transitSegments.isEmpty();
 
-        System.out.println(transitSegments);
+        //System.out.println(transitSegments);
         // Toplu taşıma rotası bulunduysa
         Map<String, Object> startSegment = createWalkingSegment(startLat, startLon, startId, startDistance, true);
         Map<String, Object> endSegment = createWalkingSegment(endLat, endLon, endId, endDistance, false);
 
-        System.out.println("endSegment:"+endSegment);
+         //System.out.println("endSegment:"+endSegment);
 
         route.add(startSegment);
         route.addAll(transitSegments);

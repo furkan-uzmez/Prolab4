@@ -9,36 +9,36 @@ import org.jgrapht.alg.shortestpath.DijkstraShortestPath;
 import java.util.*;
 
 interface WeightStrategy {
-    double calculateWeight(Rota.KenarOzellikleri edge);
+    double calculateWeight(EdgeFeatures edge);
 }
 
 class TimeWeightStrategy implements WeightStrategy {
     @Override
-    public double calculateWeight(Rota.KenarOzellikleri edge) {
+    public double calculateWeight(EdgeFeatures edge) {
         return edge.getSure();
     }
 }
 
 class DistanceWeightStrategy implements WeightStrategy {
     @Override
-    public double calculateWeight(Rota.KenarOzellikleri edge) {
+    public double calculateWeight(EdgeFeatures edge) {
         return edge.getMesafe();
     }
 }
 
 class CostWeightStrategy implements WeightStrategy {
     @Override
-    public double calculateWeight(Rota.KenarOzellikleri edge) {
+    public double calculateWeight(EdgeFeatures edge) {
         return edge.getUcret();
     }
 }
 
 public class DijkstraPathFinder implements PathFinder {
-    private final Graph<String, Rota.KenarOzellikleri> graph;
+    private final Graph<String, EdgeFeatures> graph;
     private final Map<String, WeightStrategy> strategies;
     private final Map<String, JsonNode> duraklar;
 
-    public DijkstraPathFinder(Graph<String,Rota.KenarOzellikleri> graph,Map<String, JsonNode> duraklar) {
+    public DijkstraPathFinder(Graph<String,EdgeFeatures> graph,Map<String, JsonNode> duraklar) {
         this.graph = graph;
         this.duraklar = duraklar;
         this.strategies = new HashMap<>();
@@ -50,7 +50,7 @@ public class DijkstraPathFinder implements PathFinder {
     @Override
     public List<Map<String, Object>> findBestPath(String startId, String stopId, String optimization) {
         WeightStrategy strategy = strategies.getOrDefault(optimization, new TimeWeightStrategy());
-        for (Rota.KenarOzellikleri edge : graph.edgeSet()) {
+        for (EdgeFeatures edge : graph.edgeSet()) {
             graph.setEdgeWeight(edge, strategy.calculateWeight(edge));
         }
 
@@ -58,7 +58,7 @@ public class DijkstraPathFinder implements PathFinder {
         System.out.println("Graph edges: " + graph.edgeSet());
         System.out.println("Start ID: " + startId + ", Stop ID: " + stopId);
 
-        GraphPath<String, Rota.KenarOzellikleri> path = DijkstraShortestPath.findPathBetween(graph, startId, stopId);
+        GraphPath<String, EdgeFeatures> path = DijkstraShortestPath.findPathBetween(graph, startId, stopId);
         if (path == null || path.getVertexList().size() < 2) {
             return new ArrayList<>();
         }
@@ -71,7 +71,7 @@ public class DijkstraPathFinder implements PathFinder {
         for (int i = 0; i < vertices.size() - 1; i++) {
             String u = vertices.get(i);
             String v = vertices.get(i + 1);
-            Rota.KenarOzellikleri edge = graph.getEdge(u, v);
+            EdgeFeatures edge = graph.getEdge(u, v);
 
             // Durak bilgilerini duraklar haritasından al
             JsonNode startStop = duraklar.get(u);

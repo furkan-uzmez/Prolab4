@@ -1,12 +1,8 @@
 package org.example;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.example.Data.GraphDurakData;
 import org.example.Mesafe.DistanceCalculator;
-import org.json.JSONArray;
-import org.json.JSONObject;
 
 import java.util.AbstractMap;
 import java.util.HashMap;
@@ -38,7 +34,4 @@ public class Durak {
 
         return new AbstractMap.SimpleEntry<>(nearestStopId, minDistance);
     }
-
-
-
 }

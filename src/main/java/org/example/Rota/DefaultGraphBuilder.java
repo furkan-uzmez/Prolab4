@@ -8,8 +8,8 @@ import org.example.IRota.GraphBuilder;
 
 public class DefaultGraphBuilder implements GraphBuilder {
 
-    public Graph<String, Rota.KenarOzellikleri> buildGraph(JsonNode data) {
-        Graph<String, Rota.KenarOzellikleri> graph = new DefaultDirectedWeightedGraph<>(Rota.KenarOzellikleri.class);
+    public Graph<String, EdgeFeatures> buildGraph(JsonNode data) {
+        Graph<String, EdgeFeatures> graph = new DefaultDirectedWeightedGraph<>(EdgeFeatures.class);
 
         for (JsonNode stop : data.get("duraklar")) {
             graph.addVertex(stop.get("id").asText());
@@ -21,7 +21,7 @@ public class DefaultGraphBuilder implements GraphBuilder {
             if (stop.has("nextStops")) {
                 for (JsonNode nextStop : stop.get("nextStops")) {
                     String targetStopId = nextStop.get("stopId").asText();
-                    Rota.KenarOzellikleri edge = new Rota.KenarOzellikleri(
+                    EdgeFeatures edge = new EdgeFeatures(
                             nextStop.get("mesafe").asDouble(),
                             nextStop.get("sure").asDouble(),
                             nextStop.get("ucret").asDouble(),
@@ -35,7 +35,7 @@ public class DefaultGraphBuilder implements GraphBuilder {
 
             if (stop.has("transfer") && stop.get("transfer").hasNonNull("transferStopId")){
                 String transferStopId = stop.get("transfer").get("transferStopId").asText();
-                Rota.KenarOzellikleri edge = new Rota.KenarOzellikleri(
+                EdgeFeatures edge = new EdgeFeatures(
                         0.1,
                         stop.get("transfer").get("transferSure").asDouble(),
                         stop.get("transfer").get("transferUcret").asDouble(),
