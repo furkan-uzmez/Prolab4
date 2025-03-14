@@ -1,12 +1,14 @@
 package org.example;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.example.Data.GraphDurakData;
 import org.example.IRota.*;
 import org.example.Data.Data;
+import org.example.Data.DurakData;
+import org.example.Mesafe.DistanceCalculator;
 import org.example.Mesafe.HaversineDistanceCalculator;
 import org.example.Rota.*;
 import org.example.Vehicle.Taxi;
 import org.jgrapht.Graph;
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -25,32 +27,33 @@ public class WebController {
     @Value("${google.maps.api.key:default-key}")
     private String googleMapsApiKey;
 
-    private final Data data;
-    private final Durak durak;
+    private final DurakData durak_data;
     private final Rota rota;
 
     public WebController() throws IOException {
-        this.data = new Data();
+        Data data = new Data();
+        this.durak_data = new DurakData(data);
+        GraphDurakData graph_durak_data = new GraphDurakData(data,new ObjectMapper());
+
         DistanceCalculator distanceCalculator = new HaversineDistanceCalculator();
-        this.durak = new Durak(data.get_data(),new ObjectMapper(),distanceCalculator);
+        Durak durak = new Durak(graph_durak_data,distanceCalculator);
+
         GraphBuilder graphBuilder = new DefaultGraphBuilder();
-        Graph<String, Rota.KenarOzellikleri> graph = graphBuilder.buildGraph(new ObjectMapper().readTree(this.data.get_data().toString()));
-        PathFinder pathFinder = new DijkstraPathFinder(graph,this.durak.get_hashmap_duraklar());
+        Graph<String, Rota.KenarOzellikleri> graph = graphBuilder.buildGraph(new ObjectMapper().readTree(data.get_data()));
+        PathFinder pathFinder = new DijkstraPathFinder(graph,graph_durak_data.get_hashmap_duraklar());
         WaypointGenerator waypointGenerator = new DefaultWaypointGenerator(new ObjectMapper(), new HashMap<>());
         RoutePrinter routePrinter = new ConsoleRoutePrinter("Izmit");
-        Taxi taksi = new Taxi(new ObjectMapper().readTree(this.data.get_data().toString()).get("taxi"));
+        Taxi taksi = new Taxi(new ObjectMapper().readTree(data.get_data()).get("taxi"));
+
         this.rota = new Rota( graphBuilder, pathFinder, waypointGenerator,
-                routePrinter, distanceCalculator, taksi,this.durak);
+                routePrinter, distanceCalculator, taksi,durak,graph_durak_data);
     }
 
     @GetMapping("/")
     public String home(Model model) {
         try {
-            //System.out.println(durak.getDurak_veri());
-            //System.out.println(durak.get_node_data());
-
             // Pass the JSON data directly to the model
-            model.addAttribute("duraklar", durak.getDurak_veri());
+            model.addAttribute("duraklar", durak_data.getDuraklar().toString());
 
             // Default coordinates (replace with actual values if needed)
             model.addAttribute("baslangic_enlem", 40.7669);

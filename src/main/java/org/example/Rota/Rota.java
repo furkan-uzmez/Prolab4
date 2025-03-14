@@ -3,7 +3,9 @@ package org.example.Rota;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.example.Data.GraphDurakData;
 import org.example.Durak;
+import org.example.Mesafe.DistanceCalculator;
 import org.example.Vehicle.Taxi;
 import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultWeightedEdge;
@@ -32,7 +34,6 @@ public class Rota {
         public double getMesafe() { return mesafe; }
         public double getSure() { return sure; }
         public double getUcret() { return ucret; }
-        public String getType() { return type; }
         public String getBaglanti_tipi() { return baglanti_tipi; }
     }
 
@@ -49,18 +50,18 @@ public class Rota {
 
     public Rota(GraphBuilder graphBuilder, PathFinder pathFinder,
                 WaypointGenerator waypointGenerator, RoutePrinter routePrinter,
-                DistanceCalculator distanceCalculator, Taxi taksi,Durak durak) throws JsonProcessingException {
+                DistanceCalculator distanceCalculator, Taxi taksi, Durak durak, GraphDurakData graphDurakData) throws JsonProcessingException {
 
         this.objectMapper = new ObjectMapper();
         this.durak = durak;
-        this.duraklar = durak.get_hashmap_duraklar();
+        this.duraklar = graphDurakData.get_hashmap_duraklar();
         this.taksi = taksi;
         this.graphBuilder = graphBuilder;
         this.pathFinder = pathFinder;
         this.waypointGenerator = waypointGenerator;
         this.routePrinter = routePrinter;
         this.distanceCalculator = distanceCalculator;
-        this.graph = graphBuilder.buildGraph(durak.get_node_data());
+        this.graph = graphBuilder.buildGraph(graphDurakData.get_node_data());
     }
 
     public Map<String, Object> findRouteWithCoordinates(double startLat, double startLon,
@@ -147,21 +148,5 @@ public class Rota {
         return segment;
     }
 
-    private Map<String, Object> createWaypoint(String id, String name, double lat, double lon,
-                                               boolean isStart, boolean isEnd, double distanceToStop) {
-        Map<String, Object> waypoint = new HashMap<>();
-        waypoint.put("id", id);
-        waypoint.put("name", name);
-        waypoint.put("lat", lat);
-        waypoint.put("lon", lon);
-        waypoint.put("type", "custom");
-        waypoint.put("is_start", isStart);
-        waypoint.put("is_end", isEnd);
-        waypoint.put("mesafe_to_stop", distanceToStop);
-        return waypoint;
-    }
 
-    public void printRouteDescription(Map<String, Object> result) {
-        routePrinter.printRoute(result);
-    }
 }

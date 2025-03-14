@@ -1,4 +1,4 @@
-package org.example.IRota;
+package org.example.Mesafe;
 
 // Mesafe hesaplayıcı arayüzü
 public interface DistanceCalculator {

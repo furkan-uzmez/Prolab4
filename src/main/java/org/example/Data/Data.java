@@ -14,23 +14,21 @@ import java.util.Map;
 @Service
 public class Data {
 
-    private JSONObject veri;
+    private String veri;
 
-    private Map<String, JsonNode> duraklar;
+    //private Map<String, JsonNode> duraklar;
 
     public Data() throws IOException {
         this.veri = set_data("veriseti.json");
     }
 
-    public JSONObject get_data() {
+    public String get_data() {
         return this.veri;
     }
 
-    public static JSONObject set_data(String filename) throws IOException {
+    public static String set_data(String filename) throws IOException {
         // Dosyanın içeriğini oku
-        String jsonString = new String(Files.readAllBytes(Paths.get(filename)));
-
-        return new JSONObject(jsonString);
+        return new String(Files.readAllBytes(Paths.get(filename)));
     }
 
 

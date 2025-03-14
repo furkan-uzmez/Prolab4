@@ -1,7 +1,5 @@
 package org.example.Mesafe;
 
-import org.example.IRota.DistanceCalculator;
-
 public class HaversineDistanceCalculator implements DistanceCalculator {
     @Override
     public double calculateDistance(double lat1, double lon1, double lat2, double lon2) {
