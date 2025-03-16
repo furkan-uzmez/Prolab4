@@ -7,37 +7,13 @@ import org.example.Data.GraphDurakData;
 import org.example.Durak;
 import org.example.Mesafe.DistanceCalculator;
 import org.example.Vehicle.Taxi;
-import org.jgrapht.Graph;
-import org.jgrapht.graph.DefaultWeightedEdge;
+import org.example.Graph.Graph;
 import org.example.IRota.*;
 
 import java.util.*;
 
 public class Rota {
-
-
-    /*public static class KenarOzellikleri extends DefaultWeightedEdge {
-        private double mesafe;
-        private double sure;
-        private double ucret;
-        private String type;
-        private String baglanti_tipi;
-
-        public KenarOzellikleri(double mesafe, double sure, double ucret, String type, String baglanti_tipi) {
-            this.mesafe = mesafe;
-            this.sure = sure;
-            this.ucret = ucret;
-            this.type = type;
-            this.baglanti_tipi = baglanti_tipi;
-        }
-
-        public double getMesafe() { return mesafe; }
-        public double getSure() { return sure; }
-        public double getUcret() { return ucret; }
-        public String getBaglanti_tipi() { return baglanti_tipi; }
-    }*/
-
-    private final GraphBuilder graphBuilder;
+    private final Graph graph;
     private final PathFinder pathFinder;
     private final WaypointGenerator waypointGenerator;
     private final RoutePrinter routePrinter;
@@ -45,10 +21,10 @@ public class Rota {
     private final Taxi taksi;
     private final ObjectMapper objectMapper;
     private final Map<String, JsonNode> duraklar;
-    private final Graph<String, EdgeFeatures> graph;
+    //private final Graph graph;
     private final Durak durak;
 
-    public Rota(GraphBuilder graphBuilder, PathFinder pathFinder,
+    public Rota(Graph graph, PathFinder pathFinder,
                 WaypointGenerator waypointGenerator, RoutePrinter routePrinter,
                 DistanceCalculator distanceCalculator, Taxi taksi, Durak durak, GraphDurakData graphDurakData) throws JsonProcessingException {
 
@@ -56,12 +32,12 @@ public class Rota {
         this.durak = durak;
         this.duraklar = graphDurakData.get_hashmap_duraklar();
         this.taksi = taksi;
-        this.graphBuilder = graphBuilder;
+        this.graph = graph;
         this.pathFinder = pathFinder;
         this.waypointGenerator = waypointGenerator;
         this.routePrinter = routePrinter;
         this.distanceCalculator = distanceCalculator;
-        this.graph = graphBuilder.buildGraph(graphDurakData.get_node_data());
+        //this.graph = graphBuilder.buildGraph(graphDurakData.get_node_data());
     }
 
     public Map<String, Object> findRouteWithCoordinates(double startLat, double startLon,

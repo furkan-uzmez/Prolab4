@@ -1,10 +1,12 @@
 package org.example.Rota;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import org.example.DijkstraAlghorithm.DijkstraA;
+import org.example.Graph.Edge;
+import org.example.Graph.EdgeFeatures;
+import org.example.Graph.Node;
 import org.example.IRota.PathFinder;
-import org.jgrapht.Graph;
-import org.jgrapht.GraphPath;
-import org.jgrapht.alg.shortestpath.DijkstraShortestPath;
+import org.example.Graph.Graph;
 
 import java.util.*;
 
@@ -34,11 +36,11 @@ class CostWeightStrategy implements WeightStrategy {
 }
 
 public class DijkstraPathFinder implements PathFinder {
-    private final Graph<String, EdgeFeatures> graph;
+    private final Graph graph;
     private final Map<String, WeightStrategy> strategies;
     private final Map<String, JsonNode> duraklar;
 
-    public DijkstraPathFinder(Graph<String,EdgeFeatures> graph,Map<String, JsonNode> duraklar) {
+    public DijkstraPathFinder(Graph graph,Map<String, JsonNode> duraklar) {
         this.graph = graph;
         this.duraklar = duraklar;
         this.strategies = new HashMap<>();
@@ -49,29 +51,33 @@ public class DijkstraPathFinder implements PathFinder {
 
     @Override
     public List<Map<String, Object>> findBestPath(String startId, String stopId, String optimization) {
-        WeightStrategy strategy = strategies.getOrDefault(optimization, new TimeWeightStrategy());
-        for (EdgeFeatures edge : graph.edgeSet()) {
+        //WeightStrategy strategy = strategies.getOrDefault(optimization, new TimeWeightStrategy());
+        /*for (EdgeFeatures edge : graph.edgeSet()) {
             graph.setEdgeWeight(edge, strategy.calculateWeight(edge));
-        }
+        }*/
 
-        System.out.println("Graph vertices: " + graph.vertexSet());
-        System.out.println("Graph edges: " + graph.edgeSet());
+        //System.out.println("Graph vertices: " + graph.vertexSet());
+        //System.out.println("Graph edges: " + graph.edgeSet());
         System.out.println("Start ID: " + startId + ", Stop ID: " + stopId);
 
-        GraphPath<String, EdgeFeatures> path = DijkstraShortestPath.findPathBetween(graph, startId, stopId);
-        if (path == null || path.getVertexList().size() < 2) {
+        DijkstraA dijkstraA = new DijkstraA();
+        ArrayList<Node> path = dijkstraA.shortest_path(graph,graph.getNode(startId), graph.getNode(stopId));
+        /*if (path == null || path.getVertexList().size() < 2) {
             return new ArrayList<>();
-        }
+        }*/
 
         // Burada duraklar haritasına erişim eksik, bu yüzden bağımlılığı enjekte etmek gerekebilir
         // Şimdilik basit bir dönüş yapıyorum, gerçek uygulamada duraklar haritası gerekecek
         List<Map<String, Object>> segments = new ArrayList<>();
-        List<String> vertices = path.getVertexList();
+        List<String> vertices = new ArrayList<>();
+        for (Node node : path) {
+            vertices.add(node.get_name());
+        }
 
         for (int i = 0; i < vertices.size() - 1; i++) {
             String u = vertices.get(i);
             String v = vertices.get(i + 1);
-            EdgeFeatures edge = graph.getEdge(u, v);
+            Edge edge = graph.getEdge(u, v);
 
             // Durak bilgilerini duraklar haritasından al
             JsonNode startStop = duraklar.get(u);
@@ -104,13 +110,7 @@ public class DijkstraPathFinder implements PathFinder {
             segment.put("baglanti_tipi", edge.getBaglanti_tipi());
             segments.add(segment);
         }
-        /*
-        Map<String, Object> yurume_segment = new HashMap<>();
-        yurume_segment.put("baslangic_durak", startDurak);
-        yurume_segment.put("bitis_durak", "hedef_nokta");
-        yurume_segment.put("baglanti_tipi", edge.getBaglanti_tipi());
-        segments.add(yurume_segment);
-        */
+
         return segments;
     }
 }

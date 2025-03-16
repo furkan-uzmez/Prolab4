@@ -1,4 +1,4 @@
-package org.example.Rota;
+package org.example.Graph;
 
 import org.jgrapht.graph.DefaultWeightedEdge;
 
