@@ -1,7 +1,6 @@
-package org.example.Rota;
+package org.example.DijkstraAlghorithm;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import org.example.DijkstraAlghorithm.DijkstraA;
 import org.example.Graph.Edge;
 import org.example.Graph.EdgeFeatures;
 import org.example.Graph.Node;

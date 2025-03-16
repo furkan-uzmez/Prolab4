@@ -9,6 +9,7 @@ import org.example.Mesafe.DistanceCalculator;
 import org.example.Vehicle.Taxi;
 import org.example.Graph.Graph;
 import org.example.IRota.*;
+import org.example.Vehicle.Walking;
 
 import java.util.*;
 
@@ -65,9 +66,10 @@ public class Rota {
         boolean routeFound = !transitSegments.isEmpty();
 
         //System.out.println(transitSegments);
+        Walking walking = new Walking(this.duraklar);
         // Toplu taşıma rotası bulunduysa
-        Map<String, Object> startSegment = createWalkingSegment(startLat, startLon, startId, startDistance, true);
-        Map<String, Object> endSegment = createWalkingSegment(endLat, endLon, endId, endDistance, false);
+        Map<String, Object> startSegment = walking.createWalkingSegment(startLat, startLon, startId, startDistance, true);
+        Map<String, Object> endSegment = walking.createWalkingSegment(endLat, endLon, endId, endDistance, false);
 
          //System.out.println("endSegment:"+endSegment);
 
@@ -103,26 +105,5 @@ public class Rota {
 
         return result;
     }
-
-    private Map<String, Object> createWalkingSegment(double lat, double lon, String stopId,
-                                                     double distance, boolean isStart) {
-        Map<String, Object> segment = new HashMap<>();
-        Map<String, Object> point = new HashMap<>();
-        point.put("id", isStart ? "baslangic_nokta" : "hedef_nokta");
-        point.put("name", isStart ? "Başlangıç Noktası" : "Hedef Noktası");
-        point.put("lat", lat);
-        point.put("lon", lon);
-        point.put("type", "custom");
-
-        segment.put(isStart ? "baslangic_durak" : "bitis_durak", point);
-        segment.put(isStart ? "bitis_durak" : "baslangic_durak",
-                objectMapper.convertValue(duraklar.get(stopId), Map.class));
-        segment.put("mesafe", distance);
-        segment.put("sure", distance * 15);
-        segment.put("ucret", 0.0);
-        segment.put("baglanti_tipi", "walking");
-        return segment;
-    }
-
 
 }

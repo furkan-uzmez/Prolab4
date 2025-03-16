@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.example.Data.Data;
 import org.example.Data.DurakData;
 import org.example.Data.GraphDurakData;
+import org.example.DijkstraAlghorithm.DijkstraPathFinder;
 import org.example.Graph.GraphBuilder;
 import org.example.IRota.PathFinder;
 import org.example.IRota.RoutePrinter;

@@ -22,7 +22,7 @@ public class DijkstraA {
             }
             previous.put(node.get_name(),new Node("Null"));
         }
-        System.out.println("Start node: "+start_node.get_name());
+        //System.out.println("Start node: "+start_node.get_name());
 
         distances.put(start_node.get_name(),0.0);
 
