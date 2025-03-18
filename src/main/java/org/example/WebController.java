@@ -48,7 +48,11 @@ public class WebController {
             @RequestParam("baslangic_boylam") double baslangicBoylam,
             @RequestParam("hedef_enlem") double hedefEnlem,
             @RequestParam("hedef_boylam") double hedefBoylam,
+            @RequestParam("odeme_yontemi") String odemeYontemi,
+            @RequestParam("yolcu_turu") String yolcuTuru,
             Model model) {
+        System.out.println("odemeYontemi:"+odemeYontemi);
+        System.out.println("yolcuTuru:"+yolcuTuru);
 
         return rota.findRouteWithCoordinates(baslangicEnlem, baslangicBoylam, hedefEnlem, hedefBoylam, "sure");
     }

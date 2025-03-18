@@ -7,6 +7,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet" th:href="@{https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap}">
     <link href="https://fonts.googleapis.com/css2?family=Sen:wght@400;700;800&display=swap" rel="stylesheet" th:href="@{https://fonts.googleapis.com/css2?family=Sen:wght@400;700;800&display=swap}">
     <style>
+
+
         * {
             margin: 0;
             padding: 0;
@@ -313,6 +315,102 @@
             scrollbar-width: thin;
             scrollbar-color: #5b86e5 rgba(235, 245, 255, 0.9);
             position: relative;
+        }
+
+        .input-group #odeme_yontemi {
+            display: flex;
+            flex-direction: column; /* Elemanları dikey hizalar */
+            align-items: flex-start; /* Sol hizalama yapar */
+            width: 100%; /* Tam genişlikte görünmesini sağlar */
+            margin-top: 4px; /* Alanı biraz aşağı kaydırır */
+        }
+
+
+        /* Karanlık Mod İçin Label */
+        .dark-mode .input-group.odeme-yontemi label {
+            color: #e2e8f0; /* Karanlık modda açık renk */
+        }
+
+        /* Ödeme Yöntemi Açılır Menü Stili */
+        #odeme_yontemi {
+            cursor: pointer;
+            width: 100%;
+            padding: 1.4rem;
+            border: none;
+            border-radius: 30px;
+            font-size: 1.0rem;
+            background: linear-gradient(135deg, rgba(220, 230, 245, 0.85), rgba(200, 220, 240, 0.85));
+            box-shadow: inset 5px 5px 12px rgba(0, 0, 0, 0.06), inset -5px -5px 12px rgba(255, 255, 255, 0.9);
+            transition: all 0.5s ease;
+            font-family: 'Poppins', sans-serif;
+            margin-top: 40px;
+        }
+
+        /* Karanlık Mod İçin Ödeme Yöntemi Stili */
+        .dark-mode #odeme_yontemi {
+            background: linear-gradient(145deg, #1a202c, #2d3748);
+            color: #e2e8f0;
+            box-shadow: inset 5px 5px 12px rgba(0, 0, 0, 0.4), inset -5px -5px 12px rgba(50, 60, 70, 0.4);
+        }
+
+        /* Hover Efekti */
+        #odeme_yontemi:hover {
+            box-shadow: inset 5px 5px 12px rgba(0, 0, 0, 0.2), inset -5px -5px 12px rgba(255, 255, 255, 0.7);
+            transform: scale(1.02); /* Hover durumunda biraz büyüme efekti */
+        }
+
+        /* Seçili Durum (Focus) */
+        #odeme_yontemi:focus {
+            outline: none;
+            box-shadow: 0 0 5px rgba(0, 123, 255, 0.6);
+        }
+
+        /* Yolcu Türü Konteyneri */
+        .input-group #yolcu_turu {
+            display: flex;
+            flex-direction: column; /* Elemanları dikey hizalar */
+            align-items: flex-start; /* Sol hizalama yapar */
+            width: 100%; /* Tam genişlikte görünmesini sağlar */
+            margin-top: 4px; /* Alanı biraz aşağı kaydırır */
+        }
+
+        /* Karanlık Mod İçin Label */
+        .dark-mode .input-group.yolcu-turu label {
+            color: #e2e8f0; /* Karanlık modda açık renk */
+        }
+
+        /* Yolcu Türü Açılır Menü Stili */
+        #yolcu_turu {
+            cursor: pointer;
+            width: 100%;
+            padding: 1.4rem;
+            border: none;
+            border-radius: 30px;
+            font-size: 1.0rem;
+            background: linear-gradient(135deg, rgba(220, 230, 245, 0.85), rgba(200, 220, 240, 0.85));
+            box-shadow: inset 5px 5px 12px rgba(0, 0, 0, 0.06), inset -5px -5px 12px rgba(255, 255, 255, 0.9);
+            transition: all 0.5s ease;
+            font-family: 'Poppins', sans-serif;
+            margin-top: 40px;
+        }
+
+        /* Karanlık Mod İçin Yolcu Türü Stili */
+        .dark-mode #yolcu_turu {
+            background: linear-gradient(145deg, #1a202c, #2d3748);
+            color: #e2e8f0;
+            box-shadow: inset 5px 5px 12px rgba(0, 0, 0, 0.4), inset -5px -5px 12px rgba(50, 60, 70, 0.4);
+        }
+
+        /* Hover Efekti */
+        #yolcu_turu:hover {
+            box-shadow: inset 5px 5px 12px rgba(0, 0, 0, 0.2), inset -5px -5px 12px rgba(255, 255, 255, 0.7);
+            transform: scale(1.02); /* Hover durumunda biraz büyüme efekti */
+        }
+
+        /* Seçili Durum (Focus) */
+        #yolcu_turu:focus {
+            outline: none;
+            box-shadow: 0 0 5px rgba(0, 123, 255, 0.6);
         }
 
         .form-container::-webkit-scrollbar {
@@ -925,7 +1023,29 @@
                 <button type="submit" class="form-btn"><span>Konumları Göster</span><div class="spinner"></div></button>
                 <div class="tooltip">Konumları Haritada Göster</div>
             </div>
+
+            <div class="input-group">
+                <label for="odeme_yontemi">Ödeme Yöntemi:</label>
+                <select name="odeme_yontemi" id="odeme_yontemi" required>
+                    <option value="" disabled selected>Ödeme yöntemi seçin</option>
+                    <option value="nakit">Nakit</option>
+                    <option value="kredi_karti">Kredi Kartı</option>
+                    <option value="kentkart">Kentkart</option>
+                </select>
+            </div>
+
+
+            <div class="input-group">
+                <label for="yolcu_turu">Yolcu Türü:</label>
+                <select name="yolcu_turu" id="yolcu_turu" required>
+                    <option value="" disabled selected>Yolcu türünü seçin</option>
+                    <option value="genel">Genel</option>
+                    <option value="ogrenci">Öğrenci</option>
+                    <option value="yasli">Yaşlı</option>
+                </select>
+            </div>
         </form>
+
 
         <div th:if="${hata}" class="error" th:text="${hata}"></div>
 
@@ -986,6 +1106,8 @@
                 <div class="tooltip">Mevcut Rotayı Kaydet</div>
             </div>
         </div>
+
+
 
         <div class="status-bar" id="status-bar">
             Durum: Harita Yüklendi
@@ -1515,104 +1637,104 @@
                 body: formData,
                 headers: { 'Accept': 'application/json' }
             })
-            .then(response => {
-                if (!response.ok) {
-                    return response.text().then(text => {
-                        throw new Error(`Server error: ${response.status} - ${text}`);
-                    });
-                }
-                return response.json();
-            })
-            .then(sonuc => {
-                console.log("Fetch result:", sonuc);
-                button.textContent = 'Konumları Göster';
-                button.disabled = false;
+                .then(response => {
+                    if (!response.ok) {
+                        return response.text().then(text => {
+                            throw new Error(`Server error: ${response.status} - ${text}`);
+                        });
+                    }
+                    return response.json();
+                })
+                .then(sonuc => {
+                    console.log("Fetch result:", sonuc);
+                    button.textContent = 'Konumları Göster';
+                    button.disabled = false;
 
-                baslangicMarker.setPosition({ lat: parseFloat(sonuc.baslangic_koordinat.lat), lng: parseFloat(sonuc.baslangic_koordinat.lon) });
-                if (!hedefMarker) {
-                    hedefMarker = new google.maps.Marker({
-                        position: { lat: parseFloat(sonuc.hedef_koordinat.lat), lng: parseFloat(sonuc.hedef_koordinat.lon) },
-                        map: map,
-                        title: 'Hedef Noktası',
-                        icon: { url: 'https://img.icons8.com/color/48/000000/finish-flag.png', scaledSize: new google.maps.Size(36, 36) },
-                        animation: google.maps.Animation.DROP
-                    });
-                } else {
-                    hedefMarker.setPosition({ lat: parseFloat(sonuc.hedef_koordinat.lat), lng: parseFloat(sonuc.hedef_koordinat.lon) });
-                }
+                    baslangicMarker.setPosition({ lat: parseFloat(sonuc.baslangic_koordinat.lat), lng: parseFloat(sonuc.baslangic_koordinat.lon) });
+                    if (!hedefMarker) {
+                        hedefMarker = new google.maps.Marker({
+                            position: { lat: parseFloat(sonuc.hedef_koordinat.lat), lng: parseFloat(sonuc.hedef_koordinat.lon) },
+                            map: map,
+                            title: 'Hedef Noktası',
+                            icon: { url: 'https://img.icons8.com/color/48/000000/finish-flag.png', scaledSize: new google.maps.Size(36, 36) },
+                            animation: google.maps.Animation.DROP
+                        });
+                    } else {
+                        hedefMarker.setPosition({ lat: parseFloat(sonuc.hedef_koordinat.lat), lng: parseFloat(sonuc.hedef_koordinat.lon) });
+                    }
 
-                let baslangicDurakMarker;
-                if (sonuc.baslangic_durak && sonuc.baslangic_durak.lat && sonuc.baslangic_durak.lon) {
-                    if (nearestMarker) nearestMarker.setMap(null);
-                    baslangicDurakMarker = new google.maps.Marker({
-                        position: { lat: sonuc.baslangic_durak.lat, lng: sonuc.baslangic_durak.lon },
-                        map: map,
-                        title: sonuc.baslangic_durak.name || 'Başlangıç Durak',
-                        icon: {
-                            url: sonuc.baslangic_durak.type === 'bus' ? 'https://img.icons8.com/color/48/000000/bus.png' : 'https://img.icons8.com/color/48/000000/tram.png',
-                            scaledSize: new google.maps.Size(40, 40)
-                        },
-                        animation: google.maps.Animation.BOUNCE
-                    });
-                }
+                    let baslangicDurakMarker;
+                    if (sonuc.baslangic_durak && sonuc.baslangic_durak.lat && sonuc.baslangic_durak.lon) {
+                        if (nearestMarker) nearestMarker.setMap(null);
+                        baslangicDurakMarker = new google.maps.Marker({
+                            position: { lat: sonuc.baslangic_durak.lat, lng: sonuc.baslangic_durak.lon },
+                            map: map,
+                            title: sonuc.baslangic_durak.name || 'Başlangıç Durak',
+                            icon: {
+                                url: sonuc.baslangic_durak.type === 'bus' ? 'https://img.icons8.com/color/48/000000/bus.png' : 'https://img.icons8.com/color/48/000000/tram.png',
+                                scaledSize: new google.maps.Size(40, 40)
+                            },
+                            animation: google.maps.Animation.BOUNCE
+                        });
+                    }
 
-                let bitisDurakMarker;
-                if (sonuc.bitis_durak && sonuc.bitis_durak.lat && sonuc.bitis_durak.lon) {
-                    bitisDurakMarker = new google.maps.Marker({
-                        position: { lat: sonuc.bitis_durak.lat, lng: sonuc.bitis_durak.lon },
-                        map: map,
-                        title: sonuc.bitis_durak.name || 'Bitiş Durak',
-                        icon: {
-                            url: sonuc.bitis_durak.type === 'bus' ? 'https://img.icons8.com/color/48/000000/bus.png' : 'https://img.icons8.com/color/48/000000/tram.png',
-                            scaledSize: new google.maps.Size(40, 40)
-                        },
-                        animation: google.maps.Animation.BOUNCE
-                    });
-                }
+                    let bitisDurakMarker;
+                    if (sonuc.bitis_durak && sonuc.bitis_durak.lat && sonuc.bitis_durak.lon) {
+                        bitisDurakMarker = new google.maps.Marker({
+                            position: { lat: sonuc.bitis_durak.lat, lng: sonuc.bitis_durak.lon },
+                            map: map,
+                            title: sonuc.bitis_durak.name || 'Bitiş Durak',
+                            icon: {
+                                url: sonuc.bitis_durak.type === 'bus' ? 'https://img.icons8.com/color/48/000000/bus.png' : 'https://img.icons8.com/color/48/000000/tram.png',
+                                scaledSize: new google.maps.Size(40, 40)
+                            },
+                            animation: google.maps.Animation.BOUNCE
+                        });
+                    }
 
-                clearPreviousRoutes();
+                    clearPreviousRoutes();
 
-                // Toplu taşıma rotası
-                if (sonuc.rota_bulundu && sonuc.rota && sonuc.rota.length > 0) {
-                    const transitPath = [];
-                    sonuc.rota.forEach(segment => {
-                        const baslangic = segment.baslangic_durak.id === "baslangic_nokta"
-                            ? { lat: sonuc.baslangic_koordinat.lat, lng: sonuc.baslangic_koordinat.lon }
-                            : { lat: segment.baslangic_durak.lat || sonuc.baslangic_durak.lat, lng: segment.baslangic_durak.lon || sonuc.baslangic_durak.lon };
-                        const bitis = segment.bitis_durak.id === "hedef_nokta"
-                            ? { lat: sonuc.hedef_koordinat.lat, lng: sonuc.hedef_koordinat.lon }
-                            : { lat: segment.bitis_durak.lat || sonuc.bitis_durak.lat, lng: segment.bitis_durak.lon || sonuc.bitis_durak.lon };
-                        transitPath.push(baslangic);
-                        transitPath.push(bitis);
-                    });
-                    drawRoute(transitPath, false); // Toplu taşıma rotası
-                } else {
-                    document.getElementById('status-bar').textContent = 'Durum: Geçerli toplu taşıma rotası bulunamadı';
-                }
+                    // Toplu taşıma rotası
+                    if (sonuc.rota_bulundu && sonuc.rota && sonuc.rota.length > 0) {
+                        const transitPath = [];
+                        sonuc.rota.forEach(segment => {
+                            const baslangic = segment.baslangic_durak.id === "baslangic_nokta"
+                                ? { lat: sonuc.baslangic_koordinat.lat, lng: sonuc.baslangic_koordinat.lon }
+                                : { lat: segment.baslangic_durak.lat || sonuc.baslangic_durak.lat, lng: segment.baslangic_durak.lon || sonuc.baslangic_durak.lon };
+                            const bitis = segment.bitis_durak.id === "hedef_nokta"
+                                ? { lat: sonuc.hedef_koordinat.lat, lng: sonuc.hedef_koordinat.lon }
+                                : { lat: segment.bitis_durak.lat || sonuc.bitis_durak.lat, lng: segment.bitis_durak.lon || sonuc.bitis_durak.lon };
+                            transitPath.push(baslangic);
+                            transitPath.push(bitis);
+                        });
+                        drawRoute(transitPath, false); // Toplu taşıma rotası
+                    } else {
+                        document.getElementById('status-bar').textContent = 'Durum: Geçerli toplu taşıma rotası bulunamadı';
+                    }
 
-                // Taksi rotası (waypoints ile)
-                if (sonuc.taksi_alternatifi && sonuc.taksi_alternatifi.waypoints && sonuc.taksi_alternatifi.waypoints.length > 0) {
-                    const taxiPath = sonuc.taksi_alternatifi.waypoints.map(point => ({
-                        lat: point.lat,
-                        lng: point.lon || point.lng // Backend'de lon veya lng olabilir
-                    }));
-                    drawRoute(taxiPath, true); // Taksi rotası
-                } else if (sonuc.taksi_alternatifi && sonuc.taksi_alternatifi.baslangic && sonuc.taksi_alternatifi.bitis) {
-                    const taxiPath = [
-                        { lat: sonuc.taksi_alternatifi.baslangic.lat, lng: sonuc.taksi_alternatifi.baslangic.lon || sonuc.taksi_alternatifi.baslangic.lng },
-                        { lat: sonuc.taksi_alternatifi.bitis.lat, lng: sonuc.taksi_alternatifi.bitis.lon || sonuc.taksi_alternatifi.bitis.lng }
-                    ];
-                    drawRoute(taxiPath, true); // Taksi rotası
-                } else {
-                    console.log('Taksi alternatifi verisi eksik veya geçersiz:', sonuc.taksi_alternatifi);
-                }
-            })
-            .catch(error => {
-                console.error('Fetch error:', error);
-                button.textContent = 'Konumları Göster';
-                button.disabled = false;
-                document.getElementById('status-bar').textContent = 'Durum: Hata oluştu: ' + error.message;
-            });
+                    // Taksi rotası (waypoints ile)
+                    if (sonuc.taksi_alternatifi && sonuc.taksi_alternatifi.waypoints && sonuc.taksi_alternatifi.waypoints.length > 0) {
+                        const taxiPath = sonuc.taksi_alternatifi.waypoints.map(point => ({
+                            lat: point.lat,
+                            lng: point.lon || point.lng // Backend'de lon veya lng olabilir
+                        }));
+                        drawRoute(taxiPath, true); // Taksi rotası
+                    } else if (sonuc.taksi_alternatifi && sonuc.taksi_alternatifi.baslangic && sonuc.taksi_alternatifi.bitis) {
+                        const taxiPath = [
+                            { lat: sonuc.taksi_alternatifi.baslangic.lat, lng: sonuc.taksi_alternatifi.baslangic.lon || sonuc.taksi_alternatifi.baslangic.lng },
+                            { lat: sonuc.taksi_alternatifi.bitis.lat, lng: sonuc.taksi_alternatifi.bitis.lon || sonuc.taksi_alternatifi.bitis.lng }
+                        ];
+                        drawRoute(taxiPath, true); // Taksi rotası
+                    } else {
+                        console.log('Taksi alternatifi verisi eksik veya geçersiz:', sonuc.taksi_alternatifi);
+                    }
+                })
+                .catch(error => {
+                    console.error('Fetch error:', error);
+                    button.textContent = 'Konumları Göster';
+                    button.disabled = false;
+                    document.getElementById('status-bar').textContent = 'Durum: Hata oluştu: ' + error.message;
+                });
         });
     }
 
