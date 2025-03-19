@@ -50,10 +50,13 @@ public class WebController {
             @RequestParam("hedef_boylam") double hedefBoylam,
             @RequestParam("odeme_yontemi") String odemeYontemi,
             @RequestParam("yolcu_turu") String yolcuTuru,
-            Model model) {
+            @RequestParam("bakiye") double bakiye
+            ) {
         System.out.println("odemeYontemi:"+odemeYontemi);
         System.out.println("yolcuTuru:"+yolcuTuru);
+        System.out.println("bakiye:"+bakiye);
 
-        return rota.findRouteWithCoordinates(baslangicEnlem, baslangicBoylam, hedefEnlem, hedefBoylam, "sure");
+
+        return rota.findRouteWithCoordinates(baslangicEnlem, baslangicBoylam, hedefEnlem, hedefBoylam, "ucret");
     }
 }

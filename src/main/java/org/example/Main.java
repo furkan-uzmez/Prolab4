@@ -39,10 +39,10 @@ public class Main {
         Graph graph = graphBuilder.buildGraph(new ObjectMapper().readTree(data.get_data()));
         PathFinder pathFinder = new DijkstraPathFinder(graph, graphDurakData.get_hashmap_duraklar());
         WaypointGenerator waypointGenerator = new DefaultWaypointGenerator(new ObjectMapper(), new HashMap<>());
-        RoutePrinter routePrinter = new ConsoleRoutePrinter("Izmit");
+        //RoutePrinter routePrinter = new ConsoleRoutePrinter("Izmit");
         Taxi taksi = new Taxi(new ObjectMapper().readTree(data.get_data()).get("taxi"));
 
-        return new Rota(graph, pathFinder, waypointGenerator, routePrinter, distanceCalculator, taksi, durak, graphDurakData);
+        return new Rota(graph, pathFinder, waypointGenerator, distanceCalculator, taksi, durak, graphDurakData);
     }
 
     @Bean

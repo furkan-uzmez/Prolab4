@@ -31,7 +31,7 @@ public class DijkstraA {
 
             for(Edge edge : curr_node.get_edges()){
 
-                Double alternative = distances.get(curr_node.get_name()) + edge.getMesafe();
+                Double alternative = distances.get(curr_node.get_name()) + edge.getWeight();
                 String neighbor = edge.getEnd().get_name();
                 if(alternative<distances.get(neighbor)){
 

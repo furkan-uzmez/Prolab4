@@ -17,7 +17,7 @@ public class Rota {
     private final Graph graph;
     private final PathFinder pathFinder;
     private final WaypointGenerator waypointGenerator;
-    private final RoutePrinter routePrinter;
+    //private final RoutePrinter routePrinter;
     private final DistanceCalculator distanceCalculator;
     private final Taxi taksi;
     private final ObjectMapper objectMapper;
@@ -26,7 +26,7 @@ public class Rota {
     private final Durak durak;
 
     public Rota(Graph graph, PathFinder pathFinder,
-                WaypointGenerator waypointGenerator, RoutePrinter routePrinter,
+                WaypointGenerator waypointGenerator,
                 DistanceCalculator distanceCalculator, Taxi taksi, Durak durak, GraphDurakData graphDurakData) throws JsonProcessingException {
 
         this.objectMapper = new ObjectMapper();
@@ -36,7 +36,7 @@ public class Rota {
         this.graph = graph;
         this.pathFinder = pathFinder;
         this.waypointGenerator = waypointGenerator;
-        this.routePrinter = routePrinter;
+        //this.routePrinter = routePrinter;
         this.distanceCalculator = distanceCalculator;
         //this.graph = graphBuilder.buildGraph(graphDurakData.get_node_data());
     }

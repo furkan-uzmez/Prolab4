@@ -3,6 +3,7 @@ package org.example.Graph;
 public class Edge {
     private final Node start;
     private final Node end;
+    private double weight_strategy;
     private final double mesafe;
     private final double sure;
     private final double ucret;
@@ -24,6 +25,12 @@ public class Edge {
         return end;
     }
 
+
+    public void setWeight_strategy(double weight_strategy){
+        this.weight_strategy = weight_strategy;
+    }
+
+    public double getWeight(){ return weight_strategy;}
 
     public double getMesafe() { return mesafe; }
     public double getSure() { return sure; }

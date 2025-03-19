@@ -2,7 +2,6 @@ package org.example.DijkstraAlghorithm;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import org.example.Graph.Edge;
-import org.example.Graph.EdgeFeatures;
 import org.example.Graph.Node;
 import org.example.IRota.PathFinder;
 import org.example.Graph.Graph;
@@ -10,26 +9,26 @@ import org.example.Graph.Graph;
 import java.util.*;
 
 interface WeightStrategy {
-    double calculateWeight(EdgeFeatures edge);
+    double calculateWeight(Edge edge);
 }
 
 class TimeWeightStrategy implements WeightStrategy {
     @Override
-    public double calculateWeight(EdgeFeatures edge) {
+    public double calculateWeight(Edge edge) {
         return edge.getSure();
     }
 }
 
 class DistanceWeightStrategy implements WeightStrategy {
     @Override
-    public double calculateWeight(EdgeFeatures edge) {
+    public double calculateWeight(Edge edge) {
         return edge.getMesafe();
     }
 }
 
 class CostWeightStrategy implements WeightStrategy {
     @Override
-    public double calculateWeight(EdgeFeatures edge) {
+    public double calculateWeight(Edge edge) {
         return edge.getUcret();
     }
 }
@@ -50,10 +49,11 @@ public class DijkstraPathFinder implements PathFinder {
 
     @Override
     public List<Map<String, Object>> findBestPath(String startId, String stopId, String optimization) {
-        //WeightStrategy strategy = strategies.getOrDefault(optimization, new TimeWeightStrategy());
-        /*for (EdgeFeatures edge : graph.edgeSet()) {
-            graph.setEdgeWeight(edge, strategy.calculateWeight(edge));
-        }*/
+        WeightStrategy strategy = strategies.getOrDefault(optimization, new TimeWeightStrategy());
+        System.out.println(strategy);
+        for (Edge edge : graph.edgeSet()) {
+            edge.setWeight_strategy(strategy.calculateWeight(edge));
+        }
 
         //System.out.println("Graph vertices: " + graph.vertexSet());
         //System.out.println("Graph edges: " + graph.edgeSet());

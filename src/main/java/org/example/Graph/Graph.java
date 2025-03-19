@@ -62,10 +62,14 @@ public class Graph {
         return null;
     }
 
-    public void printGraph() {
-        for (Node node : nodes) {
-            System.out.println(node.get_name());
-            System.out.println(node.get_edges());
+    public ArrayList<Edge> edgeSet(){
+        ArrayList<Edge> edges = new ArrayList<>();
+        for (Node node : this.getNodes()){
+            for (Edge edge : node.get_edges()){
+                edges.add(edge);
+            }
         }
+        return edges;
     }
+
 }
