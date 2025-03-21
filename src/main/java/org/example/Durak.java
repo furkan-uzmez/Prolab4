@@ -2,6 +2,7 @@ package org.example;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import org.example.Data.GraphDurakData;
+import org.example.DijkstraAlghorithm.Coordinate;
 import org.example.Mesafe.DistanceCalculator;
 
 import java.util.AbstractMap;
@@ -21,14 +22,14 @@ public class Durak {
         double minDistance = Double.POSITIVE_INFINITY;
         String nearestStopId = null;
 
-        for (HashMap.Entry<String, JsonNode> entry : graphDurakData.get_hashmap_duraklar().entrySet()) {
+        for (Map.Entry<Coordinate, JsonNode> entry : graphDurakData.get_hashmap_duraklar().entrySet()) {
             JsonNode stop = entry.getValue();
             double distance = distanceCalculator.calculateDistance(lat, lon,
                     stop.get("lat").asDouble(),
                     stop.get("lon").asDouble());
             if (distance < minDistance) {
                 minDistance = distance;
-                nearestStopId = entry.getKey();
+                nearestStopId = stop.get("id").asText();
             }
         }
 

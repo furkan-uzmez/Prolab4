@@ -3,13 +3,14 @@ package org.example.Data;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.example.DijkstraAlghorithm.Coordinate;
 
 import java.util.HashMap;
 
 public class GraphDurakData {
     private String veri;
     private ObjectMapper objectMapper;
-    private HashMap<String, JsonNode> duraklar;
+    private HashMap<Coordinate, JsonNode> duraklar;
 
 
     public GraphDurakData(Data data, ObjectMapper objectMapper) throws JsonProcessingException {
@@ -22,11 +23,11 @@ public class GraphDurakData {
         JsonNode jsonData = this.get_node_data();
         this.duraklar =  new HashMap<>();
         for (JsonNode durak : jsonData.get("duraklar")) {
-            duraklar.put(durak.get("id").asText(), durak);
+            duraklar.put(new Coordinate(durak.get("lat").asText(),durak.get("lon").asText()), durak);
         }
     }
 
-    public HashMap<String,JsonNode> get_hashmap_duraklar(){
+    public HashMap<Coordinate,JsonNode> get_hashmap_duraklar(){
         return this.duraklar;
     }
 

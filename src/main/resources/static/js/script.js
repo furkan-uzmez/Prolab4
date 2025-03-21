@@ -4,6 +4,14 @@ let currentRouteMarkers = [];
 let currentRoutePolylines = [];
 let animationInterval;
 
+let route1Polylines = [];
+let route2Polylines = [];
+let route3Polylines = [];
+let taxiPolylines = []; // Yeni taxi rotası için dizi
+
+// Global variable to store route data
+window.routeDataResult = null;
+
 function initMap() {
     const baslangicEnlem = parseFloat(window.baslangicEnlem) || 40.7669;
     const baslangicBoylam = parseFloat(window.baslangicBoylam) || 29.9169;
@@ -55,7 +63,7 @@ function initMap() {
             ? 'https://img.icons8.com/color/48/000000/bus.png'
             : 'https://img.icons8.com/color/48/000000/tram.png';
         const marker = new google.maps.Marker({
-            position: { lat: durak.lat, lng: durak.lon },
+            position: { lat: parseFloat(durak.lat), lng: parseFloat(durak.lot || durak.lon) },
             map: map,
             title: durak.name,
             icon: { url: iconUrl, scaledSize: new google.maps.Size(34, 34) },
@@ -67,7 +75,7 @@ function initMap() {
                 <div style="font-family: 'Poppins', sans-serif; padding: 10px;">
                     <h3 style="margin: 0; color: #4285F4;">${durak.name}</h3>
                     <p style="margin: 5px 0;">Tür: ${durak.type === 'bus' ? 'Otobüs' : 'Tramvay'}</p>
-                    <p style="margin: 5px 0;">Konum: ${durak.lat.toFixed(6)}, ${durak.lon.toFixed(6)}</p>
+                    <p style="margin: 5px 0;">Konum: ${parseFloat(durak.lat).toFixed(6)}, ${(parseFloat(durak.lot || durak.lon)).toFixed(6)}</p>
                 </div>`
         });
         marker.addListener('click', () => {
@@ -103,9 +111,9 @@ function initMap() {
         bounds.extend(hedefMarker.getPosition());
     }
 
-    if (nearestStop && nearestStop.lat && nearestStop.lon) {
+    if (nearestStop && nearestStop.lat && (nearestStop.lot || nearestStop.lon)) {
         nearestMarker = new google.maps.Marker({
-            position: { lat: nearestStop.lat, lng: nearestStop.lon },
+            position: { lat: parseFloat(nearestStop.lat), lng: parseFloat(nearestStop.lot || nearestStop.lon) },
             map: map,
             title: nearestStop.name,
             icon: {
@@ -119,7 +127,7 @@ function initMap() {
                 <div style="font-family: 'Poppins', sans-serif; padding: 10px;">
                     <h3 style="margin: 0; color: #4285F4;">${nearestStop.name}</h3>
                     <p style="margin: 5px 0;">Tür: ${nearestStop.type === 'bus' ? 'Otobüs' : 'Tramvay'}</p>
-                    <p style="margin: 5px 0;">Konum: ${nearestStop.lat.toFixed(6)}, ${nearestStop.lon.toFixed(6)}</p>
+                    <p style="margin: 5px 0;">Konum: ${parseFloat(nearestStop.lat).toFixed(6)}, ${(parseFloat(nearestStop.lot || nearestStop.lon)).toFixed(6)}</p>
                     <p style="margin: 5px 0;">Mesafe: ${nearestStop.distance_text || 'Bilinmiyor'}</p>
                 </div>`
         });
@@ -164,10 +172,10 @@ function drawInitialRoute() {
     if (nearestStop && hedefEnlem && hedefBoylam && !isNaN(hedefEnlem) && !isNaN(hedefBoylam)) {
         const transitPath = [
             { lat: baslangicEnlem, lng: baslangicBoylam },
-            { lat: nearestStop.lat, lng: nearestStop.lon },
+            { lat: parseFloat(nearestStop.lat), lng: parseFloat(nearestStop.lot || nearestStop.lon) },
             { lat: hedefEnlem, lng: hedefBoylam }
         ];
-        drawRoute(transitPath, false);
+        drawRoute(transitPath, '#4285F4');
     }
 }
 
@@ -198,7 +206,7 @@ function clearPreviousRoutes() {
     currentRoutePolylines = [];
 }
 
-function drawRoute(path, isTaxi = false) {
+function drawRoute(path, color) {
     const validPath = path.filter(p => p && typeof p.lat === 'number' && !isNaN(p.lat) && typeof p.lng === 'number' && !isNaN(p.lng));
     if (validPath.length < 2) {
         document.getElementById('status-bar').textContent = 'Durum: Geçerli rota çizilemedi';
@@ -208,12 +216,12 @@ function drawRoute(path, isTaxi = false) {
     const routeLine = new google.maps.Polyline({
         path: validPath,
         geodesic: true,
-        strokeColor: isTaxi ? '#FFA500' : '#4285F4',
+        strokeColor: color,
         strokeOpacity: 1.0,
         strokeWeight: 6,
         map: map,
         icons: [{
-            icon: { path: google.maps.SymbolPath.CIRCLE, scale: 3, fillColor: '#ffffff', fillOpacity: 1, strokeColor: isTaxi ? '#FFA500' : '#4285F4' },
+            icon: { path: google.maps.SymbolPath.CIRCLE, scale: 3, fillColor: '#ffffff', fillOpacity: 1, strokeColor: color },
             offset: '0%',
             repeat: '20px'
         }]
@@ -233,7 +241,7 @@ function drawRoute(path, isTaxi = false) {
         );
     }
     const distanceInKm = (totalDistance / 1000).toFixed(2);
-    document.getElementById('status-bar').innerHTML = `Durum: ${isTaxi ? 'Taksi rotası' : 'Toplu taşıma rotası'} çizildi<br>Mesafe: ${distanceInKm} km`;
+    document.getElementById('status-bar').innerHTML = `Durum: Rota çizildi<br>Mesafe: ${distanceInKm} km`;
 }
 
 function highlightNearestStop(startPos) {
@@ -310,7 +318,36 @@ function saveRoute() {
     document.getElementById('status-bar').textContent = 'Durum: Rota kaydedildi';
 }
 
+document.querySelectorAll('.tab-btn').forEach(button => {
+    button.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
+        button.classList.add('active');
+        const tabId = button.getAttribute('data-tab');
+        document.getElementById(tabId).classList.add('active');
+        document.getElementById('status-bar').textContent = `Durum: ${button.textContent} sekmesi açık`;
+    });
+});
+
+document.getElementById('homeForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const button = e.target.querySelector('button');
+    button.textContent = 'Yükleniyor...';
+    button.disabled = true;
+    document.getElementById('status-bar').textContent = 'Durum: Rota hesaplanıyor...';
+});
+
+function addRouteToggleListeners() {
+    document.getElementById('show-route-1').addEventListener('click', () => toggleRoute("1"));
+    document.getElementById('show-route-2').addEventListener('click', () => toggleRoute("2"));
+    document.getElementById('show-route-3').addEventListener('click', () => toggleRoute("3"));
+    document.getElementById('show-all-routes').addEventListener('click', () => toggleRoute("all"));
+    document.getElementById('show-taxi-route').addEventListener('click', () => toggleRoute("taxi")); // Yeni taxi tuşu
+}
+
 function setupEventListeners() {
+    addRouteToggleListeners();
+
     document.getElementById('modeToggle').addEventListener('click', () => {
         document.body.classList.toggle('dark-mode');
         const isDark = document.body.classList.contains('dark-mode');
@@ -457,83 +494,7 @@ function setupEventListeners() {
                 console.log("Fetch result:", sonuc);
                 button.textContent = 'Konumları Göster';
                 button.disabled = false;
-
-                baslangicMarker.setPosition({ lat: parseFloat(sonuc.baslangic_koordinat.lat), lng: parseFloat(sonuc.baslangic_koordinat.lon) });
-                if (!hedefMarker) {
-                    hedefMarker = new google.maps.Marker({
-                        position: { lat: parseFloat(sonuc.hedef_koordinat.lat), lng: parseFloat(sonuc.hedef_koordinat.lon) },
-                        map: map,
-                        title: 'Hedef Noktası',
-                        icon: { url: 'https://img.icons8.com/color/48/000000/finish-flag.png', scaledSize: new google.maps.Size(36, 36) },
-                        animation: google.maps.Animation.DROP
-                    });
-                } else {
-                    hedefMarker.setPosition({ lat: parseFloat(sonuc.hedef_koordinat.lat), lng: parseFloat(sonuc.hedef_koordinat.lon) });
-                }
-
-                let baslangicDurakMarker;
-                if (sonuc.baslangic_durak && sonuc.baslangic_durak.lat && sonuc.baslangic_durak.lon) {
-                    if (nearestMarker) nearestMarker.setMap(null);
-                    baslangicDurakMarker = new google.maps.Marker({
-                        position: { lat: sonuc.baslangic_durak.lat, lng: sonuc.baslangic_durak.lon },
-                        map: map,
-                        title: sonuc.baslangic_durak.name || 'Başlangıç Durak',
-                        icon: {
-                            url: sonuc.baslangic_durak.type === 'bus' ? 'https://img.icons8.com/color/48/000000/bus.png' : 'https://img.icons8.com/color/48/000000/tram.png',
-                            scaledSize: new google.maps.Size(40, 40)
-                        },
-                        animation: google.maps.Animation.BOUNCE
-                    });
-                }
-
-                let bitisDurakMarker;
-                if (sonuc.bitis_durak && sonuc.bitis_durak.lat && sonuc.bitis_durak.lon) {
-                    bitisDurakMarker = new google.maps.Marker({
-                        position: { lat: sonuc.bitis_durak.lat, lng: sonuc.bitis_durak.lon },
-                        map: map,
-                        title: sonuc.bitis_durak.name || 'Bitiş Durak',
-                        icon: {
-                            url: sonuc.bitis_durak.type === 'bus' ? 'https://img.icons8.com/color/48/000000/bus.png' : 'https://img.icons8.com/color/48/000000/tram.png',
-                            scaledSize: new google.maps.Size(40, 40)
-                        },
-                        animation: google.maps.Animation.BOUNCE
-                    });
-                }
-
-                clearPreviousRoutes();
-
-                if (sonuc.rota_bulundu && sonuc.rota && sonuc.rota.length > 0) {
-                    const transitPath = [];
-                    sonuc.rota.forEach(segment => {
-                        const baslangic = segment.baslangic_durak.id === "baslangic_nokta"
-                            ? { lat: sonuc.baslangic_koordinat.lat, lng: sonuc.baslangic_koordinat.lon }
-                            : { lat: segment.baslangic_durak.lat || sonuc.baslangic_durak.lat, lng: segment.baslangic_durak.lon || sonuc.baslangic_durak.lon };
-                        const bitis = segment.bitis_durak.id === "hedef_nokta"
-                            ? { lat: sonuc.hedef_koordinat.lat, lng: sonuc.hedef_koordinat.lon }
-                            : { lat: segment.bitis_durak.lat || sonuc.bitis_durak.lat, lng: segment.bitis_durak.lon || sonuc.bitis_durak.lon };
-                        transitPath.push(baslangic);
-                        transitPath.push(bitis);
-                    });
-                    drawRoute(transitPath, false);
-                } else {
-                    document.getElementById('status-bar').textContent = 'Durum: Geçerli toplu taşıma rotası bulunamadı';
-                }
-
-                if (sonuc.taksi_alternatifi && sonuc.taksi_alternatifi.waypoints && sonuc.taksi_alternatifi.waypoints.length > 0) {
-                    const taxiPath = sonuc.taksi_alternatifi.waypoints.map(point => ({
-                        lat: point.lat,
-                        lng: point.lon || point.lng
-                    }));
-                    drawRoute(taxiPath, true);
-                } else if (sonuc.taksi_alternatifi && sonuc.taksi_alternatifi.baslangic && sonuc.taksi_alternatifi.bitis) {
-                    const taxiPath = [
-                        { lat: sonuc.taksi_alternatifi.baslangic.lat, lng: sonuc.taksi_alternatifi.baslangic.lon || sonuc.taksi_alternatifi.baslangic.lng },
-                        { lat: sonuc.taksi_alternatifi.bitis.lat, lng: sonuc.taksi_alternatifi.bitis.lon || sonuc.taksi_alternatifi.bitis.lng }
-                    ];
-                    drawRoute(taxiPath, true);
-                } else {
-                    console.log('Taksi alternatifi verisi eksik veya geçersiz:', sonuc.taksi_alternatifi);
-                }
+                initializeRoute(sonuc);
             })
             .catch(error => {
                 console.error('Fetch error:', error);
@@ -561,64 +522,178 @@ function setupEventListeners() {
 }
 
 function initializeRoute(sonuc) {
-    console.log("initializeRoute called with:", sonuc);
+    console.log("initializeRoute called with:", JSON.stringify(sonuc, null, 2));
 
-    if (!baslangicMarker) {
-        baslangicMarker = new google.maps.Marker({
-            position: { lat: sonuc.baslangic_koordinat.lat, lng: sonuc.baslangic_koordinat.lon },
-            map: map,
-            title: 'Başlangıç Noktası',
-            icon: { url: 'https://img.icons8.com/color/48/000000/marker.png', scaledSize: new google.maps.Size(36, 36) }
-        });
-    } else {
-        baslangicMarker.setPosition({ lat: sonuc.baslangic_koordinat.lat, lng: sonuc.baslangic_koordinat.lon });
+    if (!sonuc || typeof sonuc !== 'object') {
+        document.getElementById('status-bar').textContent = 'Durum: Geçersiz rota verisi';
+        return;
     }
 
-    if (!hedefMarker) {
-        hedefMarker = new google.maps.Marker({
-            position: { lat: sonuc.hedef_koordinat.lat, lng: sonuc.hedef_koordinat.lon },
-            map: map,
-            title: 'Hedef Noktası',
-            icon: { url: 'https://img.icons8.com/color/48/000000/finish-flag.png', scaledSize: new google.maps.Size(36, 36) }
-        });
-    } else {
-        hedefMarker.setPosition({ lat: sonuc.hedef_koordinat.lat, lng: sonuc.hedef_koordinat.lon });
-    }
+    // Store the route data globally
+    window.routeDataResult = sonuc;
 
     clearPreviousRoutes();
+    route1Polylines = [];
+    route2Polylines = [];
+    route3Polylines = [];
+    taxiPolylines = [];
 
-    if (sonuc.rota_bulundu && sonuc.rota && sonuc.rota.length > 0) {
-        const transitPath = [];
-        sonuc.rota.forEach(segment => {
-            const baslangic = segment.baslangic_durak.id === "baslangic_nokta"
-                ? { lat: sonuc.baslangic_koordinat.lat, lng: sonuc.baslangic_koordinat.lon }
-                : { lat: segment.baslangic_durak.lat || sonuc.baslangic_durak.lat, lng: segment.baslangic_durak.lon || sonuc.baslangic_durak.lon };
-            const bitis = segment.bitis_durak.id === "hedef_nokta"
-                ? { lat: sonuc.hedef_koordinat.lat, lng: sonuc.hedef_koordinat.lon }
-                : { lat: segment.bitis_durak.lat || sonuc.bitis_durak.lat, lng: segment.bitis_durak.lon || sonuc.bitis_durak.lon };
-            transitPath.push(baslangic);
-            if (segment.bitis_durak.id !== "hedef_nokta") transitPath.push(bitis);
+    const routeColors = {
+        "1": "#4285F4", // Blue
+        "2": "#FFA500", // Orange
+        "3": "#34C759", // Green
+        "taxi": "#FF0000" // Red (taxi)
+    };
+
+    let bounds = new google.maps.LatLngBounds();
+    let routeCount = 0;
+
+    for (const routeId in sonuc) {
+        console.log(`Processing routeId: ${routeId}`);
+        if (sonuc[routeId] && Array.isArray(sonuc[routeId].coordinates)) {
+            const coordinates = sonuc[routeId].coordinates;
+            const routePath = coordinates.map(coord => ({
+                lat: parseFloat(coord.lat),
+                lng: parseFloat(coord.lon || coord.lot || coord.lng)
+            }));
+
+            if (routePath.length > 0) {
+                routeCount++;
+                const color = routeColors[routeId] || '#4285F4';
+                console.log(`Route ${routeId} assigned color: ${color}`);
+                const polyline = drawRouteWithId(routePath, color, routeId);
+
+                if (routeId === "1") route1Polylines.push(polyline);
+                else if (routeId === "2") route2Polylines.push(polyline);
+                else if (routeId === "3") route3Polylines.push(polyline);
+                else if (routeId === "taxi") taxiPolylines.push(polyline);
+                else console.warn(`Unknown routeId: ${routeId}`);
+
+                if (routeId === "1" && routePath.length > 0) {
+                    baslangicMarker.setPosition(routePath[0]);
+                    if (routePath.length > 1) {
+                        if (!hedefMarker) {
+                            hedefMarker = new google.maps.Marker({
+                                position: routePath[routePath.length - 1],
+                                map: map,
+                                title: 'Hedef Noktası',
+                                icon: { url: 'https://img.icons8.com/color/48/000000/finish-flag.png', scaledSize: new google.maps.Size(36, 36) }
+                            });
+                        } else {
+                            hedefMarker.setPosition(routePath[routePath.length - 1]);
+                        }
+                    }
+                }
+
+                routePath.forEach(point => bounds.extend(point));
+            }
+        }
+    }
+
+    console.log(`Route counts - 1: ${route1Polylines.length}, 2: ${route2Polylines.length}, 3: ${route3Polylines.length}, taxi: ${taxiPolylines.length}`);
+    if (routeCount > 0) {
+        map.fitBounds(bounds);
+        document.getElementById('status-bar').textContent = `Durum: ${routeCount} rota çizildi`;
+    } else {
+        document.getElementById('status-bar').textContent = 'Durum: Geçerli rota bulunamadı';
+    }
+}
+
+function drawRouteWithId(path, color, routeId) {
+    const validPath = path.filter(p => p && typeof p.lat === 'number' && !isNaN(p.lat) && typeof p.lng === 'number' && !isNaN(p.lng));
+    if (validPath.length < 2) {
+        document.getElementById('status-bar').textContent = 'Durum: Geçerli rota çizilemedi';
+        return null;
+    }
+
+    console.log(`Drawing route ${routeId} with color ${color}`);
+
+    const routeLine = new google.maps.Polyline({
+        path: validPath,
+        geodesic: true,
+        strokeColor: color,
+        strokeOpacity: 1.0,
+        strokeWeight: 6,
+        map: map,
+        routeId: routeId,
+        icons: [{
+            icon: { path: google.maps.SymbolPath.CIRCLE, scale: 3, fillColor: '#ffffff', fillOpacity: 1, strokeColor: color },
+            offset: '0%',
+            repeat: '20px'
+        }]
+    });
+
+    currentRoutePolylines.push(routeLine);
+    return routeLine;
+}
+
+function toggleRoute(routeId) {
+    const routeColors = {
+        "1": "#4285F4", // Blue
+        "2": "#FFA500", // Orange
+        "3": "#34C759", // Green
+        "taxi": "#FF0000" // Red (taxi)
+    };
+
+    console.log(`Toggling route: ${routeId}`);
+
+    // Hide all routes initially
+    route1Polylines.forEach(polyline => polyline.setVisible(false));
+    route2Polylines.forEach(polyline => polyline.setVisible(false));
+    route3Polylines.forEach(polyline => polyline.setVisible(false));
+    taxiPolylines.forEach(polyline => polyline.setVisible(false));
+
+    // Show selected routes and update status bar
+    let statusMessage = "";
+    if (routeId === "all") {
+        route1Polylines.forEach(polyline => {
+            polyline.setVisible(true);
+            polyline.setOptions({ strokeColor: routeColors["1"] });
         });
-        drawRoute(transitPath, false);
+        route2Polylines.forEach(polyline => {
+            polyline.setVisible(true);
+            polyline.setOptions({ strokeColor: routeColors["2"] });
+        });
+        route3Polylines.forEach(polyline => {
+            polyline.setVisible(true);
+            polyline.setOptions({ strokeColor: routeColors["3"] });
+        });
+        taxiPolylines.forEach(polyline => {
+            polyline.setVisible(true);
+            polyline.setOptions({ strokeColor: routeColors["taxi"] });
+        });
+        statusMessage = 'Durum: Tüm rotalar gösteriliyor';
     } else {
-        document.getElementById('status-bar').textContent = 'Durum: Geçerli toplu taşıma rotası bulunamadı';
+        const routePolylines = routeId === "1" ? route1Polylines :
+            routeId === "2" ? route2Polylines :
+                routeId === "3" ? route3Polylines :
+                    routeId === "taxi" ? taxiPolylines : [];
+        routePolylines.forEach(polyline => {
+            polyline.setVisible(true);
+            polyline.setOptions({ strokeColor: routeColors[routeId] });
+            console.log(`Route ${routeId} set to ${routeColors[routeId]}`);
+        });
+
+        // Get route details from window.routeDataResult
+        if (window.routeDataResult && window.routeDataResult[routeId]) {
+            const routeData = window.routeDataResult[routeId];
+            let distance, cost, duration;
+            if (routeId === "taxi") {
+                distance = routeData.mesafe_km ? `${routeData.mesafe_km.toFixed(2)} km` : "N/A";
+                cost = routeData.ucret ? `${routeData.ucret.toFixed(2)} TL` : "N/A";
+                duration = routeData.tahmini_sure_dk ? `${Math.round(routeData.tahmini_sure_dk)} dk` : "N/A";
+            } else {
+                distance = routeData.toplam_mesafe_km ? `${routeData.toplam_mesafe_km} km` : "N/A";
+                cost = routeData.toplam_ucret ? `${routeData.toplam_ucret} TL` : "N/A";
+                duration = routeData.toplam_sure_dk ? `${routeData.toplam_sure_dk} dk` : "N/A";
+            }
+            statusMessage = `${routeId === "taxi" ? "Taksi" : "Rota " + routeId}: Mesafe: ${distance}, Ücret: ${cost}, Süre: ${duration}`;
+        } else {
+            statusMessage = `Durum: ${routeId === "taxi" ? "Taksi" : "Rota " + routeId} gösteriliyor (Detaylar mevcut değil)`;
+        }
     }
 
-    if (sonuc.taksi_alternatifi && sonuc.taksi_alternatifi.waypoints && sonuc.taksi_alternatifi.waypoints.length > 0) {
-        const taxiPath = sonuc.taksi_alternatifi.waypoints.map(point => ({
-            lat: point.lat,
-            lng: point.lon || point.lng
-        }));
-        drawRoute(taxiPath, true);
-    } else if (sonuc.taksi_alternatifi && sonuc.taksi_alternatifi.baslangic && sonuc.taksi_alternatifi.bitis) {
-        const taxiPath = [
-            { lat: sonuc.taksi_alternatifi.baslangic.lat, lng: sonuc.taksi_alternatifi.baslangic.lon || sonuc.taksi_alternatifi.baslangic.lng },
-            { lat: sonuc.taksi_alternatifi.bitis.lat, lng: sonuc.taksi_alternatifi.bitis.lon || sonuc.taksi_alternatifi.bitis.lng }
-        ];
-        drawRoute(taxiPath, true);
-    } else {
-        console.log('Taksi alternatifi verisi eksik veya geçersiz:', sonuc.taksi_alternatifi);
-    }
+    document.getElementById('status-bar').textContent = statusMessage;
 }
 
 function searchLocation(query) {
@@ -643,7 +718,6 @@ function animateMarker(marker) {
 }
 
 function createParticles() {
-    // Basit bir particle efekti (örnek olarak)
     const particleCount = 20;
     for (let i = 0; i < particleCount; i++) {
         const particle = new google.maps.Marker({

@@ -15,19 +15,10 @@ public class Walking {
         this.duraklar = duraklar;
     }
 
-    public Map<String, Object> createWalkingSegment(double lat, double lon, String stopId,
-                                                     double distance, boolean isStart) {
+    public Map<String, Object> createWalkingSegment(double lat, double lon, double distance) {
         Map<String, Object> segment = new HashMap<>();
-        Map<String, Object> point = new HashMap<>();
-        point.put("id", isStart ? "baslangic_nokta" : "hedef_nokta");
-        point.put("name", isStart ? "Başlangıç Noktası" : "Hedef Noktası");
-        point.put("lat", lat);
-        point.put("lon", lon);
-        point.put("type", "custom");
-
-        segment.put(isStart ? "baslangic_durak" : "bitis_durak", point);
-        segment.put(isStart ? "bitis_durak" : "baslangic_durak",
-                objectMapper.convertValue(duraklar.get(stopId), Map.class));
+        segment.put("lat", lat);
+        segment.put("lon", lon);
         segment.put("mesafe", distance);
         segment.put("sure", distance * 15);
         segment.put("ucret", 0.0);

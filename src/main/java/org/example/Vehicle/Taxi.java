@@ -1,6 +1,7 @@
 package org.example.Vehicle;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import org.example.DijkstraAlghorithm.Coordinate;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -35,36 +36,19 @@ public class Taxi implements Arac{
         taxiAlternative.put("ucret", taxiFare);
         taxiAlternative.put("tahmini_sure_dk", taxiTime);
 
-        List<Map<String, Object>> taxiWaypoints = createTaxiWaypoints(startLat, startLon, endLat, endLon);
-        taxiAlternative.put("waypoints", taxiWaypoints);
+        List<Coordinate> taxiWaypoints = createTaxiWaypoints(startLat, startLon, endLat, endLon);
+        taxiAlternative.put("coordinates", taxiWaypoints);
 
         return taxiAlternative;
     }
 
-    private List<Map<String, Object>> createTaxiWaypoints(double startLat, double startLon,
+    private List<Coordinate>createTaxiWaypoints(double startLat, double startLon,
                                                           double endLat, double endLon) {
-        List<Map<String, Object>> taxiWaypoints = new ArrayList<>();
 
-        Map<String, Object> taxiStart = new HashMap<>();
-        taxiStart.put("id", "baslangic_nokta");
-        taxiStart.put("name", "Başlangıç Noktası");
-        taxiStart.put("lat", startLat);
-        taxiStart.put("lon", startLon);
-        taxiStart.put("type", "taksi");
-        taxiStart.put("is_start", true);
-        taxiStart.put("is_end", false);
-        taxiWaypoints.add(taxiStart);
+        List<Coordinate> vertices = new ArrayList<>();
+        vertices.add(new Coordinate(String.valueOf(startLat),String.valueOf(startLon)));
+        vertices.add(new Coordinate(String.valueOf(endLat),String.valueOf(endLon)));
 
-        Map<String, Object> taxiEnd = new HashMap<>();
-        taxiEnd.put("id", "hedef_nokta");
-        taxiEnd.put("name", "Hedef Noktası");
-        taxiEnd.put("lat", endLat);
-        taxiEnd.put("lon", endLon);
-        taxiEnd.put("type", "taksi");
-        taxiEnd.put("is_start", false);
-        taxiEnd.put("is_end", true);
-        taxiWaypoints.add(taxiEnd);
-
-        return taxiWaypoints;
+        return vertices;
     }
 }

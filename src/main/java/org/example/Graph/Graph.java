@@ -13,8 +13,9 @@ public class Graph {
         this.isWeighted = isWeighted;
     }
 
-    public Node addNode(String data){
+    public Node addNode(String data,double lat,double lon){
         Node new_node = new Node(data);
+        new_node.setCoordinates(lat,lon);
         this.nodes.add(new_node);
         return new_node;
     }

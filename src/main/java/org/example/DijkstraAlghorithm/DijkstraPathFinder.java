@@ -3,44 +3,22 @@ package org.example.DijkstraAlghorithm;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.example.Graph.Edge;
 import org.example.Graph.Node;
-import org.example.IRota.PathFinder;
 import org.example.Graph.Graph;
+import org.example.WeightStrategy.CostWeightStrategy;
+import org.example.WeightStrategy.DistanceWeightStrategy;
+import org.example.WeightStrategy.TimeWeightStrategy;
+import org.example.WeightStrategy.WeightStrategy;
 
 import java.util.*;
-
-interface WeightStrategy {
-    double calculateWeight(Edge edge);
-}
-
-class TimeWeightStrategy implements WeightStrategy {
-    @Override
-    public double calculateWeight(Edge edge) {
-        return edge.getSure();
-    }
-}
-
-class DistanceWeightStrategy implements WeightStrategy {
-    @Override
-    public double calculateWeight(Edge edge) {
-        return edge.getMesafe();
-    }
-}
-
-class CostWeightStrategy implements WeightStrategy {
-    @Override
-    public double calculateWeight(Edge edge) {
-        return edge.getUcret();
-    }
-}
 
 public class DijkstraPathFinder implements PathFinder {
     private final Graph graph;
     private final Map<String, WeightStrategy> strategies;
-    private final Map<String, JsonNode> duraklar;
+    //private final Map<String, JsonNode> duraklar;
 
-    public DijkstraPathFinder(Graph graph,Map<String, JsonNode> duraklar) {
+    public DijkstraPathFinder(Graph graph) {
         this.graph = graph;
-        this.duraklar = duraklar;
+        //this.duraklar = duraklar;
         this.strategies = new HashMap<>();
         strategies.put("sure", new TimeWeightStrategy());
         strategies.put("mesafe", new DistanceWeightStrategy());
@@ -48,68 +26,45 @@ public class DijkstraPathFinder implements PathFinder {
     }
 
     @Override
-    public List<Map<String, Object>> findBestPath(String startId, String stopId, String optimization) {
+    public HashMap<String,Object> findBestPath(String startId, String stopId, String optimization) {
         WeightStrategy strategy = strategies.getOrDefault(optimization, new TimeWeightStrategy());
         System.out.println(strategy);
         for (Edge edge : graph.edgeSet()) {
             edge.setWeight_strategy(strategy.calculateWeight(edge));
         }
 
-        //System.out.println("Graph vertices: " + graph.vertexSet());
-        //System.out.println("Graph edges: " + graph.edgeSet());
+
         System.out.println("Start ID: " + startId + ", Stop ID: " + stopId);
 
         DijkstraA dijkstraA = new DijkstraA();
         ArrayList<Node> path = dijkstraA.shortest_path(graph,graph.getNode(startId), graph.getNode(stopId));
-        /*if (path == null || path.getVertexList().size() < 2) {
-            return new ArrayList<>();
-        }*/
 
-        // Burada duraklar haritasına erişim eksik, bu yüzden bağımlılığı enjekte etmek gerekebilir
-        // Şimdilik basit bir dönüş yapıyorum, gerçek uygulamada duraklar haritası gerekecek
-        List<Map<String, Object>> segments = new ArrayList<>();
-        List<String> vertices = new ArrayList<>();
-        for (Node node : path) {
-            vertices.add(node.get_name());
-        }
 
-        for (int i = 0; i < vertices.size() - 1; i++) {
-            String u = vertices.get(i);
-            String v = vertices.get(i + 1);
-            Edge edge = graph.getEdge(u, v);
+        double totalDistance = 0.0;
+        double totalTime = 0.0;
+        double totalCost = 0.0;
 
-            // Durak bilgilerini duraklar haritasından al
-            JsonNode startStop = duraklar.get(u);
-            JsonNode endStop = duraklar.get(v);
+        HashMap<String,Object> path_info = new HashMap<>();
+        List<Coordinate> vertices = new ArrayList<>();
 
-            Map<String, Object> startDurak = new HashMap<>();
-            startDurak.put("id", u);
-            if (startStop != null) {
-                startDurak.put("lat", startStop.get("lat").asDouble());
-                startDurak.put("lon", startStop.get("lon").asDouble());
-                startDurak.put("name", startStop.get("name").asText());
-                startDurak.put("type", startStop.get("type").asText());
+        for (int i=0; i < path.size()-1;i++) {
+            Node node = path.get(i);
+            for(Edge edge : node.get_edges()){
+                if(edge.getEnd().equals(path.get(i+1))){
+                    totalDistance += edge.getMesafe();
+                    totalTime += edge.getSure();
+                    totalCost += edge.getUcret();
+                }
             }
-
-            Map<String, Object> endDurak = new HashMap<>();
-            endDurak.put("id", v);
-            if (endStop != null) {
-                endDurak.put("lat", endStop.get("lat").asDouble());
-                endDurak.put("lon", endStop.get("lon").asDouble());
-                endDurak.put("name", endStop.get("name").asText());
-                endDurak.put("type", endStop.get("type").asText());
-            }
-
-            Map<String, Object> segment = new HashMap<>();
-            segment.put("baslangic_durak", startDurak);
-            segment.put("bitis_durak", endDurak);
-            segment.put("mesafe", edge.getMesafe());
-            segment.put("sure", edge.getSure());
-            segment.put("ucret", edge.getUcret());
-            segment.put("baglanti_tipi", edge.getBaglanti_tipi());
-            segments.add(segment);
+            vertices.add(node.getCoordinates());
         }
+        vertices.add(path.get(path.size()-1).getCoordinates());
 
-        return segments;
+        path_info.put("toplam_mesafe_km", totalDistance);
+        path_info.put("toplam_ucret", totalCost);
+        path_info.put("toplam_sure_dk", totalTime);
+        path_info.put("ara_koordinatlar",vertices);
+
+        return path_info;
     }
 }

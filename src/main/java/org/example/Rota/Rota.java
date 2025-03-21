@@ -1,15 +1,15 @@
 package org.example.Rota;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.example.Data.GraphDurakData;
+import org.example.DijkstraAlghorithm.Coordinate;
+import org.example.DijkstraAlghorithm.PathFinder;
 import org.example.Durak;
 import org.example.Mesafe.DistanceCalculator;
 import org.example.Vehicle.Taxi;
 import org.example.Graph.Graph;
-import org.example.IRota.*;
-import org.example.Vehicle.Walking;
+import org.example.Vehicle.WaypointGenerator;
 
 import java.util.*;
 
@@ -17,17 +17,15 @@ public class Rota {
     private final Graph graph;
     private final PathFinder pathFinder;
     private final WaypointGenerator waypointGenerator;
-    //private final RoutePrinter routePrinter;
     private final DistanceCalculator distanceCalculator;
     private final Taxi taksi;
     private final ObjectMapper objectMapper;
-    private final Map<String, JsonNode> duraklar;
-    //private final Graph graph;
+    private final HashMap<Coordinate, JsonNode> duraklar;
     private final Durak durak;
 
     public Rota(Graph graph, PathFinder pathFinder,
                 WaypointGenerator waypointGenerator,
-                DistanceCalculator distanceCalculator, Taxi taksi, Durak durak, GraphDurakData graphDurakData) throws JsonProcessingException {
+                DistanceCalculator distanceCalculator, Taxi taksi, Durak durak, GraphDurakData graphDurakData) {
 
         this.objectMapper = new ObjectMapper();
         this.durak = durak;
@@ -36,9 +34,7 @@ public class Rota {
         this.graph = graph;
         this.pathFinder = pathFinder;
         this.waypointGenerator = waypointGenerator;
-        //this.routePrinter = routePrinter;
         this.distanceCalculator = distanceCalculator;
-        //this.graph = graphBuilder.buildGraph(graphDurakData.get_node_data());
     }
 
     public Map<String, Object> findRouteWithCoordinates(double startLat, double startLon,
@@ -46,7 +42,6 @@ public class Rota {
                                                         String optimization) {
         Map.Entry<String, Double> startStop = durak.findNearestStop(startLat, startLon);
         Map.Entry<String, Double> endStop = durak.findNearestStop(endLat, endLon);
-
         String startId = startStop.getKey();
         double startDistance = startStop.getValue();
         String endId = endStop.getKey();
@@ -56,54 +51,23 @@ public class Rota {
             throw new IllegalArgumentException("En yakın durak bulunamadı.");
         }
 
+        List<Coordinate> coordinates = new ArrayList<>();
+        coordinates.add(new Coordinate(String.valueOf(startLat),String.valueOf(startLon)));
+
         // Toplu taşıma rotası
-        List<Map<String, Object>> transitSegments = pathFinder.findBestPath(startId, endId, optimization);
-        List<Map<String, Object>> route = new ArrayList<>();
-        List<Map<String, Object>> waypoints;
-        double totalDistance = 0.0;
-        double totalTime = 0.0;
-        double totalCost = 0.0;
-        boolean routeFound = !transitSegments.isEmpty();
+        Map<String, Object> yol_bilgileri = pathFinder.findBestPath(startId, endId, optimization);
 
-        //System.out.println(transitSegments);
-        Walking walking = new Walking(this.duraklar);
-        // Toplu taşıma rotası bulunduysa
-        Map<String, Object> startSegment = walking.createWalkingSegment(startLat, startLon, startId, startDistance, true);
-        Map<String, Object> endSegment = walking.createWalkingSegment(endLat, endLon, endId, endDistance, false);
+        ArrayList<Coordinate> ara_koordinatlar = (ArrayList<Coordinate>) yol_bilgileri.get("ara_koordinatlar");
 
-         //System.out.println("endSegment:"+endSegment);
+        coordinates.addAll(ara_koordinatlar);
 
-        route.add(startSegment);
-        route.addAll(transitSegments);
-        route.add(endSegment);
+        coordinates.add(new Coordinate(String.valueOf(endLat),String.valueOf(endLon)));
 
-        totalDistance = route.stream().mapToDouble(s -> (double) s.get("mesafe")).sum();
-        totalTime = route.stream().mapToDouble(s -> (double) s.get("sure")).sum();
-        totalCost = route.stream().mapToDouble(s -> (double) s.get("ucret")).sum();
+        yol_bilgileri.remove("ara_koordinatlar");
 
-        waypoints = waypointGenerator.generateWaypoints(route, startLat, startLon, endLat, endLon,
-                    startDistance, endDistance, endId);
+        yol_bilgileri.put("coordinates",coordinates);
 
-
-        // Taksi alternatifi (her zaman oluşturuluyor)
-        double taxiDistance = distanceCalculator.calculateDistance(startLat, startLon, endLat, endLon);
-        Map<String, Object> taxiAlternative = taksi.createAlternative(startLat, startLon, endLat, endLon, taxiDistance);
-
-        // Sonuç objesi
-        Map<String, Object> result = new HashMap<>();
-        result.put("rota_bulundu", routeFound);
-        result.put("baslangic_koordinat", Map.of("lat", startLat, "lon", startLon));
-        result.put("hedef_koordinat", Map.of("lat", endLat, "lon", endLon));
-        result.put("baslangic_durak", duraklar.get(startId));
-        result.put("bitis_durak", duraklar.get(endId));
-        result.put("toplam_mesafe_km", totalDistance);
-        result.put("toplam_ucret", totalCost);
-        result.put("toplam_sure_dk", totalTime);
-        result.put("rota", route);
-        result.put("waypoints", waypoints);
-        result.put("taksi_alternatifi", taxiAlternative);
-
-        return result;
+        return yol_bilgileri;
     }
 
 }

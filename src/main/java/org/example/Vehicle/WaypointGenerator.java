@@ -1,4 +1,6 @@
-package org.example.IRota;
+package org.example.Vehicle;
+
+import org.example.DijkstraAlghorithm.Coordinate;
 
 import java.util.List;
 import java.util.Map;
@@ -10,4 +12,5 @@ public interface WaypointGenerator {
                                                 double endLat, double endLon,
                                                 double startDistance, double endDistance,
                                                 String endStopId);
+
 }

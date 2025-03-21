@@ -6,11 +6,12 @@ import org.example.Data.DurakData;
 import org.example.Data.GraphDurakData;
 import org.example.DijkstraAlghorithm.DijkstraPathFinder;
 import org.example.Graph.GraphBuilder;
-import org.example.IRota.PathFinder;
-import org.example.IRota.RoutePrinter;
-import org.example.IRota.WaypointGenerator;
+import org.example.DijkstraAlghorithm.PathFinder;
+import org.example.Vehicle.WaypointGenerator;
 import org.example.Mesafe.DistanceCalculator;
 import org.example.Mesafe.HaversineDistanceCalculator;
+import org.example.Passenger.PassengerManager;
+import org.example.Payment.PaymentManager;
 import org.example.Rota.*;
 import org.example.Vehicle.Taxi;
 import org.springframework.boot.SpringApplication;
@@ -31,15 +32,13 @@ public class Main {
     @Bean
     public Rota rota() throws IOException {
         Data data = new Data();
-        //DurakData durakData = new DurakData(data);
         GraphDurakData graphDurakData = new GraphDurakData(data, new ObjectMapper());
         DistanceCalculator distanceCalculator = new HaversineDistanceCalculator();
         Durak durak = new Durak(graphDurakData, distanceCalculator);
-        org.example.IRota.GraphBuilder graphBuilder = new GraphBuilder();
+        GraphBuilder graphBuilder = new GraphBuilder();
         Graph graph = graphBuilder.buildGraph(new ObjectMapper().readTree(data.get_data()));
-        PathFinder pathFinder = new DijkstraPathFinder(graph, graphDurakData.get_hashmap_duraklar());
-        WaypointGenerator waypointGenerator = new DefaultWaypointGenerator(new ObjectMapper(), new HashMap<>());
-        //RoutePrinter routePrinter = new ConsoleRoutePrinter("Izmit");
+        PathFinder pathFinder = new DijkstraPathFinder(graph);
+        WaypointGenerator waypointGenerator = new DefaultWaypointGenerator(new HashMap<>());
         Taxi taksi = new Taxi(new ObjectMapper().readTree(data.get_data()).get("taxi"));
 
         return new Rota(graph, pathFinder, waypointGenerator, distanceCalculator, taksi, durak, graphDurakData);
@@ -49,5 +48,17 @@ public class Main {
     public DurakData durakData() throws IOException {
         return new DurakData(new Data());
     }
+
+    @Bean
+    public PassengerManager passengerManager(){
+        return new PassengerManager();
+    }
+
+    @Bean
+    public PaymentManager paymentManager(){
+        return new PaymentManager();
+    }
+
+
 }
 

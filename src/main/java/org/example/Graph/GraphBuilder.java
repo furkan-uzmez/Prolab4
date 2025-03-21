@@ -2,16 +2,14 @@ package org.example.Graph;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
-public class GraphBuilder implements org.example.IRota.GraphBuilder {
+public class GraphBuilder implements IGraphBuilder {
 
     public Graph buildGraph(JsonNode data) {
         Graph graph = new Graph(true,true);
 
         for (JsonNode stop : data.get("duraklar")) {
-            //System.out.println("Node eklendi");
-            graph.addNode(stop.get("id").asText());
+            graph.addNode(stop.get("id").asText(),stop.get("lat").asDouble(),stop.get("lon").asDouble());
         }
-        //System.out.println(graph.getNodes().size());
 
         for (JsonNode stop : data.get("duraklar")) {
             String stopId = stop.get("id").asText();
@@ -24,13 +22,10 @@ public class GraphBuilder implements org.example.IRota.GraphBuilder {
                     Double sure = nextStop.get("sure").asDouble();
                     Double ucret = nextStop.get("ucret").asDouble();
                     String type = stop.get("type").asText();
-                    //System.out.println("Edge eklendi");
                     graph.addEdge(stopNode,targetStopNode, mesafe,sure,ucret,type);}
-                    //System.out.println(stopNode.get_edges());
             }
 
             if (stop.has("transfer") && stop.get("transfer").hasNonNull("transferStopId")){
-                //System.out.println("Edge eklendi");
                 String transferStopId = stop.get("transfer").get("transferStopId").asText();
                 Node transferStopNode = graph.getNode(transferStopId);
                         Double mesafe = 0.0;
@@ -38,10 +33,9 @@ public class GraphBuilder implements org.example.IRota.GraphBuilder {
                         Double ucret = stop.get("transfer").get("transferUcret").asDouble();
                         String type = "transfer";
                 graph.addEdge(stopNode,transferStopNode, mesafe,sure,ucret,type);
-                //System.out.println(stopNode.get_edges());
             }
         }
-        //graph.printGraph();
+
         return graph;
     }
 }

@@ -22,7 +22,6 @@ public class DijkstraA {
             }
             previous.put(node.get_name(),new Node("Null"));
         }
-        //System.out.println("Start node: "+start_node.get_name());
 
         distances.put(start_node.get_name(),0.0);
 
@@ -66,28 +65,4 @@ public class DijkstraA {
         return path;
     }
 
-    public static void main(String[] args){
-        /*Graph testGraph = new Graph(true, true);
-        Node a = testGraph.addNode("A");
-        Node b = testGraph.addNode("B");
-        Node c = testGraph.addNode("C");
-        Node d = testGraph.addNode("D");
-        Node e = testGraph.addNode("E");
-        Node f = testGraph.addNode("F");
-        Node g = testGraph.addNode("G");
-
-        testGraph.addEdge(a, c, 100,0.0,0.0,"");
-        testGraph.addEdge(a, b, 3,0.0,0.0,"");
-        testGraph.addEdge(a, d, 4,0.0,0.0,"");
-        testGraph.addEdge(d, c, 3,0.0,0.0,"");
-        testGraph.addEdge(d, e, 8,0.0,0.0,"");
-        testGraph.addEdge(e, b, -2,0.0,0.0,"");
-        testGraph.addEdge(e, f, 10,0.0,0.0,"");
-        testGraph.addEdge(b, g, 9,0.0,0.0,"");
-        testGraph.addEdge(e, g, -50,0.0,0.0,"");
-        DijkstraA dijkstraA = new DijkstraA();
-        dijkstraA.Dijkstra(testGraph,a);*/
-        //Dijkstra.dijkstraResultPrinter(dijkstra(testGraph, a));
-        //shortestPathBetween(testGraph, a, g);
-    }
 }

@@ -9,8 +9,6 @@
     <link rel="stylesheet" th:href="@{/css/style.css}">
 </head>
 <body>
-
-
 <div class="top-bar">
     <h1>📍 Toplu Taşıma Durakları</h1>
     <div class="search-bar">
@@ -37,134 +35,178 @@
 
 <div class="container">
     <div class="form-container">
-        <h2>Konum Bilgileri</h2>
-        <form method="POST" id="locationForm" th:action="@{/}">
-            <div class="input-group">
-                <label for="baslangic_enlem">Başlangıç Enlemi:</label>
-                <input type="text" name="baslangic_enlem" id="baslangic_enlem" placeholder="Örn: 40.7669" required  >
-            </div>
-            <div class="input-group">
-                <label for="baslangic_boylam">Başlangıç Boylamı:</label>
-                <input type="text" name="baslangic_boylam" id="baslangic_boylam"  placeholder="Örn: 29.9169" required>
-            </div>
-            <div class="input-group">
-                <label for="hedef_enlem">Hedef Enlemi:</label>
-                <input type="text" name="hedef_enlem" id="hedef_enlem"  placeholder="Örn: 40.7769" required>
-            </div>
-            <div class="input-group">
-                <label for="hedef_boylam">Hedef Boylamı:</label>
-                <input type="text" name="hedef_boylam" id="hedef_boylam"  placeholder="Örn: 29.9269" required>
-            </div>
-            <div class="form-btn-wrapper">
-                <button type="submit" class="form-btn"><span>Konumları Göster</span><div class="spinner"></div></button>
-                <div class="tooltip">Konumları Haritada Göster</div>
+        <!-- Yeni Kontrol Çubuğu -->
+        <div class="form-control-panel">
+            <button class="tab-btn active" data-tab="location-tab" title="Konum Bilgileri">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                    <circle cx="12" cy="10" r="3"></circle>
+                </svg>
+            </button>
+            <button class="tab-btn" data-tab="payment-tab" title="Ödeme Bilgileri">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
+                    <line x1="1" y1="10" x2="23" y2="10"></line>
+                </svg>
+            </button>
+            <button class="tab-btn" data-tab="tools-tab" title="Araçlar">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                </svg>
+            </button>
+        </div>
+
+        <!-- Sekme İçerikleri -->
+        <div class="tab-content">
+            <!-- Konum Sekmesi -->
+            <div id="location-tab" class="tab-pane active">
+                <h2>Konum Bilgileri</h2>
+                <form method="POST" id="locationForm" th:action="@{/}" >
+                    <div class="input-group">
+                        <label for="baslangic_enlem">Başlangıç Enlemi:</label>
+                        <input type="text" name="baslangic_enlem" id="baslangic_enlem" placeholder="Örn: 40.7669" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="baslangic_boylam">Başlangıç Boylamı:</label>
+                        <input type="text" name="baslangic_boylam" id="baslangic_boylam" placeholder="Örn: 29.9169" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="hedef_enlem">Hedef Enlemi:</label>
+                        <input type="text" name="hedef_enlem" id="hedef_enlem" placeholder="Örn: 40.7769" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="hedef_boylam">Hedef Boylamı:</label>
+                        <input type="text" name="hedef_boylam" id="hedef_boylam" placeholder="Örn: 29.9269" required>
+                    </div>
+                    <div class="form-btn-wrapper">
+                        <button type="submit" class="form-btn"><span>Konumları Göster</span><div class="spinner"></div></button>
+                        <div class="tooltip">Konumları Haritada Göster</div>
+                    </div>
+                    <div th:if="${hata}" class="error" th:text="${hata}"></div>
+
+                    <!-- Koordinat Gösterimi -->
+                    <div class="coordinate-display">
+                        <p>Tıklayarak Konum Seç:</p>
+                        <p>Seçilen: <span id="selected-coordinates">Henüz seçilmedi</span></p>
+                        <div class="quick-actions">
+                            <div class="quick-btn-wrapper">
+                                <button class="quick-btn" id="set-start">Başlangıç Yap</button>
+                                <div class="tooltip">Seçileni Başlangıç Olarak Ayarla</div>
+                            </div>
+                            <div class="quick-btn-wrapper">
+                                <button class="quick-btn" id="set-destination">Hedef Yap</button>
+                                <div class="tooltip">Seçileni Hedef Olarak Ayarla</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Durak Türleri Legend -->
+                    <div class="legend">
+                        <h3>Durak Türleri</h3>
+                        <div class="legend-item">
+                            <img src="https://img.icons8.com/color/48/000000/bus.png" alt="Otobüs" class="legend-icon" th:src="@{https://img.icons8.com/color/48/000000/bus.png}">
+                            Otobüs Durağı
+                        </div>
+                        <div class="legend-item">
+                            <img src="https://img.icons8.com/color/48/000000/tram.png" alt="Tramvay" class="legend-icon" th:src="@{https://img.icons8.com/color/48/000000/tram.png}">
+                            Tramvay Durağı
+                        </div>
+                    </div>
             </div>
 
-            <div class="input-group">
-                <label for="odeme_yontemi">Ödeme Yöntemi:</label>
-                <select name="odeme_yontemi" id="odeme_yontemi" required>
-                    <option value="" disabled selected>Ödeme yöntemi seçin</option>
-                    <option value="nakit">Nakit</option>
-                    <option value="kredi_karti">Kredi Kartı</option>
-                    <option value="kentkart">Kentkart</option>
-                </select>
+            <!-- Ödeme Sekmesi -->
+            <div id="payment-tab" class="tab-pane">
+                <h2>Ödeme Bilgileri</h2>
+                <form id="paymentForm" >
+                    <div class="input-group">
+                        <label for="odeme_yontemi">Ödeme Yöntemi:</label>
+                        <select name="odeme_yontemi" id="odeme_yontemi" required>
+                            <option value="" disabled selected>Ödeme yöntemi seçin</option>
+                            <option value="nakit">Nakit</option>
+                            <option value="kredi_karti">Kredi Kartı</option>
+                            <option value="kentkart">Kentkart</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label for="yolcu_turu">Yolcu Türü:</label>
+                        <select name="yolcu_turu" id="yolcu_turu" required>
+                            <option value="" disabled selected>Yolcu türünü seçin</option>
+                            <option value="genel">Genel</option>
+                            <option value="ogrenci">Öğrenci</option>
+                            <option value="yasli">Yaşlı</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label for="bakiye">Bakiye:</label>
+                        <input type="text" name="bakiye" id="bakiye" th:value="${bakiye}" placeholder="Örn: 1000.50" required>
+                    </div>
+                </form>
             </div>
 
-            <div class="input-group">
-                <label for="yolcu_turu">Yolcu Türü:</label>
-                <select name="yolcu_turu" id="yolcu_turu" required>
-                    <option value="" disabled selected>Yolcu türünü seçin</option>
-                    <option value="genel">Genel</option>
-                    <option value="ogrenci">Öğrenci</option>
-                    <option value="yasli">Yaşlı</option>
-                </select>
-            </div>
-
-            <div class="input-group">
-                <label for="bakiye">Bakiye:</label>
-                <input type="text" name="bakiye" id="bakiye" th:value="${bakiye}" placeholder="Örn: 1000.50" required>
-            </div>
-        </form>
-
-
-
-        <div th:if="${hata}" class="error" th:text="${hata}"></div>
-
-        <div class="coordinate-display">
-            <p>Tıklayarak Konum Seç:</p>
-            <p>Seçilen: <span id="selected-coordinates">Henüz seçilmedi</span></p>
-            <div class="quick-actions">
-                <div class="quick-btn-wrapper">
-                    <button class="quick-btn" id="set-start">Başlangıç Yap</button>
-                    <div class="tooltip">Seçileni Başlangıç Olarak Ayarla</div>
+            <!-- Araçlar Sekmesi -->
+            <div id="tools-tab" class="tab-pane">
+                <h2>Araçlar</h2>
+                <div class="quick-actions">
+                    <div class="quick-btn-wrapper">
+                        <button class="quick-btn" id="zoomIn">Yakınlaştır</button>
+                        <div class="tooltip">Haritayı Yakınlaştır</div>
+                    </div>
+                    <div class="quick-btn-wrapper">
+                        <button class="quick-btn" id="zoomOut">Uzaklaştır</button>
+                        <div class="tooltip">Haritayı Uzaklaştır</div>
+                    </div>
+                    <div class="quick-btn-wrapper">
+                        <button class="quick-btn" id="clearMarkers">İşaretleri Temizle</button>
+                        <div class="tooltip">Tüm İşaretleri Kaldır</div>
+                    </div>
+                    <div class="quick-btn-wrapper">
+                        <button class="quick-btn" id="filter-bus">Sadece Otobüs</button>
+                        <div class="tooltip">Yalnızca Otobüs Duraklarını Göster</div>
+                    </div>
+                    <div class="quick-btn-wrapper">
+                        <button class="quick-btn" id="filter-tram">Sadece Tramvay</button>
+                        <div class="tooltip">Yalnızca Tramvay Duraklarını Göster</div>
+                    </div>
+                    <div class="quick-btn-wrapper">
+                        <button class="quick-btn" id="filter-all">Tüm Duraklar</button>
+                        <div class="tooltip">Tüm Durakları Göster</div>
+                    </div>
+                    <div class="quick-btn-wrapper">
+                        <button class="quick-btn" id="saveRoute">Rotayı Kaydet</button>
+                        <div class="tooltip">Mevcut Rotayı Kaydet</div>
+                    </div>
                 </div>
-                <div class="quick-btn-wrapper">
-                    <button class="quick-btn" id="set-destination">Hedef Yap</button>
-                    <div class="tooltip">Seçileni Hedef Olarak Ayarla</div>
+                <div class="route-controls">
+                    <button id="show-route-1" class="btn">Rota 1</button>
+                    <button id="show-route-2" class="btn">Rota 2</button>
+                    <button id="show-route-3" class="btn">Rota 3</button>
+                    <button id="show-all-routes" class="btn">Tüm Rotalar</button>
+                    <button id="show-taxi-route">Taksi</button>
                 </div>
             </div>
         </div>
 
-        <div class="legend">
-            <h3>Durak Türleri</h3>
-            <div class="legend-item">
-                <img src="https://img.icons8.com/color/48/000000/bus.png" alt="Otobüs" class="legend-icon" th:src="@{https://img.icons8.com/color/48/000000/bus.png}">
-                Otobüs Durağı
-            </div>
-            <div class="legend-item">
-                <img src="https://img.icons8.com/color/48/000000/tram.png" alt="Tramvay" class="legend-icon" th:src="@{https://img.icons8.com/color/48/000000/tram.png}">
-                Tramvay Durağı
-            </div>
-        </div>
-
-        <div class="quick-actions">
-            <div class="quick-btn-wrapper">
-                <button class="quick-btn" id="zoomIn">Yakınlaştır</button>
-                <div class="tooltip">Haritayı Yakınlaştır</div>
-            </div>
-            <div class="quick-btn-wrapper">
-                <button class="quick-btn" id="zoomOut">Uzaklaştır</button>
-                <div class="tooltip">Haritayı Uzaklaştır</div>
-            </div>
-            <div class="quick-btn-wrapper">
-                <button class="quick-btn" id="clearMarkers">İşaretleri Temizle</button>
-                <div class="tooltip">Tüm İşaretleri Kaldır</div>
-            </div>
-            <div class="quick-btn-wrapper">
-                <button class="quick-btn" id="filter-bus">Sadece Otobüs</button>
-                <div class="tooltip">Yalnızca Otobüs Duraklarını Göster</div>
-            </div>
-            <div class="quick-btn-wrapper">
-                <button class="quick-btn" id="filter-tram">Sadece Tramvay</button>
-                <div class="tooltip">Yalnızca Tramvay Duraklarını Göster</div>
-            </div>
-            <div class="quick-btn-wrapper">
-                <button class="quick-btn" id="filter-all">Tüm Duraklar</button>
-                <div class="tooltip">Tüm Durakları Göster</div>
-            </div>
-            <div class="quick-btn-wrapper">
-                <button class="quick-btn" id="saveRoute">Rotayı Kaydet</button>
-                <div class="tooltip">Mevcut Rotayı Kaydet</div>
-            </div>
-        </div>
-
-
-
+        <!-- Durum Çubuğu -->
         <div class="status-bar" id="status-bar">
             Durum: Harita Yüklendi
         </div>
 
+        <!-- Tema Bilgisi -->
         <div class="theme-toggle-info" id="theme-info">
             Tema: Açık Mod
         </div>
     </div>
 
+    </form>
+
+    <!-- Harita Alanı -->
     <div class="map-container">
         <div id="map"></div>
     </div>
 </div>
 
-<!-- Değişkenleri HTML’de tanımlayın -->
+<!-- JavaScript Değişkenleri -->
 <script th:inline="javascript">
     window.duraklar = /*[[${duraklar}]]*/ [];
     window.googleMapsApiKey = /*[[${googleMapsApiKey}]]*/ null;
@@ -179,7 +221,9 @@
     window.durakVerisi = JSON.parse(/*[[${duraklar != null ? duraklar : '[]'}]]*/ '[]');
 </script>
 
+<!-- Script Dosyaları -->
 <script th:src="@{js/script.js}"></script>
 <script th:src="@{https://maps.googleapis.com/maps/api/js(key=${googleMapsApiKey},libraries=geometry,callback=initMap,loading=async)}" async defer></script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'922f6ba26c70c599',t:'MTc0MjQxMzAwNS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
 </body>
 </html>
