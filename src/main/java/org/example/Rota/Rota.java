@@ -58,9 +58,9 @@ public class Rota {
 
         this.vehicleManager.setVehicle_type(endDistance);
         Vehicle end_vehicle = this.vehicleManager.getVehicle_type();
-        if(end_vehicle instanceof TaxiController) {
-            ((TaxiController) end_vehicle).setCostPerKm(taxiData.getCostPerKm());
-            ((TaxiController) end_vehicle).setOpeningFee(taxiData.getOpeningFee());
+        if(end_vehicle instanceof TaxiController nd) {
+            nd.setCostPerKm(taxiData.getCostPerKm());
+            nd.setOpeningFee(taxiData.getOpeningFee());
         }
 
 

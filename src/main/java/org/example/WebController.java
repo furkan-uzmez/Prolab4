@@ -1,6 +1,6 @@
 package org.example;
 
-import org.example.Data.Data;
+import org.example.Data.DefaultData;
 import org.example.Data.DurakData;
 import org.example.Data.TaxiData;
 import org.example.Mesafe.DistanceCalculator;
@@ -43,15 +43,15 @@ public class WebController {
     private String yolcuTuru;
     private double bakiye;
     private DistanceCalculator distanceCalculator;
-    private Data data;
+    private DefaultData data;
     private OdemeKontrol odemeKontrol;
     private final TaxiData taxiData;
     private final Taxi taxi;
 
     @Autowired
-    public WebController(DurakData durak_data, Rota rota,PassengerManager passengerManager,
-                         PaymentManager paymentManager,DistanceCalculator distanceCalculator,
-                         Data data,OdemeKontrol odemeKontrol,TaxiData taxiData,
+    public WebController(DurakData durak_data, Rota rota, PassengerManager passengerManager,
+                         PaymentManager paymentManager, DistanceCalculator distanceCalculator,
+                         DefaultData data, OdemeKontrol odemeKontrol, TaxiData taxiData,
                          Taxi taxi) {
         this.durak_data = durak_data;
         this.rota = rota;

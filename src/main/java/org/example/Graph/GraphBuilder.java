@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 public class GraphBuilder implements IGraphBuilder {
 
     public Graph buildGraph(JsonNode data) {
-        Graph graph = new Graph(true,true);
+        Graph graph = new Graph(false,true);
 
         for (JsonNode stop : data.get("duraklar")) {
             graph.addNode(stop.get("id").asText(),stop.get("lat").asDouble(),stop.get("lon").asDouble());
@@ -22,7 +22,8 @@ public class GraphBuilder implements IGraphBuilder {
                     Double sure = nextStop.get("sure").asDouble();
                     Double ucret = nextStop.get("ucret").asDouble();
                     String type = stop.get("type").asText();
-                    graph.addEdge(stopNode,targetStopNode, mesafe,sure,ucret,type);}
+                    graph.addEdge(stopNode,targetStopNode, mesafe,sure,ucret,type);
+                }
             }
 
             if (stop.has("transfer") && stop.get("transfer").hasNonNull("transferStopId")){

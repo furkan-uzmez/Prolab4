@@ -1,10 +1,9 @@
 package org.example;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.example.Data.Data;
-import org.example.Data.DurakData;
-import org.example.Data.GraphDurakData;
-import org.example.Data.TaxiData;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import org.example.Data.*;
 import org.example.DijkstraAlghorithm.DijkstraPathFinder;
 import org.example.Graph.GraphBuilder;
 import org.example.DijkstraAlghorithm.PathFinder;
@@ -32,22 +31,23 @@ public class Main {
 
     @Bean
     public Rota rota() throws IOException {
-        Data data = new Data();
-        GraphDurakData graphDurakData = new GraphDurakData(data, new ObjectMapper());
+        ObjectMapper objectMapper = new ObjectMapper();
+        JsonNodeData jsonNodeData = new JsonNodeData(objectMapper);
+        GraphDurakData graphDurakData = new GraphDurakData(objectMapper,jsonNodeData);
         DistanceCalculator distanceCalculator = new HaversineDistanceCalculator();
         Durak durak = new Durak(graphDurakData, distanceCalculator);
         IGraphBuilder graphBuilder = new GraphBuilder();
-        Graph graph = graphBuilder.buildGraph(new ObjectMapper().readTree(data.get_data()));
+        Graph graph = graphBuilder.buildGraph(jsonNodeData.get_node_data());
         PathFinder pathFinder = new DijkstraPathFinder(graph);
         VehicleManager vehicleManager = new VehicleManager();
-        TaxiData taxiData = new TaxiData(new ObjectMapper().readTree(data.get_data()).get("taxi"));
+        TaxiData taxiData = new TaxiData(objectMapper);
 
         return new Rota(pathFinder, vehicleManager, taxiData, durak);
     }
 
     @Bean
     public DurakData durakData() throws IOException {
-        return new DurakData(new Data());
+        return new DurakData();
     }
 
     @Bean
@@ -66,8 +66,8 @@ public class Main {
     }
 
     @Bean
-    public Data durak_data() throws IOException {
-        return new Data();
+    public DefaultData durak_data() throws IOException {
+        return new DefaultData();
     }
 
     @Bean
@@ -75,12 +75,12 @@ public class Main {
         return new OdemeKontrol();
     }
     @Bean
-    public Data data() throws IOException {
-        return new Data();
+    public DefaultData data() throws IOException {
+        return new DefaultData();
     }
     @Bean
-    public TaxiData taxiData(Data data) throws IOException {
-        return new TaxiData(new ObjectMapper().readTree(data.get_data()).get("taxi"));
+    public TaxiData taxiData() throws IOException {
+        return new TaxiData(new ObjectMapper());
     }
     @Bean
     public Taxi taxi(TaxiData taxiData) {
