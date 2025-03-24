@@ -1,16 +1,16 @@
 package org.example;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.example.Data.Data;
 import org.example.Data.DurakData;
+import org.example.Data.TaxiData;
 import org.example.Mesafe.DistanceCalculator;
-import org.example.Mesafe.HaversineDistanceCalculator;
 import org.example.Passenger.PassengerManager;
 import org.example.Passenger.Yolcu;
+import org.example.Payment.Odeme;
+import org.example.Payment.OdemeKontrol;
 import org.example.Payment.PaymentManager;
 import org.example.Rota.*;
-import org.example.Vehicle.Arac;
-import org.example.Vehicle.Taxi;
+import org.example.AlternativeRota.Taxi;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -21,7 +21,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -43,14 +42,26 @@ public class WebController {
     private String odemeYontemi;
     private String yolcuTuru;
     private double bakiye;
-
+    private DistanceCalculator distanceCalculator;
+    private Data data;
+    private OdemeKontrol odemeKontrol;
+    private final TaxiData taxiData;
+    private final Taxi taxi;
 
     @Autowired
-    public WebController(DurakData durak_data, Rota rota,PassengerManager passengerManager,PaymentManager paymentManager) {
+    public WebController(DurakData durak_data, Rota rota,PassengerManager passengerManager,
+                         PaymentManager paymentManager,DistanceCalculator distanceCalculator,
+                         Data data,OdemeKontrol odemeKontrol,TaxiData taxiData,
+                         Taxi taxi) {
         this.durak_data = durak_data;
         this.rota = rota;
         this.passengerManager = passengerManager;
         this.paymentManager = paymentManager;
+        this.distanceCalculator = distanceCalculator;
+        this.data = data;
+        this.odemeKontrol = odemeKontrol;
+        this.taxiData = taxiData;
+        this.taxi = taxi;
     }
 
     @GetMapping("/")
@@ -93,19 +104,17 @@ public class WebController {
         return rotaCiz();
     }
 
-    public Map rotaCiz() throws IOException {
+    public Map rotaCiz() {
         passengerManager.setYolcu(yolcuTuru);
         paymentManager.setOdeme_turu(odemeYontemi);
+        Yolcu yolcu = passengerManager.get_yolcu();
+        Odeme odeme = paymentManager.getOdeme_turu();
+        System.out.println("Yolcu nesnesi : " + yolcu);
+        System.out.println("Odeme nesnesi : " + odeme);
 
-        System.out.println("Yolcu nesnesi : " + passengerManager.get_yolcu());
-        System.out.println("Odeme nesnesi : " + paymentManager.getOdeme_turu());
-
-        // Taksi alternatifi (her zaman oluşturuluyor)
-        DistanceCalculator distanceCalculator = new HaversineDistanceCalculator();
         double taxiDistance = distanceCalculator.calculateDistance(baslangicEnlem, baslangicBoylam, hedefEnlem, hedefBoylam);
-        Data data = new Data();
-        Taxi taksi = new Taxi(new ObjectMapper().readTree(data.get_data()).get("taxi"));
-        Map<String, Object> taxiAlternative = taksi.createAlternative(baslangicEnlem, baslangicBoylam, hedefEnlem, hedefBoylam, taxiDistance);
+        Map<String, Object> taxiAlternative = taxi.createAlternative(baslangicEnlem, baslangicBoylam,
+                hedefEnlem, hedefBoylam, taxiDistance);
 
         Map rotalar = new HashMap<>();
 
@@ -113,6 +122,8 @@ public class WebController {
         rotalar.put("2",rota.findRouteWithCoordinates(baslangicEnlem, baslangicBoylam, hedefEnlem, hedefBoylam, "sure"));
         rotalar.put("3",rota.findRouteWithCoordinates(baslangicEnlem, baslangicBoylam, hedefEnlem, hedefBoylam, "mesafe"));
         rotalar.put("taxi",taxiAlternative);
+
+        odemeKontrol.kontrol(rotalar,odeme,yolcu,bakiye);
 
         System.out.println(rotalar);
 

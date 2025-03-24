@@ -12,10 +12,10 @@ public enum PaymentType {
     }
 
     // String türündeki girişleri daha güvenli çevirmek için bir yardımcı metot
-    public static PaymentType fromString(String text) {
+    public static Odeme fromString(String text) {
         for (PaymentType pt : PaymentType.values()) {
             if (pt.name().equalsIgnoreCase(text)) {
-                return pt;
+                return pt.payment_type;
             }
         }
         throw new IllegalArgumentException("Geçersiz ödeme türü: " + text);

@@ -1,6 +1,7 @@
-package org.example.Vehicle;
+package org.example.AlternativeRota;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import org.example.Data.TaxiData;
 import org.example.DijkstraAlghorithm.Coordinate;
 
 import java.util.ArrayList;
@@ -9,15 +10,14 @@ import java.util.List;
 import java.util.Map;
 
 public class Taxi implements Arac{
-    private final JsonNode taxiData;
     private final double openingFee;
     private final double costPerKm;
 
-    public Taxi(JsonNode taxiData) {
-        this.taxiData = taxiData;
-        this.openingFee = taxiData.get("openingFee").asDouble();
-        this.costPerKm = taxiData.get("costPerKm").asDouble();
+    public Taxi(TaxiData taxiData) {
+        this.openingFee = taxiData.getOpeningFee();
+        this.costPerKm = taxiData.getCostPerKm();
     }
+
 
     public double calculateTaxiFare(double distanceKm) {
         return openingFee + (distanceKm * costPerKm);
@@ -33,7 +33,7 @@ public class Taxi implements Arac{
         double taxiTime = distanceKm * 2; // Taxi time estimate: 2 min/km
 
         taxiAlternative.put("mesafe_km", distanceKm);
-        taxiAlternative.put("ucret", taxiFare);
+        taxiAlternative.put("toplam_ucret", taxiFare);
         taxiAlternative.put("tahmini_sure_dk", taxiTime);
 
         List<Coordinate> taxiWaypoints = createTaxiWaypoints(startLat, startLon, endLat, endLon);
@@ -44,7 +44,6 @@ public class Taxi implements Arac{
 
     private List<Coordinate>createTaxiWaypoints(double startLat, double startLon,
                                                           double endLat, double endLon) {
-
         List<Coordinate> vertices = new ArrayList<>();
         vertices.add(new Coordinate(String.valueOf(startLat),String.valueOf(startLon)));
         vertices.add(new Coordinate(String.valueOf(endLat),String.valueOf(endLon)));

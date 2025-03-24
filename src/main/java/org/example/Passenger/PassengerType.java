@@ -12,10 +12,10 @@ public enum PassengerType {
     }
 
     // String türündeki girişleri daha güvenli çevirmek için bir yardımcı metot
-    public static PassengerType fromString(String text) {
+    public static Yolcu fromString(String text) {
         for (PassengerType pt : PassengerType.values()) {
             if (pt.name().equalsIgnoreCase(text)) {
-                return pt;
+                return pt.passenger_type;
             }
         }
         throw new IllegalArgumentException("Geçersiz yolcu türü: " + text);

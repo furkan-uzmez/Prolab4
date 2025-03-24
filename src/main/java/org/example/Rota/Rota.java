@@ -1,40 +1,30 @@
 package org.example.Rota;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.example.Data.GraphDurakData;
+import org.example.Data.TaxiData;
 import org.example.DijkstraAlghorithm.Coordinate;
 import org.example.DijkstraAlghorithm.PathFinder;
 import org.example.Durak;
 import org.example.Mesafe.DistanceCalculator;
-import org.example.Vehicle.Taxi;
+import org.example.AlternativeRota.Taxi;
 import org.example.Graph.Graph;
-import org.example.Vehicle.WaypointGenerator;
 
 import java.util.*;
 
 public class Rota {
-    private final Graph graph;
     private final PathFinder pathFinder;
-    private final WaypointGenerator waypointGenerator;
-    private final DistanceCalculator distanceCalculator;
-    private final Taxi taksi;
-    private final ObjectMapper objectMapper;
-    private final HashMap<Coordinate, JsonNode> duraklar;
+    private final VehicleManager vehicleManager;
+    private final TaxiData taxiData;
     private final Durak durak;
 
-    public Rota(Graph graph, PathFinder pathFinder,
-                WaypointGenerator waypointGenerator,
-                DistanceCalculator distanceCalculator, Taxi taksi, Durak durak, GraphDurakData graphDurakData) {
+    public Rota(PathFinder pathFinder,
+                VehicleManager vehicleManager,
+                TaxiData taxiData, Durak durak) {
 
-        this.objectMapper = new ObjectMapper();
         this.durak = durak;
-        this.duraklar = graphDurakData.get_hashmap_duraklar();
-        this.taksi = taksi;
-        this.graph = graph;
+        this.taxiData = taxiData;
         this.pathFinder = pathFinder;
-        this.waypointGenerator = waypointGenerator;
-        this.distanceCalculator = distanceCalculator;
+        this.vehicleManager = vehicleManager;
     }
 
     public Map<String, Object> findRouteWithCoordinates(double startLat, double startLon,
@@ -51,23 +41,44 @@ public class Rota {
             throw new IllegalArgumentException("En yakın durak bulunamadı.");
         }
 
-        List<Coordinate> coordinates = new ArrayList<>();
-        coordinates.add(new Coordinate(String.valueOf(startLat),String.valueOf(startLon)));
+        Map<String, Object> path_info = initializePathInfo();
 
-        // Toplu taşıma rotası
-        Map<String, Object> yol_bilgileri = pathFinder.findBestPath(startId, endId, optimization);
+        this.vehicleManager.setVehicle_type(startDistance);
+        Vehicle start_vehicle = this.vehicleManager.getVehicle_type();
+        if(start_vehicle instanceof TaxiController) {
+            ((TaxiController) start_vehicle).setCostPerKm(taxiData.getCostPerKm());
+            ((TaxiController) start_vehicle).setOpeningFee(taxiData.getOpeningFee());
+        }
 
-        ArrayList<Coordinate> ara_koordinatlar = (ArrayList<Coordinate>) yol_bilgileri.get("ara_koordinatlar");
+        start_vehicle.create_way(path_info,new Coordinate(String.valueOf(startLat),String.valueOf(startLon)),startDistance,"start_type");
 
-        coordinates.addAll(ara_koordinatlar);
 
-        coordinates.add(new Coordinate(String.valueOf(endLat),String.valueOf(endLon)));
+        path_info = pathFinder.findBestPath(path_info,startId, endId, optimization);
 
-        yol_bilgileri.remove("ara_koordinatlar");
 
-        yol_bilgileri.put("coordinates",coordinates);
+        this.vehicleManager.setVehicle_type(endDistance);
+        Vehicle end_vehicle = this.vehicleManager.getVehicle_type();
+        if(end_vehicle instanceof TaxiController) {
+            ((TaxiController) end_vehicle).setCostPerKm(taxiData.getCostPerKm());
+            ((TaxiController) end_vehicle).setOpeningFee(taxiData.getOpeningFee());
+        }
 
-        return yol_bilgileri;
+
+        end_vehicle.create_way(path_info,new Coordinate(String.valueOf(endLat),String.valueOf(endLon)),endDistance,"end_type");
+
+
+        return path_info;
+    }
+
+    private Map<String, Object> initializePathInfo() {
+        Map<String, Object> pathInfo = new HashMap<>();
+        pathInfo.put("start_type", null);
+        pathInfo.put("end_type", null);
+        pathInfo.put("coordinates", new ArrayList<Coordinate>());
+        pathInfo.put("toplam_mesafe_km", 0.0);
+        pathInfo.put("toplam_ucret", 0.0);
+        pathInfo.put("toplam_sure_dk", 0.0);
+        return pathInfo;
     }
 
 }

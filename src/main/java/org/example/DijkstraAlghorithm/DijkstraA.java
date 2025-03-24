@@ -9,7 +9,7 @@ import java.util.Hashtable;
 import org.example.Graph.Graph;
 
 public class DijkstraA {
-    public Dictionary[] Dijkstra(Graph graph,Node start_node){
+    private Dictionary[] Dijkstra(Graph graph,Node start_node){
         Dictionary<String, Double> distances = new Hashtable<String, Double>();
         Dictionary<String, Node> previous = new Hashtable<String, Node>();
         PriorityQ pq = new PriorityQ();
