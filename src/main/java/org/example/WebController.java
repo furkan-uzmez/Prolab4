@@ -104,7 +104,7 @@ public class WebController {
         return rotaCiz();
     }
 
-    public Map rotaCiz() {
+    public Map rotaCiz() throws IOException {
         passengerManager.setYolcu(yolcuTuru);
         paymentManager.setOdeme_turu(odemeYontemi);
         Yolcu yolcu = passengerManager.get_yolcu();

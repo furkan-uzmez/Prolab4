@@ -27,17 +27,16 @@ public class GraphDurakData extends AbstractData{
     }
 
     public void set_hashmap_duraklar() throws JsonProcessingException {
-        System.out.println("k");
+
         JsonNode jsonData = jsonNodeData.get_node_data();
-        System.out.println("l");
-        System.out.println("m");
-        System.out.println(jsonData);
+
+
+
         for (JsonNode durak : jsonData.get("duraklar")) {
-            System.out.println(durak);
-            System.out.println(durak.get("lat"));
+
             duraklar.put(new Coordinate(durak.get("lat").asText(),durak.get("lon").asText()), durak);
         }
-        System.out.println("n");
+
     }
 
     public HashMap<Coordinate,JsonNode> get_hashmap_duraklar(){

@@ -46,11 +46,6 @@ public class Main {
     }
 
     @Bean
-    public DurakData durakData() throws IOException {
-        return new DurakData();
-    }
-
-    @Bean
     public PassengerManager passengerManager(){
         return new PassengerManager();
     }
@@ -66,8 +61,8 @@ public class Main {
     }
 
     @Bean
-    public DefaultData durak_data() throws IOException {
-        return new DefaultData();
+    public DurakData durak_data() throws IOException {
+        return new DurakData();
     }
 
     @Bean
