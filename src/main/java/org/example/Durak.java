@@ -25,10 +25,10 @@ public class Durak {
         for (Map.Entry<Coordinate, JsonNode> entry : graphDurakData.get_hashmap_duraklar().entrySet()) {
             JsonNode stop = entry.getValue();
 
-            if(!stop.get("type").asText().equals("tram")) {
-                System.out.println(stop.get("id").asText());
-                continue;
-            }
+//            if(!stop.get("type").asText().equals("tram")) {
+//                System.out.println(stop.get("id").asText());
+//                continue;
+//            }
             double distance = distanceCalculator.calculateDistance(lat, lon,
                     stop.get("lat").asDouble(),
                     stop.get("lon").asDouble());

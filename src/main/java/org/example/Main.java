@@ -39,16 +39,20 @@ public class Main {
 
         BusGraphBuilder busGraphBuilder = new BusGraphBuilder();
         TramGraphBuilder tramGraphBuilder = new TramGraphBuilder();
+        BusTramGraphBuilder busTramGraphBuilder = new BusTramGraphBuilder();
 
         IGraphBuilder graphBuilder = new GraphBuilder();
         Graph graph = graphBuilder.buildGraph(jsonNodeData.get_node_data());
         PathFinder pathFinder = new DijkstraPathFinder(graph);
+
         PathFinder pathFinder1 = new DijkstraPathFinder(busGraphBuilder.buildGraph(stopData));
         PathFinder pathFinder2 = new DijkstraPathFinder(tramGraphBuilder.buildGraph(stopData));
+        PathFinder pathFinder3 = new DijkstraPathFinder(busTramGraphBuilder.buildGraph(stopData));
+
         VehicleManager vehicleManager = new VehicleManager();
         TaxiData taxiData = new TaxiData(objectMapper);
 
-        return new Rota(pathFinder2, vehicleManager, taxiData, durak);
+        return new Rota(pathFinder3, vehicleManager, taxiData, durak);
     }
 
     @Bean
