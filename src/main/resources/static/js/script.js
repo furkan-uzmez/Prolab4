@@ -519,6 +519,11 @@ function setupEventListeners() {
             }
         }
     });
+
+    document.getElementById('closeInfoPanel').addEventListener('click', () => {
+        document.getElementById('infoPanel').style.display = 'none';
+        document.getElementById('status-bar').textContent = 'Durum: Bilgi paneli kapatıldı';
+    });
 }
 
 function initializeRoute(sonuc) {
@@ -541,11 +546,12 @@ function initializeRoute(sonuc) {
         "1": "#4285F4", // Blue
         "2": "#000080", // Navy Blue
         "3": "#34C759", // Green
-        "taxi": "#FF0000" // Red
+        "taxi": "#fb9403" // Red
     };
 
     let bounds = new google.maps.LatLngBounds();
     let routeCount = 0;
+    let routeInfoHtml = '';
 
     for (const routeId in sonuc) {
         console.log(`Processing routeId: ${routeId}`);
@@ -559,16 +565,15 @@ function initializeRoute(sonuc) {
             if (routePath.length >= 2) {
                 routeCount++;
                 const isBalanceSufficient = sonuc[routeId].bakiye_yeterli;
-                const defaultColor = isBalanceSufficient ? routeColors[routeId] || '#4285F4' : '#808080'; // Gray if insufficient
+                const defaultColor = isBalanceSufficient ? routeColors[routeId] || '#4285F4' : '#808080';
                 const startType = sonuc[routeId].start_type || 'unknown';
                 const endType = sonuc[routeId].end_type || 'unknown';
 
                 console.log(`Route ${routeId}: startType=${startType}, endType=${endType}, bakiye_yeterli=${isBalanceSufficient}`);
 
-                // Segment the route
                 for (let i = 0; i < routePath.length - 1; i++) {
                     let segmentColor = defaultColor;
-                    if (isBalanceSufficient) { // Only apply segment colors if balance is sufficient
+                    if (isBalanceSufficient) {
                         if (i === 0) {
                             segmentColor = startType === 'walking' ? '#000000' : (startType === 'taxi' ? '#FFA500' : defaultColor);
                         } else if (i === routePath.length - 2) {
@@ -603,6 +608,21 @@ function initializeRoute(sonuc) {
                 }
 
                 routePath.forEach(point => bounds.extend(point));
+
+                const routeData = sonuc[routeId];
+                const distance = routeId === "taxi" ? (routeData.mesafe_km ? `${routeData.mesafe_km.toFixed(2)} km` : "N/A") : (routeData.toplam_mesafe_km ? `${routeData.toplam_mesafe_km} km` : "N/A");
+                const cost = routeId === "taxi" ? ((routeData.ucret || routeData.toplam_ucret) ? `${(routeData.ucret || routeData.toplam_ucret).toFixed(2)} TL` : "0.0") : (routeData.toplam_ucret ? `${routeData.toplam_ucret} TL` : "N/A");
+                const duration = routeId === "taxi" ? (routeData.tahmini_sure_dk ? `${Math.round(routeData.tahmini_sure_dk)} dk` : "N/A") : (routeData.toplam_sure_dk ? `${routeData.toplam_sure_dk} dk` : "N/A");
+                const balanceStatus = isBalanceSufficient ? `Kalan Bakiye: ${routeData.kalan_bakiye || '0.0'} TL` : "Bakiye Yetersiz";
+                const routeName = routeId === "taxi" ? "Taksi Rotası" : `Rota ${routeId}`;
+
+                routeInfoHtml += `
+                    <h4>${routeName}</h4>
+                    <p><span>Mesafe:</span> ${distance}</p>
+                    <p><span>Ücret:</span> ${cost}</p>
+                    <p><span>Süre:</span> ${duration}</p>
+                    <p><span>Durum:</span> ${balanceStatus}</p>
+                `;
             } else {
                 console.warn(`Route ${routeId} has insufficient coordinates: ${routePath.length}`);
             }
@@ -613,12 +633,16 @@ function initializeRoute(sonuc) {
     if (routeCount > 0) {
         map.fitBounds(bounds);
         document.getElementById('status-bar').textContent = `Durum: ${routeCount} rota çizildi`;
+
+        // Show info panel
+        const infoPanel = document.getElementById('infoPanel');
+        const routeInfoContent = document.getElementById('routeInfoContent');
+        routeInfoContent.innerHTML = routeInfoHtml;
+        infoPanel.style.display = 'block';
     } else {
         document.getElementById('status-bar').textContent = 'Durum: Geçerli rota bulunamadı';
     }
 }
-
-
 
 function drawRouteWithId(path, color, routeId) {
     const validPath = path.filter(p => p && typeof p.lat === 'number' && !isNaN(p.lat) && typeof p.lng === 'number' && !isNaN(p.lng));
@@ -651,12 +675,11 @@ function toggleRoute(routeId) {
         "1": "#4285F4", // Blue
         "2": "#000080", // Navy Blue
         "3": "#34C759", // Green
-        "taxi": "#FF0000" // Red
+        "taxi": "#fb9403" // Red
     };
 
     console.log(`Toggling route: ${routeId}`);
 
-    // Hide all routes
     [route1Polylines, route2Polylines, route3Polylines, taxiPolylines].forEach(route => {
         route.forEach(polyline => polyline.setVisible(false));
     });
@@ -686,9 +709,9 @@ function toggleRoute(routeId) {
         statusMessage = 'Durum: Tüm rotalar gösteriliyor';
     } else {
         const routePolylines = routeId === "1" ? route1Polylines :
-                               routeId === "2" ? route2Polylines :
-                               routeId === "3" ? route3Polylines :
-                               routeId === "taxi" ? taxiPolylines : [];
+            routeId === "2" ? route2Polylines :
+                routeId === "3" ? route3Polylines :
+                    routeId === "taxi" ? taxiPolylines : [];
         const isBalanceSufficient = window.routeDataResult[routeId]?.bakiye_yeterli || false;
         const defaultColor = isBalanceSufficient ? routeColors[routeId] : '#808080';
         const startType = window.routeDataResult[routeId]?.start_type || 'unknown';
@@ -711,10 +734,9 @@ function toggleRoute(routeId) {
         if (window.routeDataResult && window.routeDataResult[routeId]) {
             const routeData = window.routeDataResult[routeId];
             let distance = routeId === "taxi" ? (routeData.mesafe_km ? `${routeData.mesafe_km.toFixed(2)} km` : "N/A") : (routeData.toplam_mesafe_km ? `${routeData.toplam_mesafe_km} km` : "N/A");
-            // Fix: Check both ucret and toplam_ucret for taxi
             let cost = routeId === "taxi" ? ((routeData.ucret || routeData.toplam_ucret) ? `${(routeData.ucret || routeData.toplam_ucret).toFixed(2)} TL` : "N/A") : (routeData.toplam_ucret ? `${routeData.toplam_ucret} TL` : "N/A");
             let duration = routeId === "taxi" ? (routeData.tahmini_sure_dk ? `${Math.round(routeData.tahmini_sure_dk)} dk` : "N/A") : (routeData.toplam_sure_dk ? `${routeData.toplam_sure_dk} dk` : "N/A");
-            let balanceStatus = isBalanceSufficient ? `Kalan Bakiye: ${routeData.kalan_bakiye} TL` : "Bakiye Yetersiz";
+            let balanceStatus = isBalanceSufficient ? `Kalan Bakiye: ${routeData.kalan_bakiye || 'Sıfır'} TL` : "Bakiye Yetersiz";
             statusMessage = `${routeId === "taxi" ? "Taksi" : "Rota " + routeId}: Mesafe: ${distance}, Ücret: ${cost}, Süre: ${duration}, ${balanceStatus}`;
         } else {
             statusMessage = `Durum: ${routeId === "taxi" ? "Taksi" : "Rota " + routeId} gösteriliyor (Detaylar mevcut değil)`;

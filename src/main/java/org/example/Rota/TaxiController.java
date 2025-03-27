@@ -1,8 +1,20 @@
 package org.example.Rota;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.example.Data.TaxiData;
+
+import java.io.IOException;
+
 public class TaxiController extends Vehicle {
     private double openingFee;
     private double costPerKm;
+    private TaxiData taxiData;
+
+    public TaxiController() throws IOException {
+        this.taxiData = new TaxiData(new ObjectMapper());
+        setCostPerKm();
+        setOpeningFee();
+    }
 
     @Override
     public String get_name(){
@@ -19,11 +31,11 @@ public class TaxiController extends Vehicle {
         return openingFee + (costPerKm*distance);
     }
 
-    public void setCostPerKm(double costPerKm) {
-        this.costPerKm = costPerKm;
+    public void setCostPerKm() {
+        this.costPerKm = taxiData.getCostPerKm();
     }
 
-    public void setOpeningFee(double openingFee) {
-        this.openingFee = openingFee;
+    public void setOpeningFee() {
+        this.openingFee = taxiData.getCostPerKm();
     }
 }
