@@ -1,5 +1,6 @@
 package org.example;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.example.Data.*;
 import org.example.Data.DurakD.StopData;
@@ -35,15 +36,15 @@ public class Main {
         StopData stopData = new StopData();
         stopData.set_stops(jsonNodeData);
         DistanceCalculator distanceCalculator = new HaversineDistanceCalculator();
-        Durak durak = new Durak(graphDurakData, distanceCalculator);
+        Durak durak = new Durak(graphDurakData, distanceCalculator,"");
 
-        BusGraphBuilder busGraphBuilder = new BusGraphBuilder();
-        TramGraphBuilder tramGraphBuilder = new TramGraphBuilder();
-        BusTramGraphBuilder busTramGraphBuilder = new BusTramGraphBuilder();
+        IGraphBuilder busGraphBuilder = new BusGraphBuilder();
+        IGraphBuilder tramGraphBuilder = new TramGraphBuilder();
+        IGraphBuilder busTramGraphBuilder = new BusTramGraphBuilder();
 
-        IGraphBuilder graphBuilder = new GraphBuilder();
-        Graph graph = graphBuilder.buildGraph(jsonNodeData.get_node_data());
-        PathFinder pathFinder = new DijkstraPathFinder(graph);
+        //IGraphBuilder graphBuilder = new GraphBuilder();
+        //Graph graph = graphBuilder.buildGraph(jsonNodeData.get_node_data());
+        //PathFinder pathFinder = new DijkstraPathFinder(graph);
 
         PathFinder pathFinder1 = new DijkstraPathFinder(busGraphBuilder.buildGraph(stopData));
         PathFinder pathFinder2 = new DijkstraPathFinder(tramGraphBuilder.buildGraph(stopData));
@@ -55,9 +56,56 @@ public class Main {
         return new Rota(pathFinder3, vehicleManager, taxiData, durak);
     }
 
+
+
     @Bean
     public PassengerManager passengerManager(){
         return new PassengerManager();
+    }
+
+    @Bean
+    public ObjectMapper objectMapper(){
+        return new ObjectMapper();
+    }
+
+    @Bean
+    public JsonNodeData jsonNodeData(ObjectMapper objectMapper) throws IOException {
+        return  new JsonNodeData(objectMapper);
+    }
+
+    @Bean
+    public GraphDurakData graphDurakData(ObjectMapper objectMapper,JsonNodeData jsonNodeData) throws IOException {
+        return new GraphDurakData(objectMapper,jsonNodeData);
+    }
+
+    @Bean
+    public StopData stopData(){
+        return new StopData();
+    }
+
+    @Bean
+    public Durak durak(GraphDurakData graphDurakData,DistanceCalculator distanceCalculator){
+        return new Durak(graphDurakData,distanceCalculator,"");
+    }
+
+    @Bean
+    public IGraphBuilder busgraphbuilder(){
+        return new BusGraphBuilder();
+    }
+
+    @Bean
+    public IGraphBuilder tramgraphbuilder(){
+        return new TramGraphBuilder();
+    }
+
+    @Bean
+    public IGraphBuilder bustramgraphbuilder(){
+        return new BusTramGraphBuilder();
+    }
+
+    @Bean
+    public PathFinder dijsktrapathfinder(Graph graph){
+        return new DijkstraPathFinder(graph);
     }
 
     @Bean

@@ -5,7 +5,7 @@ import org.example.Data.DurakD.StopData;
 import org.example.Data.DurakD.Transfer;
 import org.example.DijkstraAlghorithm.Coordinate;
 
-public class BusTramGraphBuilder {
+public class BusTramGraphBuilder implements IGraphBuilder{
     public Graph buildGraph(StopData stopData) {
         Graph graph = new Graph(false,true);
 
@@ -43,5 +43,9 @@ public class BusTramGraphBuilder {
         }
 
         return graph;
+    }
+
+    public String get_name(){
+        return "";
     }
 }

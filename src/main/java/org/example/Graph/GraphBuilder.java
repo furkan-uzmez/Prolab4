@@ -2,7 +2,7 @@ package org.example.Graph;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
-public class GraphBuilder implements IGraphBuilder {
+public class GraphBuilder {
 
     public Graph buildGraph(JsonNode data) {
         Graph graph = new Graph(false,true);

@@ -4,7 +4,7 @@ import org.example.Data.DurakD.Stop;
 import org.example.Data.DurakD.StopData;
 import org.example.DijkstraAlghorithm.Coordinate;
 
-public class TramGraphBuilder {
+public class TramGraphBuilder implements IGraphBuilder{
     public Graph buildGraph(StopData stopData) {
         Graph graph = new Graph(false,true);
 
@@ -34,5 +34,9 @@ public class TramGraphBuilder {
         }
 
         return graph;
+    }
+
+    public String get_name(){
+        return "tram";
     }
 }

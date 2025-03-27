@@ -4,7 +4,7 @@ import org.example.Data.DurakD.Stop;
 import org.example.Data.DurakD.StopData;
 import org.example.DijkstraAlghorithm.Coordinate;
 
-public class BusGraphBuilder{
+public class BusGraphBuilder implements IGraphBuilder{
     public Graph buildGraph(StopData stopData) {
         Graph graph = new Graph(false,true);
 
@@ -35,5 +35,9 @@ public class BusGraphBuilder{
         }
 
         return graph;
+    }
+
+    public String get_name(){
+        return "bus";
     }
 }
