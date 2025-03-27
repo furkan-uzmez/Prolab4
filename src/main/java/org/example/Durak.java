@@ -25,7 +25,7 @@ public class Durak {
         for (Map.Entry<Coordinate, JsonNode> entry : graphDurakData.get_hashmap_duraklar().entrySet()) {
             JsonNode stop = entry.getValue();
 
-            if(!stop.get("type").asText().equals("bus")) {
+            if(!stop.get("type").asText().equals("tram")) {
                 System.out.println(stop.get("id").asText());
                 continue;
             }

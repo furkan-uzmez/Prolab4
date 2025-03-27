@@ -4,10 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.example.Data.*;
 import org.example.Data.DurakD.StopData;
 import org.example.DijkstraAlghorithm.DijkstraPathFinder;
-import org.example.Graph.BusGraphBuilder;
-import org.example.Graph.GraphBuilder;
+import org.example.Graph.*;
 import org.example.DijkstraAlghorithm.PathFinder;
-import org.example.Graph.IGraphBuilder;
 import org.example.Mesafe.DistanceCalculator;
 import org.example.Mesafe.HaversineDistanceCalculator;
 import org.example.Passenger.PassengerManager;
@@ -17,7 +15,6 @@ import org.example.Rota.*;
 import org.example.AlternativeRota.Taxi;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.example.Graph.Graph;
 
 import org.springframework.context.annotation.Bean;
 
@@ -39,15 +36,19 @@ public class Main {
         stopData.set_stops(jsonNodeData);
         DistanceCalculator distanceCalculator = new HaversineDistanceCalculator();
         Durak durak = new Durak(graphDurakData, distanceCalculator);
+
         BusGraphBuilder busGraphBuilder = new BusGraphBuilder();
+        TramGraphBuilder tramGraphBuilder = new TramGraphBuilder();
+
         IGraphBuilder graphBuilder = new GraphBuilder();
         Graph graph = graphBuilder.buildGraph(jsonNodeData.get_node_data());
         PathFinder pathFinder = new DijkstraPathFinder(graph);
         PathFinder pathFinder1 = new DijkstraPathFinder(busGraphBuilder.buildGraph(stopData));
+        PathFinder pathFinder2 = new DijkstraPathFinder(tramGraphBuilder.buildGraph(stopData));
         VehicleManager vehicleManager = new VehicleManager();
         TaxiData taxiData = new TaxiData(objectMapper);
 
-        return new Rota(pathFinder1, vehicleManager, taxiData, durak);
+        return new Rota(pathFinder2, vehicleManager, taxiData, durak);
     }
 
     @Bean
