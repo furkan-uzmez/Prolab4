@@ -103,10 +103,6 @@ public class Main {
         return new BusTramGraphBuilder();
     }
 
-    @Bean
-    public PathFinder dijsktrapathfinder(Graph graph){
-        return new DijkstraPathFinder(graph);
-    }
 
     @Bean
     public PaymentManager paymentManager(){
