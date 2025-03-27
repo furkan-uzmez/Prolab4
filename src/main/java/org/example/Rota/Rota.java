@@ -42,6 +42,8 @@ public class Rota {
 
         this.vehicleManager.setVehicle_type(startDistance);
         Vehicle start_vehicle = this.vehicleManager.getVehicle_type();
+        System.out.println("start_vehicle:" + start_vehicle);
+        System.out.println(start_vehicle.get_ucret(startDistance));
 
         start_vehicle.create_way(path_info,new Coordinate(String.valueOf(startLat),String.valueOf(startLon)),startDistance,"start_type");
 
@@ -49,6 +51,9 @@ public class Rota {
 
         this.vehicleManager.setVehicle_type(endDistance);
         Vehicle end_vehicle = this.vehicleManager.getVehicle_type();
+        System.out.println("end_vehicle:" + end_vehicle);
+        System.out.println(end_vehicle.get_ucret(endDistance));
+
 
         end_vehicle.create_way(path_info,new Coordinate(String.valueOf(endLat),String.valueOf(endLon)),endDistance,"end_type");
 

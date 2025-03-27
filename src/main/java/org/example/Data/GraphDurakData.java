@@ -31,7 +31,6 @@ public class GraphDurakData extends AbstractData{
         JsonNode jsonData = jsonNodeData.get_node_data();
 
 
-
         for (JsonNode durak : jsonData.get("duraklar")) {
 
             duraklar.put(new Coordinate(durak.get("lat").asText(),durak.get("lon").asText()), durak);

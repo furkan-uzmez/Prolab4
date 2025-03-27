@@ -5,10 +5,11 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 
 public abstract class AbstractData {
-    private String veri;
+    private final String veri;
 
     public AbstractData() throws IOException {
         this.veri = set_data("veriseti.json");
+        System.out.println("String adres : " + System.identityHashCode(veri));
     }
 
     public String get_data() {

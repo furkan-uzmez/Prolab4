@@ -1,10 +1,10 @@
 package org.example;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import org.example.Data.*;
+import org.example.Data.DurakD.StopData;
 import org.example.DijkstraAlghorithm.DijkstraPathFinder;
+import org.example.Graph.BusGraphBuilder;
 import org.example.Graph.GraphBuilder;
 import org.example.DijkstraAlghorithm.PathFinder;
 import org.example.Graph.IGraphBuilder;
@@ -34,15 +34,20 @@ public class Main {
         ObjectMapper objectMapper = new ObjectMapper();
         JsonNodeData jsonNodeData = new JsonNodeData(objectMapper);
         GraphDurakData graphDurakData = new GraphDurakData(objectMapper,jsonNodeData);
+
+        StopData stopData = new StopData();
+        stopData.set_stops(jsonNodeData);
         DistanceCalculator distanceCalculator = new HaversineDistanceCalculator();
         Durak durak = new Durak(graphDurakData, distanceCalculator);
+        BusGraphBuilder busGraphBuilder = new BusGraphBuilder();
         IGraphBuilder graphBuilder = new GraphBuilder();
         Graph graph = graphBuilder.buildGraph(jsonNodeData.get_node_data());
         PathFinder pathFinder = new DijkstraPathFinder(graph);
+        PathFinder pathFinder1 = new DijkstraPathFinder(busGraphBuilder.buildGraph(stopData));
         VehicleManager vehicleManager = new VehicleManager();
         TaxiData taxiData = new TaxiData(objectMapper);
 
-        return new Rota(pathFinder, vehicleManager, taxiData, durak);
+        return new Rota(pathFinder1, vehicleManager, taxiData, durak);
     }
 
     @Bean
