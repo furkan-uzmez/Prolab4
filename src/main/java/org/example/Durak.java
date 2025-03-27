@@ -12,12 +12,10 @@ import java.util.Map;
 public class Durak {
     private final DistanceCalculator distanceCalculator;
     private final GraphDurakData graphDurakData;
-    private final String type;
 
-    Durak(GraphDurakData graphDurakData, DistanceCalculator distanceCalculator,String type)  {
+    Durak(GraphDurakData graphDurakData, DistanceCalculator distanceCalculator)  {
         this.graphDurakData = graphDurakData;
         this.distanceCalculator = distanceCalculator;
-        this.type = type;
     }
 
     public Map.Entry<String, Double> findNearestStop(double lat, double lon) {
@@ -26,11 +24,6 @@ public class Durak {
 
         for (Map.Entry<Coordinate, JsonNode> entry : graphDurakData.get_hashmap_duraklar().entrySet()) {
             JsonNode stop = entry.getValue();
-
-            if(!stop.get("type").asText().equals(type)) {
-                System.out.println(stop.get("id").asText());
-               continue;
-            }
             double distance = distanceCalculator.calculateDistance(lat, lon,
                     stop.get("lat").asDouble(),
                     stop.get("lon").asDouble());

@@ -1,11 +1,14 @@
 package org.example.Rota;
 
+import org.example.Data.GraphDurakData;
 import org.example.Data.TaxiData;
 import org.example.DijkstraAlghorithm.Coordinate;
 import org.example.DijkstraAlghorithm.PathFinder;
 import org.example.Durak;
+import org.example.Mesafe.DistanceCalculator;
+import org.example.AlternativeRota.Taxi;
+import org.example.Graph.Graph;
 
-import java.io.IOException;
 import java.util.*;
 
 public class Rota {
@@ -26,7 +29,7 @@ public class Rota {
 
     public Map<String, Object> findRouteWithCoordinates(double startLat, double startLon,
                                                         double endLat, double endLon,
-                                                        String optimization) throws IOException {
+                                                        String optimization) {
         Map.Entry<String, Double> startStop = durak.findNearestStop(startLat, startLon);
         Map.Entry<String, Double> endStop = durak.findNearestStop(endLat, endLon);
         String startId = startStop.getKey();
@@ -42,20 +45,27 @@ public class Rota {
 
         this.vehicleManager.setVehicle_type(startDistance);
         Vehicle start_vehicle = this.vehicleManager.getVehicle_type();
-        System.out.println("start_vehicle:" + start_vehicle);
-        System.out.println(start_vehicle.get_ucret(startDistance));
+        if(start_vehicle instanceof TaxiController) {
+            ((TaxiController) start_vehicle).setCostPerKm(taxiData.getCostPerKm());
+            ((TaxiController) start_vehicle).setOpeningFee(taxiData.getOpeningFee());
+        }
 
         start_vehicle.create_way(path_info,new Coordinate(String.valueOf(startLat),String.valueOf(startLon)),startDistance,"start_type");
 
+
         path_info = pathFinder.findBestPath(path_info,startId, endId, optimization);
+
 
         this.vehicleManager.setVehicle_type(endDistance);
         Vehicle end_vehicle = this.vehicleManager.getVehicle_type();
-        System.out.println("end_vehicle:" + end_vehicle);
-        System.out.println(end_vehicle.get_ucret(endDistance));
+        if(end_vehicle instanceof TaxiController nd) {
+            nd.setCostPerKm(taxiData.getCostPerKm());
+            nd.setOpeningFee(taxiData.getOpeningFee());
+        }
 
 
         end_vehicle.create_way(path_info,new Coordinate(String.valueOf(endLat),String.valueOf(endLon)),endDistance,"end_type");
+
 
         return path_info;
     }

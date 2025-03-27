@@ -1,12 +1,10 @@
 package org.example.Rota;
 
 
-import java.io.IOException;
-
 public class VehicleManager {
     private Vehicle vehicle_type;
 
-    public void setVehicle_type(double distance) throws IOException {
+    public void setVehicle_type(double distance){
         if(distance<=3){
             this.vehicle_type = new WalkingController();
         }
