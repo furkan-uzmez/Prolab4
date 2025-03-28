@@ -1,8 +1,10 @@
 package org.example;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.example.Data.*;
-import org.example.Data.DurakD.StopData;
+import org.example.Data.DurakVerileri.*;
+import org.example.Data.Duraklar.Transfer;
 import org.example.DijkstraAlghorithm.DijkstraPathFinder;
 import org.example.Graph.*;
 import org.example.DijkstraAlghorithm.PathFinder;
@@ -26,28 +28,30 @@ public class Main {
         SpringApplication.run(Main.class, args);
     }
 
-    @Bean
     public Rota rota() throws IOException {
         ObjectMapper objectMapper = new ObjectMapper();
         JsonNodeData jsonNodeData = new JsonNodeData(objectMapper);
         GraphDurakData graphDurakData = new GraphDurakData(objectMapper,jsonNodeData);
 
-        StopData stopData = new StopData();
-        stopData.set_stops(jsonNodeData);
+//        StopData stopData = new StopData();
+//        stopData.set_stops(jsonNodeData);
         DistanceCalculator distanceCalculator = new HaversineDistanceCalculator();
         Durak durak = new Durak(graphDurakData, distanceCalculator,"");
 
         IGraphBuilder busGraphBuilder = new BusGraphBuilder();
         IGraphBuilder tramGraphBuilder = new TramGraphBuilder();
-        IGraphBuilder busTramGraphBuilder = new BusTramGraphBuilder();
+        ITransferGraphBuilder busTramGraphBuilder = new BusTramGraphBuilder();
 
         //IGraphBuilder graphBuilder = new GraphBuilder();
         //Graph graph = graphBuilder.buildGraph(jsonNodeData.get_node_data());
         //PathFinder pathFinder = new DijkstraPathFinder(graph);
 
-        PathFinder pathFinder1 = new DijkstraPathFinder(busGraphBuilder.buildGraph(stopData));
-        PathFinder pathFinder2 = new DijkstraPathFinder(tramGraphBuilder.buildGraph(stopData));
-        PathFinder pathFinder3 = new DijkstraPathFinder(busTramGraphBuilder.buildGraph(stopData));
+        StopData bus_stop_data = new BusStopData(jsonNodeData);
+        StopData tram_stop_data = new TramStopData(jsonNodeData);
+
+        PathFinder pathFinder1 = new DijkstraPathFinder(busGraphBuilder.buildGraph(bus_stop_data));
+        PathFinder pathFinder2 = new DijkstraPathFinder(tramGraphBuilder.buildGraph(tram_stop_data));
+        PathFinder pathFinder3 = new DijkstraPathFinder(busTramGraphBuilder.buildGraph(new BusTramTransferData(jsonNodeData,bus_stop_data.getStops(),tram_stop_data.getStops())));
 
         VehicleManager vehicleManager = new VehicleManager();
         TaxiData taxiData = new TaxiData(objectMapper);
@@ -78,8 +82,13 @@ public class Main {
     }
 
     @Bean
-    public StopData stopData(){
-        return new StopData();
+    public StopData busstopData(JsonNodeData jsonNodeData) throws JsonProcessingException {
+        return new BusStopData(jsonNodeData);
+    }
+
+    @Bean
+    public StopData tramstopData(JsonNodeData jsonNodeData) throws JsonProcessingException {
+        return new TramStopData(jsonNodeData);
     }
 
     @Bean
@@ -98,7 +107,7 @@ public class Main {
     }
 
     @Bean
-    public IGraphBuilder bustramgraphbuilder(){
+    public ITransferGraphBuilder bustramgraphbuilder(){
         return new BusTramGraphBuilder();
     }
 

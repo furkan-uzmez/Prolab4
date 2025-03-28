@@ -1,4 +1,4 @@
-package org.example.Data.DurakD;
+package org.example.Data.Duraklar;
 
 public class TramStop extends Stop {
     @Override

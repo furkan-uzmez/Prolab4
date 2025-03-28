@@ -1,18 +1,13 @@
 package org.example;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.example.Data.*;
-import org.example.Data.DurakD.StopData;
+import org.example.Data.DurakVerileri.*;
 import org.example.DijkstraAlghorithm.DijkstraPathFinder;
 import org.example.DijkstraAlghorithm.PathFinder;
-import org.example.Graph.BusGraphBuilder;
-import org.example.Graph.BusTramGraphBuilder;
-import org.example.Graph.IGraphBuilder;
-import org.example.Graph.TramGraphBuilder;
+import org.example.Graph.*;
 import org.example.Mesafe.DistanceCalculator;
-import org.example.Mesafe.HaversineDistanceCalculator;
 import org.example.Passenger.PassengerManager;
 import org.example.Passenger.Yolcu;
 import org.example.Payment.Odeme;
@@ -61,33 +56,35 @@ public class WebController {
     private final ObjectMapper objectMapper;
     private final JsonNodeData jsonNodeData;
     private final GraphDurakData graphDurakData;
-    private final StopData stopData;
     private final Durak durak;
 
     @Autowired
-    public WebController(DurakData durak_data, Rota rota, PassengerManager passengerManager,
+    public WebController(DurakData durak_data, PassengerManager passengerManager,
                          PaymentManager paymentManager, DistanceCalculator distanceCalculator,
                          DefaultData data, OdemeKontrol odemeKontrol, TaxiData taxiData,
                          Taxi taxi, ObjectMapper objectMapper, JsonNodeData jsonNodeData,
-                         GraphDurakData graphDurakData,StopData stopData,Durak durak
+                         GraphDurakData graphDurakData,Durak durak
                          ) throws JsonProcessingException {
         this.objectMapper = objectMapper;
         this.jsonNodeData = jsonNodeData;
         this.graphDurakData =  graphDurakData;
 
-        this.stopData = stopData;
-        stopData.set_stops(jsonNodeData);
+        StopData busStopData = new BusStopData(jsonNodeData);
+        StopData tramStopData = new TramStopData(jsonNodeData);
+        TransferData busTramTransferData = new BusTramTransferData(jsonNodeData,busStopData.getStops(),tramStopData.getStops());
+
+
         this.distanceCalculator = distanceCalculator;
         this.durak = durak;
 
         IGraphBuilder busGraphBuilder = new BusGraphBuilder();
         IGraphBuilder tramGraphBuilder = new TramGraphBuilder();
-        IGraphBuilder busTramGraphBuilder = new BusTramGraphBuilder();
+        ITransferGraphBuilder busTramGraphBuilder = new BusTramGraphBuilder();
 
 
-        PathFinder pathFinder1 = new DijkstraPathFinder(busGraphBuilder.buildGraph(stopData));
-        PathFinder pathFinder2 = new DijkstraPathFinder(tramGraphBuilder.buildGraph(stopData));
-        PathFinder pathFinder3 = new DijkstraPathFinder(busTramGraphBuilder.buildGraph(stopData));
+        PathFinder pathFinder1 = new DijkstraPathFinder(busGraphBuilder.buildGraph(busStopData));
+        PathFinder pathFinder2 = new DijkstraPathFinder(tramGraphBuilder.buildGraph(tramStopData));
+        PathFinder pathFinder3 = new DijkstraPathFinder(busTramGraphBuilder.buildGraph(busTramTransferData));
 
         VehicleManager vehicleManager = new VehicleManager();
 
@@ -110,11 +107,9 @@ public class WebController {
     @GetMapping("/")
     public String home(Model model) {
         try {
-            System.out.println("9");
             model.addAttribute("duraklar", durak_data.getDuraklar().toString());
             model.addAttribute("googleMapsApiKey", googleMapsApiKey);
             model.addAttribute("mesaj", "Spring Boot HTML bağlantısı başarılı!");
-            System.out.println("10");
         } catch (Exception e) {
             model.addAttribute("mesaj", "Error loading JSON: " + e.getMessage());
         }
@@ -163,6 +158,10 @@ public class WebController {
 
         Map rotalar = new HashMap<>();
 
+        RotaInfoManager rotaInfoManager = new RotaInfoManager();
+
+//        RotaInfo rotaInfo = new RotaInfo();
+//        rotaInfo.addPath_info();
         rotalar.put("bus-ucret",rota1.findRouteWithCoordinates(baslangicEnlem, baslangicBoylam, hedefEnlem, hedefBoylam, "ucret"));
         rotalar.put("bus-sure",rota1.findRouteWithCoordinates(baslangicEnlem, baslangicBoylam, hedefEnlem, hedefBoylam, "sure"));
         rotalar.put("bus-mesafe",rota1.findRouteWithCoordinates(baslangicEnlem, baslangicBoylam, hedefEnlem, hedefBoylam, "mesafe"));

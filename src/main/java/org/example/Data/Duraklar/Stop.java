@@ -1,4 +1,4 @@
-package org.example.Data.DurakD;
+package org.example.Data.Duraklar;
 
 import org.example.DijkstraAlghorithm.Coordinate;
 
