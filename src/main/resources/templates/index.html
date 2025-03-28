@@ -191,27 +191,43 @@
                         <div class="tooltip">Mevcut Rotayı Kaydet</div>
                     </div>
 
-                    <div class="route-controls">
-                        <button class="quick-btn" id="show-route-1">Rota 1</button>
-                        <div class="tooltip">1. Rotayı göster</div>
+                    <div class="quick-btn-wrapper">
+                        <button class="quick-btn transport-btn" id="bus-btn" data-type="bus">Otobüs</button>
+                        <div class="tooltip">Tüm Otobüs Rotalarını Göster</div>
                     </div>
-                    <div class="route-controls">
-                        <button class="quick-btn" id="show-route-2">Rota 2</button>
-                        <div class="tooltip">2. Rotayı göster</div>
+                    <div class="quick-btn-wrapper">
+                        <button class="quick-btn transport-btn" id="tram-btn" data-type="tram">Tramvay</button>
+                        <div class="tooltip">Tüm Tramvay Rotalarını Göster</div>
                     </div>
-                    <div class="route-controls">
-                        <button class="quick-btn" id="show-route-3">Rota 3</button>
-                        <div class="tooltip">3. Rotayı göster</div>
+                    <div class="quick-btn-wrapper">
+                        <button class="quick-btn transport-btn" id="bus-tram-btn" data-type="bus_tram">Tramvay+Otobüs</button>
+                        <div class="tooltip">Tüm Tramvay+Otobüs Rotalarını Göster</div>
                     </div>
+
                     <div class="route-controls">
-                        <button class="quick-btn" id="show-taxi-route">Taksi Rotası</button>
+                        <button class="quick-btn transport-btn" id="show-taxi-route" data-type="taxi">Taksi Rotası</button>
                         <div class="tooltip">Taksi rotasını göster</div>
                     </div>
+
                     <div class="route-controls">
                         <button class="quick-btn" id="show-all-routes">Tüm Rotalar</button>
                         <div class="tooltip">Tüm rotaları göster</div>
                     </div>
 
+                    <!-- Criteria Buttons -->
+                    <h3>Kriter</h3>
+                    <div class="quick-btn-wrapper">
+                        <button class="quick-btn criteria-btn" id="ucret-btn" data-criteria="ucret">Ücret</button>
+                        <div class="tooltip">Ücret Bazlı Rota Göster</div>
+                    </div>
+                    <div class="quick-btn-wrapper">
+                        <button class="quick-btn criteria-btn" id="mesafe-btn" data-criteria="mesafe">Mesafe</button>
+                        <div class="tooltip">Mesafe Bazlı Rota Göster</div>
+                    </div>
+                    <div class="quick-btn-wrapper">
+                        <button class="quick-btn criteria-btn" id="zaman-btn" data-criteria="zaman">Zaman</button>
+                        <div class="tooltip">Zaman Bazlı Rota Göster</div>
+                    </div>
 
                 </div>
 

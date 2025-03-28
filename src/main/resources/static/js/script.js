@@ -4,13 +4,17 @@ let currentRouteMarkers = [];
 let currentRoutePolylines = [];
 let animationInterval;
 
-let route1Polylines = [];
-let route2Polylines = [];
-let route3Polylines = [];
-let taxiPolylines = [];
+let route1Polylines = []; // Bus routes
+let route2Polylines = []; // Bus+Tram routes
+let route3Polylines = []; // Tram routes
+let taxiPolylines = [];   // Taxi routes
 
 // Global variable to store route data
 window.routeDataResult = null;
+
+// Variables for filtering
+let selectedTransportType = null;
+let selectedCriteria = null;
 
 function initMap() {
     const baslangicEnlem = parseFloat(window.baslangicEnlem) || 40.7669;
@@ -19,6 +23,8 @@ function initMap() {
     const hedefBoylam = parseFloat(window.hedefBoylam);
     const durakVerisi = Array.isArray(window.durakVerisi) ? window.durakVerisi : [];
     const nearestStop = window.nearestStop || null;
+
+    console.log("initMap called with:", { baslangicEnlem, baslangicBoylam, hedefEnlem, hedefBoylam, durakVerisi, nearestStop });
 
     map = new google.maps.Map(document.getElementById('map'), {
         center: { lat: baslangicEnlem, lng: baslangicBoylam },
@@ -162,7 +168,7 @@ function initMap() {
 }
 
 function drawInitialRoute() {
-    clearPreviousRoutes();
+    clearAllRoutes();
     const baslangicEnlem = parseFloat(window.baslangicEnlem) || 40.7669;
     const baslangicBoylam = parseFloat(window.baslangicBoylam) || 29.9169;
     const hedefEnlem = parseFloat(window.hedefEnlem);
@@ -204,6 +210,19 @@ function clearPreviousRoutes() {
         if (polyline && polyline.setMap) polyline.setMap(null);
     });
     currentRoutePolylines = [];
+}
+
+function clearAllRoutes() {
+    const allRoutes = [route1Polylines, route2Polylines, route3Polylines, taxiPolylines, currentRoutePolylines];
+    allRoutes.forEach(routeArray => {
+        routeArray.forEach(polyline => {
+            if (polyline && polyline.setMap) {
+                polyline.setMap(null);
+            }
+        });
+        routeArray.length = 0; // Clear the array
+    });
+    console.log("All routes cleared: Bus:", route1Polylines.length, "Bus+Tram:", route2Polylines.length, "Tram:", route3Polylines.length, "Taxi:", taxiPolylines.length, "Current:", currentRoutePolylines.length);
 }
 
 function drawRoute(path, color) {
@@ -329,7 +348,7 @@ document.querySelectorAll('.tab-btn').forEach(button => {
     });
 });
 
-document.getElementById('homeForm').addEventListener('submit', (e) => {
+document.getElementById('homeForm')?.addEventListener('submit', (e) => {
     e.preventDefault();
     const button = e.target.querySelector('button');
     button.textContent = 'Yükleniyor...';
@@ -337,17 +356,8 @@ document.getElementById('homeForm').addEventListener('submit', (e) => {
     document.getElementById('status-bar').textContent = 'Durum: Rota hesaplanıyor...';
 });
 
-function addRouteToggleListeners() {
-    document.getElementById('show-route-1').addEventListener('click', () => toggleRoute("1"));
-    document.getElementById('show-route-2').addEventListener('click', () => toggleRoute("2"));
-    document.getElementById('show-route-3').addEventListener('click', () => toggleRoute("3"));
-    document.getElementById('show-all-routes').addEventListener('click', () => toggleRoute("all"));
-    document.getElementById('show-taxi-route').addEventListener('click', () => toggleRoute("taxi"));
-}
-
 function setupEventListeners() {
-    addRouteToggleListeners();
-
+    console.log("Setting up event listeners...");
     document.getElementById('modeToggle').addEventListener('click', () => {
         document.body.classList.toggle('dark-mode');
         const isDark = document.body.classList.contains('dark-mode');
@@ -428,7 +438,7 @@ function setupEventListeners() {
             }
             document.getElementById('status-bar').textContent = 'Durum: İşaretler temizlendi';
         }
-        clearPreviousRoutes();
+        clearAllRoutes();
     });
 
     document.getElementById('set-start').addEventListener('click', () => {
@@ -491,7 +501,7 @@ function setupEventListeners() {
                 return response.json();
             })
             .then(sonuc => {
-                console.log("Fetch result:", sonuc);
+                console.log("Fetch result:", JSON.stringify(sonuc, null, 2));
                 button.textContent = 'Konumları Göster';
                 button.disabled = false;
                 initializeRoute(sonuc);
@@ -524,6 +534,49 @@ function setupEventListeners() {
         document.getElementById('infoPanel').style.display = 'none';
         document.getElementById('status-bar').textContent = 'Durum: Bilgi paneli kapatıldı';
     });
+
+    // Transport Type Buttons
+    document.querySelectorAll('.transport-btn').forEach(button => {
+        button.addEventListener('click', () => {
+            console.log(`Transport button clicked with data-type: ${button.getAttribute('data-type')}`);
+            selectedTransportType = button.getAttribute('data-type');
+            document.querySelectorAll('.transport-btn').forEach(btn => btn.classList.remove('active'));
+            button.classList.add('active');
+            selectedCriteria = null;
+            document.querySelectorAll('.criteria-btn').forEach(btn => btn.classList.remove('active'));
+            clearAllRoutes();
+            console.log(`Calling showFilteredRoutes with transportType: ${selectedTransportType}`);
+            showFilteredRoutes(selectedTransportType);
+        });
+    });
+
+    // Criteria Buttons
+    document.querySelectorAll('.criteria-btn').forEach(button => {
+        button.addEventListener('click', () => {
+            if (!selectedTransportType) {
+                document.getElementById('status-bar').textContent = 'Durum: Lütfen önce bir ulaşım türü seçin';
+                return;
+            }
+            selectedCriteria = button.getAttribute('data-criteria');
+            document.querySelectorAll('.criteria-btn').forEach(btn => btn.classList.remove('active'));
+            button.classList.add('active');
+            clearAllRoutes();
+            console.log(`Criteria selected: ${selectedCriteria} for ${selectedTransportType}`);
+            showFilteredRoutes(selectedTransportType, selectedCriteria);
+        });
+    });
+
+    // Show All Routes Button
+    document.getElementById('show-all-routes').addEventListener('click', () => {
+        selectedTransportType = null;
+        selectedCriteria = null;
+        document.querySelectorAll('.transport-btn').forEach(btn => btn.classList.remove('active'));
+        document.querySelectorAll('.criteria-btn').forEach(btn => btn.classList.remove('active'));
+        clearAllRoutes();
+        toggleRoute("all");
+    });
+
+    console.log("Event listeners setup complete.");
 }
 
 function initializeRoute(sonuc) {
@@ -536,17 +589,13 @@ function initializeRoute(sonuc) {
 
     window.routeDataResult = sonuc;
 
-    clearPreviousRoutes();
-    route1Polylines = [];
-    route2Polylines = [];
-    route3Polylines = [];
-    taxiPolylines = [];
+    clearAllRoutes();
 
     const routeColors = {
         "1": "#4285F4", // Blue
         "2": "#000080", // Navy Blue
         "3": "#34C759", // Green
-        "taxi": "#fb9403" // Red
+        "taxi": "#fb9403" // Orange
     };
 
     let bounds = new google.maps.LatLngBounds();
@@ -634,7 +683,6 @@ function initializeRoute(sonuc) {
         map.fitBounds(bounds);
         document.getElementById('status-bar').textContent = `Durum: ${routeCount} rota çizildi`;
 
-        // Show info panel
         const infoPanel = document.getElementById('infoPanel');
         const routeInfoContent = document.getElementById('routeInfoContent');
         routeInfoContent.innerHTML = routeInfoHtml;
@@ -666,77 +714,96 @@ function drawRouteWithId(path, color, routeId) {
         }]
     });
 
-    currentRoutePolylines.push(routeLine);
+    if (routeId === "bus") route1Polylines.push(routeLine);
+    else if (routeId === "tram") route3Polylines.push(routeLine);
+    else if (routeId === "bus_tram") route2Polylines.push(routeLine);
+    else if (routeId === "taxi") taxiPolylines.push(routeLine);
+    else currentRoutePolylines.push(routeLine);
+
     return routeLine;
 }
 
 function toggleRoute(routeId) {
     const routeColors = {
-        "1": "#4285F4", // Blue
-        "2": "#000080", // Navy Blue
-        "3": "#34C759", // Green
-        "taxi": "#fb9403" // Red
+        "1": "#4285F4",
+        "2": "#000080",
+        "3": "#34C759",
+        "taxi": "#fb9403"
     };
 
     console.log(`Toggling route: ${routeId}`);
 
-    [route1Polylines, route2Polylines, route3Polylines, taxiPolylines].forEach(route => {
-        route.forEach(polyline => polyline.setVisible(false));
-    });
+    clearAllRoutes();
 
     let statusMessage = "";
     if (routeId === "all") {
-        const allRoutes = { "1": route1Polylines, "2": route2Polylines, "3": route3Polylines, "taxi": taxiPolylines };
-        for (const id in allRoutes) {
-            const isBalanceSufficient = window.routeDataResult[id]?.bakiye_yeterli || false;
-            const defaultColor = isBalanceSufficient ? routeColors[id] : '#808080';
-            const startType = window.routeDataResult[id]?.start_type || 'unknown';
-            const endType = window.routeDataResult[id]?.end_type || 'unknown';
-            allRoutes[id].forEach((polyline, index) => {
-                polyline.setVisible(true);
-                let color = defaultColor;
-                if (isBalanceSufficient) {
-                    if (index === 0) {
-                        color = startType === 'walking' ? '#000000' : (startType === 'taxi' ? '#FFA500' : color);
-                    } else if (index === allRoutes[id].length - 1) {
-                        color = endType === 'walking' ? '#000000' : color;
+        for (const id in window.routeDataResult) {
+            if (window.routeDataResult[id] && Array.isArray(window.routeDataResult[id].coordinates)) {
+                const coordinates = window.routeDataResult[id].coordinates.map(coord => ({
+                    lat: parseFloat(coord.lat),
+                    lng: parseFloat(coord.lon || coord.lot || coord.lng)
+                }));
+                const isBalanceSufficient = window.routeDataResult[id].bakiye_yeterli;
+                const defaultColor = isBalanceSufficient ? routeColors[id] : '#808080';
+                const startType = window.routeDataResult[id].start_type || 'unknown';
+                const endType = window.routeDataResult[id].end_type || 'unknown';
+
+                for (let i = 0; i < coordinates.length - 1; i++) {
+                    let segmentColor = defaultColor;
+                    if (isBalanceSufficient) {
+                        if (i === 0) {
+                            segmentColor = startType === 'walking' ? '#000000' : (startType === 'taxi' ? '#FFA500' : defaultColor);
+                        } else if (i === coordinates.length - 2) {
+                            segmentColor = endType === 'walking' ? '#000000' : defaultColor;
+                        }
+                    }
+                    const segmentPath = [coordinates[i], coordinates[i + 1]];
+                    const polyline = drawRouteWithId(segmentPath, segmentColor, id);
+                    if (polyline) {
+                        if (id === "1") route1Polylines.push(polyline);
+                        else if (id === "2") route2Polylines.push(polyline);
+                        else if (id === "3") route3Polylines.push(polyline);
+                        else if (id === "taxi") taxiPolylines.push(polyline);
                     }
                 }
-                polyline.setOptions({ strokeColor: color });
-                console.log(`Route ${id} segment ${index} set to ${color}`);
-            });
+            }
         }
         statusMessage = 'Durum: Tüm rotalar gösteriliyor';
     } else {
-        const routePolylines = routeId === "1" ? route1Polylines :
-            routeId === "2" ? route2Polylines :
-                routeId === "3" ? route3Polylines :
-                    routeId === "taxi" ? taxiPolylines : [];
-        const isBalanceSufficient = window.routeDataResult[routeId]?.bakiye_yeterli || false;
-        const defaultColor = isBalanceSufficient ? routeColors[routeId] : '#808080';
-        const startType = window.routeDataResult[routeId]?.start_type || 'unknown';
-        const endType = window.routeDataResult[routeId]?.end_type || 'unknown';
+        const routeData = window.routeDataResult[routeId];
+        if (routeData && Array.isArray(routeData.coordinates)) {
+            const coordinates = routeData.coordinates.map(coord => ({
+                lat: parseFloat(coord.lat),
+                lng: parseFloat(coord.lon || coord.lot || coord.lng)
+            }));
+            const isBalanceSufficient = routeData.bakiye_yeterli;
+            const defaultColor = isBalanceSufficient ? routeColors[routeId] : '#808080';
+            const startType = routeData.start_type || 'unknown';
+            const endType = routeData.end_type || 'unknown';
 
-        routePolylines.forEach((polyline, index) => {
-            polyline.setVisible(true);
-            let color = defaultColor;
-            if (isBalanceSufficient) {
-                if (index === 0) {
-                    color = startType === 'walking' ? '#000000' : (startType === 'taxi' ? '#FFA500' : color);
-                } else if (index === routePolylines.length - 1) {
-                    color = endType === 'walking' ? '#000000' : color;
+            for (let i = 0; i < coordinates.length - 1; i++) {
+                let segmentColor = defaultColor;
+                if (isBalanceSufficient) {
+                    if (i === 0) {
+                        segmentColor = startType === 'walking' ? '#000000' : (startType === 'taxi' ? '#FFA500' : defaultColor);
+                    } else if (i === coordinates.length - 2) {
+                        segmentColor = endType === 'walking' ? '#000000' : defaultColor;
+                    }
+                }
+                const segmentPath = [coordinates[i], coordinates[i + 1]];
+                const polyline = drawRouteWithId(segmentPath, segmentColor, routeId);
+                if (polyline) {
+                    if (routeId === "1") route1Polylines.push(polyline);
+                    else if (routeId === "2") route2Polylines.push(polyline);
+                    else if (routeId === "3") route3Polylines.push(polyline);
+                    else if (routeId === "taxi") taxiPolylines.push(polyline);
                 }
             }
-            polyline.setOptions({ strokeColor: color });
-            console.log(`Route ${routeId} segment ${index} set to ${color}`);
-        });
 
-        if (window.routeDataResult && window.routeDataResult[routeId]) {
-            const routeData = window.routeDataResult[routeId];
-            let distance = routeId === "taxi" ? (routeData.mesafe_km ? `${routeData.mesafe_km.toFixed(2)} km` : "N/A") : (routeData.toplam_mesafe_km ? `${routeData.toplam_mesafe_km} km` : "N/A");
-            let cost = routeId === "taxi" ? ((routeData.ucret || routeData.toplam_ucret) ? `${(routeData.ucret || routeData.toplam_ucret).toFixed(2)} TL` : "N/A") : (routeData.toplam_ucret ? `${routeData.toplam_ucret} TL` : "N/A");
-            let duration = routeId === "taxi" ? (routeData.tahmini_sure_dk ? `${Math.round(routeData.tahmini_sure_dk)} dk` : "N/A") : (routeData.toplam_sure_dk ? `${routeData.toplam_sure_dk} dk` : "N/A");
-            let balanceStatus = isBalanceSufficient ? `Kalan Bakiye: ${routeData.kalan_bakiye || 'Sıfır'} TL` : "Bakiye Yetersiz";
+            const distance = routeId === "taxi" ? (routeData.mesafe_km ? `${routeData.mesafe_km.toFixed(2)} km` : "N/A") : (routeData.toplam_mesafe_km ? `${routeData.toplam_mesafe_km} km` : "N/A");
+            const cost = routeId === "taxi" ? ((routeData.ucret || routeData.toplam_ucret) ? `${(routeData.ucret || routeData.toplam_ucret).toFixed(2)} TL` : "N/A") : (routeData.toplam_ucret ? `${routeData.toplam_ucret} TL` : "N/A");
+            const duration = routeId === "taxi" ? (routeData.tahmini_sure_dk ? `${Math.round(routeData.tahmini_sure_dk)} dk` : "N/A") : (routeData.toplam_sure_dk ? `${routeData.toplam_sure_dk} dk` : "N/A");
+            const balanceStatus = isBalanceSufficient ? `Kalan Bakiye: ${routeData.kalan_bakiye || 'Sıfır'} TL` : "Bakiye Yetersiz";
             statusMessage = `${routeId === "taxi" ? "Taksi" : "Rota " + routeId}: Mesafe: ${distance}, Ücret: ${cost}, Süre: ${duration}, ${balanceStatus}`;
         } else {
             statusMessage = `Durum: ${routeId === "taxi" ? "Taksi" : "Rota " + routeId} gösteriliyor (Detaylar mevcut değil)`;
@@ -744,6 +811,124 @@ function toggleRoute(routeId) {
     }
 
     document.getElementById('status-bar').textContent = statusMessage;
+}
+
+function showFilteredRoutes(transportType, criteria = null) {
+    console.log(`showFilteredRoutes called with transportType: ${transportType}, criteria: ${criteria}`);
+
+    const routeColors = {
+        "bus": "#4285F4",
+        "tram": "#34C759",
+        "bus_tram": "#000080",
+        "taxi": "#fb9403"
+    };
+
+    clearAllRoutes();
+
+    if (!window.routeDataResult) {
+        console.error("routeDataResult is not defined or empty");
+        document.getElementById('status-bar').textContent = 'Durum: Rota verisi bulunamadı';
+        return;
+    }
+
+    console.log("Current routeDataResult:", JSON.stringify(window.routeDataResult, null, 2));
+
+    let statusMessage = "";
+    let bounds = new google.maps.LatLngBounds();
+    let routeCount = 0;
+
+    const routeKeys = {
+        "bus": {
+            "all": ["bus-ucret", "bus-mesafe", "bus-sure"],
+            "ucret": ["bus-ucret"],
+            "mesafe": ["bus-mesafe"],
+            "zaman": ["bus-sure"]
+        },
+        "tram": {
+            "all": ["tram-ucret", "tram-mesafe", "tram-sure"],
+            "ucret": ["tram-ucret"],
+            "mesafe": ["tram-mesafe"],
+            "zaman": ["tram-sure"]
+        },
+        "bus_tram": {
+            "all": ["bus_tram-ucret", "bus_tram-mesafe", "bus_tram-sure"],
+            "ucret": ["bus_tram-ucret"],
+            "mesafe": ["bus_tram-mesafe"],
+            "zaman": ["bus_tram-sure"]
+        },
+        "taxi": {
+            "all": ["taxi"],
+            "ucret": ["taxi"],
+            "mesafe": ["taxi"],
+            "zaman": ["taxi"]
+        }
+    };
+
+    const routesToShow = routeKeys[transportType][criteria || "all"];
+    console.log(`Routes to show for ${transportType}:`, routesToShow);
+
+    routesToShow.forEach(routeKey => {
+        const routeData = window.routeDataResult[routeKey];
+        if (routeData && routeData.coordinates) {
+            routeCount++;
+            const isBalanceSufficient = routeData.bakiye_yeterli !== false; // Taksi için bakiye kontrolü yoksa true
+            const defaultColor = isBalanceSufficient ? routeColors[transportType] : '#808080';
+            const startType = routeData.start_type || 'unknown';
+            const endType = routeData.end_type || 'unknown';
+
+            console.log(`Drawing route: ${routeKey}, Balance: ${isBalanceSufficient}, Start: ${startType}, End: ${endType}`);
+
+            const coordinates = routeData.coordinates.map(coord => ({
+                lat: parseFloat(coord.lat),
+                lng: parseFloat(coord.lon || coord.lot || coord.lng)
+            }));
+
+            if (!coordinates || coordinates.length < 2) {
+                console.error(`Invalid coordinates for ${routeKey}:`, coordinates);
+                return;
+            }
+
+            if (isBalanceSufficient && (startType === 'walking' || endType === 'walking' || startType === 'taxi')) {
+                for (let i = 0; i < coordinates.length - 1; i++) {
+                    let segmentColor = defaultColor;
+                    if (i === 0 && startType === 'walking') segmentColor = '#000000';
+                    else if (i === 0 && startType === 'taxi') segmentColor = '#FFA500';
+                    else if (i === coordinates.length - 2 && endType === 'walking') segmentColor = '#000000';
+                    else segmentColor = defaultColor;
+
+                    const segmentPath = [coordinates[i], coordinates[i + 1]];
+                    const polyline = drawRouteWithId(segmentPath, segmentColor, transportType);
+                    if (!polyline) {
+                        console.error(`Failed to draw polyline for segment ${i} of ${routeKey}`);
+                    }
+                }
+            } else {
+                const polyline = drawRouteWithId(coordinates, defaultColor, transportType);
+                if (!polyline) {
+                    console.error(`Failed to draw polyline for ${routeKey}`);
+                }
+            }
+
+            coordinates.forEach(point => bounds.extend(point));
+
+            const distance = routeData.toplam_mesafe_km ? `${routeData.toplam_mesafe_km} km` : (routeData.mesafe_km ? `${routeData.mesafe_km.toFixed(2)} km` : "N/A");
+            const cost = routeData.toplam_ucret ? `${routeData.toplam_ucret} TL` : (routeData.ucret ? `${routeData.ucret.toFixed(2)} TL` : "N/A");
+            const duration = routeData.toplam_sure_dk ? `${routeData.toplam_sure_dk} dk` : (routeData.tahmini_sure_dk ? `${Math.round(routeData.tahmini_sure_dk)} dk` : "N/A");
+            const balanceStatus = isBalanceSufficient ? `Kalan Bakiye: ${routeData.kalan_bakiye || 'N/A'} TL` : "Bakiye Yetersiz";
+            statusMessage += `${routeKey}: Mesafe: ${distance}, Ücret: ${cost}, Süre: ${duration}, ${balanceStatus}\n`;
+        } else {
+            console.log(`No data found for route: ${routeKey}`);
+        }
+    });
+
+    console.log("After drawing - Bus:", route1Polylines.length, "Bus+Tram:", route2Polylines.length, "Tram:", route3Polylines.length, "Taxi:", taxiPolylines.length);
+
+    if (routeCount > 0) {
+        map.fitBounds(bounds);
+        document.getElementById('status-bar').textContent = `Durum: ${criteria ? `${transportType} (${criteria})` : `${transportType}`} rotaları gösteriliyor\n${statusMessage}`;
+    } else {
+        document.getElementById('status-bar').textContent = `Durum: ${criteria ? `${transportType} (${criteria})` : `${transportType}`} için rota bulunamadı`;
+    }
 }
 
 function searchLocation(query) {

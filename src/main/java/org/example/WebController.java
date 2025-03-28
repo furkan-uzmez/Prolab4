@@ -71,28 +71,23 @@ public class WebController {
                          Taxi taxi, ObjectMapper objectMapper, JsonNodeData jsonNodeData,
                          GraphDurakData graphDurakData,StopData stopData,Durak durak
                          ) throws JsonProcessingException {
-        System.out.println("1");
         this.objectMapper = objectMapper;
         this.jsonNodeData = jsonNodeData;
         this.graphDurakData =  graphDurakData;
-        System.out.println("2");
 
         this.stopData = stopData;
         stopData.set_stops(jsonNodeData);
         this.distanceCalculator = distanceCalculator;
         this.durak = durak;
-        System.out.println("3");
 
         IGraphBuilder busGraphBuilder = new BusGraphBuilder();
         IGraphBuilder tramGraphBuilder = new TramGraphBuilder();
         IGraphBuilder busTramGraphBuilder = new BusTramGraphBuilder();
-        System.out.println("4");
 
 
         PathFinder pathFinder1 = new DijkstraPathFinder(busGraphBuilder.buildGraph(stopData));
         PathFinder pathFinder2 = new DijkstraPathFinder(tramGraphBuilder.buildGraph(stopData));
         PathFinder pathFinder3 = new DijkstraPathFinder(busTramGraphBuilder.buildGraph(stopData));
-        System.out.println("5");
 
         VehicleManager vehicleManager = new VehicleManager();
 
@@ -100,18 +95,16 @@ public class WebController {
         //this.rota = rota;
         this.passengerManager = passengerManager;
         this.paymentManager = paymentManager;
-        System.out.println("6");
 
         this.data = data;
         this.odemeKontrol = odemeKontrol;
         this.taxiData = taxiData;
         this.taxi = taxi;
-        System.out.println("7");
 
         this.rota1 = new Rota(pathFinder1,vehicleManager,taxiData,new Durak(graphDurakData,distanceCalculator,busGraphBuilder.get_name()));
         this.rota2 = new Rota(pathFinder2,vehicleManager,taxiData,new Durak(graphDurakData,distanceCalculator,tramGraphBuilder.get_name()));
         this.rota3 = new Rota(pathFinder3,vehicleManager,taxiData,new Durak(graphDurakData,distanceCalculator,busTramGraphBuilder.get_name()));
-        System.out.println("8");
+
     }
 
     @GetMapping("/")
@@ -170,9 +163,24 @@ public class WebController {
 
         Map rotalar = new HashMap<>();
 
-        rotalar.put("1",rota1.findRouteWithCoordinates(baslangicEnlem, baslangicBoylam, hedefEnlem, hedefBoylam, "ucret"));
-        rotalar.put("2",rota1.findRouteWithCoordinates(baslangicEnlem, baslangicBoylam, hedefEnlem, hedefBoylam, "sure"));
-        rotalar.put("3",rota1.findRouteWithCoordinates(baslangicEnlem, baslangicBoylam, hedefEnlem, hedefBoylam, "mesafe"));
+        rotalar.put("bus-ucret",rota1.findRouteWithCoordinates(baslangicEnlem, baslangicBoylam, hedefEnlem, hedefBoylam, "ucret"));
+        rotalar.put("bus-sure",rota1.findRouteWithCoordinates(baslangicEnlem, baslangicBoylam, hedefEnlem, hedefBoylam, "sure"));
+        rotalar.put("bus-mesafe",rota1.findRouteWithCoordinates(baslangicEnlem, baslangicBoylam, hedefEnlem, hedefBoylam, "mesafe"));
+
+        System.out.println(rotalar.keySet());
+
+        rotalar.put("tram-ucret",rota2.findRouteWithCoordinates(baslangicEnlem, baslangicBoylam, hedefEnlem, hedefBoylam, "ucret"));
+        rotalar.put("tram-sure",rota2.findRouteWithCoordinates(baslangicEnlem, baslangicBoylam, hedefEnlem, hedefBoylam, "sure"));
+        rotalar.put("tram-mesafe",rota2.findRouteWithCoordinates(baslangicEnlem, baslangicBoylam, hedefEnlem, hedefBoylam, "mesafe"));
+
+        System.out.println(rotalar.keySet());
+
+        rotalar.put("bus_tram-ucret",rota3.findRouteWithCoordinates(baslangicEnlem, baslangicBoylam, hedefEnlem, hedefBoylam, "ucret"));
+        rotalar.put("bus_tram-sure",rota3.findRouteWithCoordinates(baslangicEnlem, baslangicBoylam, hedefEnlem, hedefBoylam, "sure"));
+        rotalar.put("bus_tram-mesafe",rota3.findRouteWithCoordinates(baslangicEnlem, baslangicBoylam, hedefEnlem, hedefBoylam, "mesafe"));
+
+        System.out.println(rotalar.keySet());
+
         rotalar.put("taxi",taxiAlternative);
 
         odemeKontrol.kontrol(rotalar,odeme,yolcu,bakiye);
