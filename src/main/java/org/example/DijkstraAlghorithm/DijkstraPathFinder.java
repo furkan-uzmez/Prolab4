@@ -1,9 +1,9 @@
 package org.example.DijkstraAlghorithm;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import org.example.Graph.Edge;
 import org.example.Graph.Node;
 import org.example.Graph.Graph;
+import org.example.Rota.RotaInfo;
 import org.example.WeightStrategy.*;
 
 import java.util.*;
@@ -18,7 +18,7 @@ public class DijkstraPathFinder implements PathFinder {
     }
 
     @Override
-    public Map<String,Object> findBestPath(Map<String,Object> path_info,String startId, String stopId, String optimization) {
+    public void findBestPath(RotaInfo path_info, String startId, String stopId, String optimization) {
         weight_turu.setWeight_turu(optimization);
         WeightStrategy strategy = weight_turu.getWeight_turu();
         System.out.println(strategy);
@@ -30,16 +30,14 @@ public class DijkstraPathFinder implements PathFinder {
         DijkstraA dijkstraA = new DijkstraA();
         ArrayList<Node> path = dijkstraA.shortest_path(graph,graph.getNode(startId), graph.getNode(stopId));
 
-        path_info = add_info(path_info,path);
-
-        return path_info;
+        add_info(path_info,path);
     }
-    private Map<String,Object> add_info(Map<String,Object> path_info,ArrayList<Node> path) {
-        double totalDistance = (double) path_info.get("toplam_mesafe_km");
-        double totalTime = (double) path_info.get("toplam_sure_dk");
-        double totalCost = (double) path_info.get("toplam_ucret");
+    private void add_info(RotaInfo path_info,ArrayList<Node> path) {
+        double totalDistance = path_info.getToplam_mesafe();
+        double totalTime = path_info.getToplam_sure();
+        double totalCost = path_info.getToplam_ucret();
 
-        List<Coordinate> coordinates = (List<Coordinate>) path_info.get("coordinates");
+        List<Coordinate> coordinates = path_info.getCoordinates();
 
         for (int i=0; i < path.size()-1;i++) {
             Node node = path.get(i);
@@ -54,10 +52,10 @@ public class DijkstraPathFinder implements PathFinder {
         }
         coordinates.add(path.get(path.size()-1).getCoordinates());
 
-        path_info.put("toplam_mesafe_km", totalDistance);
-        path_info.put("toplam_ucret", totalCost);
-        path_info.put("toplam_sure_dk", totalTime);
+        path_info.setToplam_mesafe(totalDistance);
+        path_info.setToplam_ucret(totalCost);
+        path_info.setToplam_sure(totalTime);
 
-        return path_info;
+        path_info.addPath_info();
     }
 }

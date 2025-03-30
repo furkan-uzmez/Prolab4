@@ -2,6 +2,7 @@ package org.example.AlternativeRota;
 
 import org.example.Data.TaxiData;
 import org.example.DijkstraAlghorithm.Coordinate;
+import org.example.Rota.RotaInfo;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -22,22 +23,28 @@ public class Taxi extends AlternatifRota {
     }
 
     @Override
-    public Map<String, Object> createAlternative(double startLat, double startLon,
-                                                 double endLat, double endLon,
-                                                 double distanceKm) {
-        Map<String, Object> taxiAlternative = new HashMap<>();
+    public RotaInfo createAlternative(double startLat, double startLon,
+                                      double endLat, double endLon,
+                                      double distanceKm) {
 
+        RotaInfo rotaInfo = new RotaInfo();
         double taxiFare = calculateTaxiFare(distanceKm);
         double taxiTime = distanceKm * 2; // Taxi time estimate: 2 min/km
 
-        taxiAlternative.put("mesafe_km", distanceKm);
-        taxiAlternative.put("toplam_ucret", taxiFare);
-        taxiAlternative.put("tahmini_sure_dk", taxiTime);
+
+        rotaInfo.setToplam_mesafe(distanceKm);
+        rotaInfo.setToplam_ucret(taxiFare);
+        rotaInfo.setToplam_sure(taxiTime);
 
         List<Coordinate> taxiWaypoints = createWaypoints(startLat, startLon, endLat, endLon);
-        taxiAlternative.put("coordinates", taxiWaypoints);
 
-        return taxiAlternative;
+        for (Coordinate coordinate:taxiWaypoints){
+            rotaInfo.getCoordinates().add(coordinate);
+        }
+
+        rotaInfo.addPath_info();
+
+        return rotaInfo;
     }
 
 

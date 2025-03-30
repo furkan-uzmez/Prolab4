@@ -6,25 +6,22 @@ import java.util.List;
 import java.util.Map;
 
 public abstract class Vehicle {
-    public Map<String, Object> create_way(Map<String,Object> path_info, Coordinate coordinate, double distance , String start_or_end) {
-        path_info.put(start_or_end,this.get_name());
-        ((List<Coordinate>)path_info.get("coordinates")).add(coordinate);
+    public void create_way(RotaInfo path_info, Coordinate coordinate, double distance , String start_or_end) {
+        if(start_or_end.equals("start_type")){
+            path_info.setStart_type(this.get_name());
+        }
+        else if(start_or_end.equals("end_type")){
+            path_info.setEnd_type(this.get_name());
+        }
+
+        path_info.getCoordinates().add(coordinate);
 
 
-        double total_distance = (double) path_info.get("toplam_mesafe_km");
-        double totalCost = (double) path_info.get("toplam_ucret");
-        double totalTime = (double) path_info.get("toplam_sure_dk");
+        path_info.setToplam_mesafe(path_info.getToplam_mesafe() + distance);
+        path_info.setToplam_ucret(path_info.getToplam_ucret() + this.get_ucret(distance));
+        path_info.setToplam_sure(path_info.getToplam_sure() + this.get_sure(distance));
 
-        total_distance += distance;
-        totalTime += this.get_sure(distance);
-        totalCost += this.get_ucret(distance);
-
-
-        path_info.replace("toplam_mesafe_km",total_distance);
-        path_info.replace("toplam_ucret",totalCost);
-        path_info.replace("toplam_sure_dk",totalTime);
-
-        return path_info;
+        path_info.addPath_info();
     }
 
     abstract String get_name();

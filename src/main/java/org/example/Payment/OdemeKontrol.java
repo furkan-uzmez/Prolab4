@@ -6,9 +6,9 @@ import java.util.ArrayList;
 import java.util.Map;
 
 public class OdemeKontrol {
-    public void kontrol(Map<String,Object> route, Odeme odeme, Yolcu yolcu,double bakiye){
+    public void kontrol(Map<String,Object> rotalar, Odeme odeme, Yolcu yolcu,double bakiye){
         ArrayList index = new ArrayList();
-        for (String key:route.keySet()){
+        for (String key:rotalar.keySet()){
             index.add(key);
         }
 //        index.add("1");
@@ -16,8 +16,8 @@ public class OdemeKontrol {
 //        index.add("3");
 //        index.add("taxi");
 
-        for(int i = 0; i<route.size() ;i++){
-            Map<String,Object> rota = (Map<String, Object>) route.get(index.get(i));
+        for(int i = 0; i<rotalar.size() ;i++){
+            Map<String,Object> rota = (Map<String, Object>) rotalar.get(index.get(i));
             double toplam_ucret = (Double) rota.get("toplam_ucret");
             double kalan = odeme.ode(bakiye, toplam_ucret ,yolcu.get_indirim_orani());
 

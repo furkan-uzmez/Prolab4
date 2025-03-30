@@ -134,7 +134,7 @@ function initMap() {
                     <h3 style="margin: 0; color: #4285F4;">${nearestStop.name}</h3>
                     <p style="margin: 5px 0;">Tür: ${nearestStop.type === 'bus' ? 'Otobüs' : 'Tramvay'}</p>
                     <p style="margin: 5px 0;">Konum: ${parseFloat(nearestStop.lat).toFixed(6)}, ${(parseFloat(nearestStop.lot || nearestStop.lon)).toFixed(6)}</p>
-                    <p style="margin: 5px 0;">Mesafe: ${nearestStop.distance_text || 'Bilinmiyor'}</p>
+                    <p style="margin: 5px 0;">Mesafe: ${nearestStop.distance_text || '0 km'}</p>
                 </div>`
         });
         nearestMarker.addListener('click', () => {
@@ -592,10 +592,10 @@ function initializeRoute(sonuc) {
     clearAllRoutes();
 
     const routeColors = {
-        "1": "#4285F4", // Blue
-        "2": "#000080", // Navy Blue
-        "3": "#34C759", // Green
-        "taxi": "#fb9403" // Orange
+        "bus": "#4285F4",      // Blue for bus
+        "bus_tram": "#000080", // Navy Blue for bus+tram
+        "tram": "#34C759",     // Green for tram
+        "taxi": "#fb9403"      // Orange for taxi
     };
 
     let bounds = new google.maps.LatLngBounds();
@@ -614,7 +614,8 @@ function initializeRoute(sonuc) {
             if (routePath.length >= 2) {
                 routeCount++;
                 const isBalanceSufficient = sonuc[routeId].bakiye_yeterli;
-                const defaultColor = isBalanceSufficient ? routeColors[routeId] || '#4285F4' : '#808080';
+                const transportType = routeId.split('-')[0]; // Extract base type (bus, bus_tram, tram, taxi)
+                const defaultColor = isBalanceSufficient ? (routeColors[transportType] || '#4285F4') : '#808080';
                 const startType = sonuc[routeId].start_type || 'unknown';
                 const endType = sonuc[routeId].end_type || 'unknown';
 
@@ -626,21 +627,21 @@ function initializeRoute(sonuc) {
                         if (i === 0) {
                             segmentColor = startType === 'walking' ? '#000000' : (startType === 'taxi' ? '#FFA500' : defaultColor);
                         } else if (i === routePath.length - 2) {
-                            segmentColor = endType === 'walking' ? '#000000' : defaultColor;
+                            segmentColor = endType === 'walking' ? '#000000' : (endType === 'taxi' ? '#FFA500' : defaultColor);
                         }
                     }
                     const segmentPath = [routePath[i], routePath[i + 1]];
                     console.log(`Drawing segment ${i} for route ${routeId} with color ${segmentColor}`);
-                    const polyline = drawRouteWithId(segmentPath, segmentColor, routeId);
+                    const polyline = drawRouteWithId(segmentPath, segmentColor, transportType);
                     if (polyline) {
-                        if (routeId === "1") route1Polylines.push(polyline);
-                        else if (routeId === "2") route2Polylines.push(polyline);
-                        else if (routeId === "3") route3Polylines.push(polyline);
-                        else if (routeId === "taxi") taxiPolylines.push(polyline);
+                        if (transportType === "bus") route1Polylines.push(polyline);
+                        else if (transportType === "bus_tram") route2Polylines.push(polyline);
+                        else if (transportType === "tram") route3Polylines.push(polyline);
+                        else if (transportType === "taxi") taxiPolylines.push(polyline);
                     }
                 }
 
-                if (routeId === "1" && routePath.length > 0) {
+                if (routeId === "bus-ucret" && routePath.length > 0) { // Use first bus route for markers
                     baslangicMarker.setPosition(routePath[0]);
                     if (routePath.length > 1) {
                         if (!hedefMarker) {
@@ -659,11 +660,15 @@ function initializeRoute(sonuc) {
                 routePath.forEach(point => bounds.extend(point));
 
                 const routeData = sonuc[routeId];
-                const distance = routeId === "taxi" ? (routeData.mesafe_km ? `${routeData.mesafe_km.toFixed(2)} km` : "N/A") : (routeData.toplam_mesafe_km ? `${routeData.toplam_mesafe_km} km` : "N/A");
-                const cost = routeId === "taxi" ? ((routeData.ucret || routeData.toplam_ucret) ? `${(routeData.ucret || routeData.toplam_ucret).toFixed(2)} TL` : "0.0") : (routeData.toplam_ucret ? `${routeData.toplam_ucret} TL` : "N/A");
-                const duration = routeId === "taxi" ? (routeData.tahmini_sure_dk ? `${Math.round(routeData.tahmini_sure_dk)} dk` : "N/A") : (routeData.toplam_sure_dk ? `${routeData.toplam_sure_dk} dk` : "N/A");
-                const balanceStatus = isBalanceSufficient ? `Kalan Bakiye: ${routeData.kalan_bakiye || '0.0'} TL` : "Bakiye Yetersiz";
-                const routeName = routeId === "taxi" ? "Taksi Rotası" : `Rota ${routeId}`;
+                const distance = routeData.toplam_mesafe_km + " km";
+                const duration = routeData.toplam_sure_dk + " dk";
+                const balanceStatus = isBalanceSufficient ? `Kalan Bakiye: ${(routeData.kalan_bakiye || 0).toFixed(2)} TL` : "Bakiye Yetersiz";
+                const routeName = routeId === "taxi" ? "Taksi Rotası" : `Rota  ${routeId} `;
+
+                // Ücret için açık bir kontrol ekliyoruz
+                const cost = typeof routeData.toplam_ucret === 'number'
+                    ? `${routeData.toplam_ucret} TL`
+                    : "N/A";
 
                 routeInfoHtml += `
                     <h4>${routeName}</h4>
@@ -678,7 +683,7 @@ function initializeRoute(sonuc) {
         }
     }
 
-    console.log(`Route counts - 1: ${route1Polylines.length}, 2: ${route2Polylines.length}, 3: ${route3Polylines.length}, taxi: ${taxiPolylines.length}`);
+    console.log(`Route counts - Bus: ${route1Polylines.length}, Bus+Tram: ${route2Polylines.length}, Tram: ${route3Polylines.length}, Taxi: ${taxiPolylines.length}`);
     if (routeCount > 0) {
         map.fitBounds(bounds);
         document.getElementById('status-bar').textContent = `Durum: ${routeCount} rota çizildi`;
@@ -715,8 +720,8 @@ function drawRouteWithId(path, color, routeId) {
     });
 
     if (routeId === "bus") route1Polylines.push(routeLine);
-    else if (routeId === "tram") route3Polylines.push(routeLine);
     else if (routeId === "bus_tram") route2Polylines.push(routeLine);
+    else if (routeId === "tram") route3Polylines.push(routeLine);
     else if (routeId === "taxi") taxiPolylines.push(routeLine);
     else currentRoutePolylines.push(routeLine);
 
@@ -725,9 +730,9 @@ function drawRouteWithId(path, color, routeId) {
 
 function toggleRoute(routeId) {
     const routeColors = {
-        "1": "#4285F4",
-        "2": "#000080",
-        "3": "#34C759",
+        "bus": "#4285F4",
+        "bus_tram": "#000080",
+        "tram": "#34C759",
         "taxi": "#fb9403"
     };
 
@@ -744,7 +749,8 @@ function toggleRoute(routeId) {
                     lng: parseFloat(coord.lon || coord.lot || coord.lng)
                 }));
                 const isBalanceSufficient = window.routeDataResult[id].bakiye_yeterli;
-                const defaultColor = isBalanceSufficient ? routeColors[id] : '#808080';
+                const transportType = id.split('-')[0];
+                const defaultColor = isBalanceSufficient ? routeColors[transportType] : '#808080';
                 const startType = window.routeDataResult[id].start_type || 'unknown';
                 const endType = window.routeDataResult[id].end_type || 'unknown';
 
@@ -754,16 +760,16 @@ function toggleRoute(routeId) {
                         if (i === 0) {
                             segmentColor = startType === 'walking' ? '#000000' : (startType === 'taxi' ? '#FFA500' : defaultColor);
                         } else if (i === coordinates.length - 2) {
-                            segmentColor = endType === 'walking' ? '#000000' : defaultColor;
+                            segmentColor = endType === 'walking' ? '#000000' : (endType === 'taxi' ? '#FFA500' : defaultColor);
                         }
                     }
                     const segmentPath = [coordinates[i], coordinates[i + 1]];
-                    const polyline = drawRouteWithId(segmentPath, segmentColor, id);
+                    const polyline = drawRouteWithId(segmentPath, segmentColor, transportType);
                     if (polyline) {
-                        if (id === "1") route1Polylines.push(polyline);
-                        else if (id === "2") route2Polylines.push(polyline);
-                        else if (id === "3") route3Polylines.push(polyline);
-                        else if (id === "taxi") taxiPolylines.push(polyline);
+                        if (transportType === "bus") route1Polylines.push(polyline);
+                        else if (transportType === "bus_tram") route2Polylines.push(polyline);
+                        else if (transportType === "tram") route3Polylines.push(polyline);
+                        else if (transportType === "taxi") taxiPolylines.push(polyline);
                     }
                 }
             }
@@ -777,7 +783,8 @@ function toggleRoute(routeId) {
                 lng: parseFloat(coord.lon || coord.lot || coord.lng)
             }));
             const isBalanceSufficient = routeData.bakiye_yeterli;
-            const defaultColor = isBalanceSufficient ? routeColors[routeId] : '#808080';
+            const transportType = routeId.split('-')[0];
+            const defaultColor = isBalanceSufficient ? routeColors[transportType] : '#808080';
             const startType = routeData.start_type || 'unknown';
             const endType = routeData.end_type || 'unknown';
 
@@ -787,26 +794,28 @@ function toggleRoute(routeId) {
                     if (i === 0) {
                         segmentColor = startType === 'walking' ? '#000000' : (startType === 'taxi' ? '#FFA500' : defaultColor);
                     } else if (i === coordinates.length - 2) {
-                        segmentColor = endType === 'walking' ? '#000000' : defaultColor;
+                        segmentColor = endType === 'walking' ? '#000000' : (endType === 'taxi' ? '#FFA500' : defaultColor);
                     }
                 }
                 const segmentPath = [coordinates[i], coordinates[i + 1]];
-                const polyline = drawRouteWithId(segmentPath, segmentColor, routeId);
+                const polyline = drawRouteWithId(segmentPath, segmentColor, transportType);
                 if (polyline) {
-                    if (routeId === "1") route1Polylines.push(polyline);
-                    else if (routeId === "2") route2Polylines.push(polyline);
-                    else if (routeId === "3") route3Polylines.push(polyline);
-                    else if (routeId === "taxi") taxiPolylines.push(polyline);
+                    if (transportType === "bus") route1Polylines.push(polyline);
+                    else if (transportType === "bus_tram") route2Polylines.push(polyline);
+                    else if (transportType === "tram") route3Polylines.push(polyline);
+                    else if (transportType === "taxi") taxiPolylines.push(polyline);
                 }
             }
 
-            const distance = routeId === "taxi" ? (routeData.mesafe_km ? `${routeData.mesafe_km.toFixed(2)} km` : "N/A") : (routeData.toplam_mesafe_km ? `${routeData.toplam_mesafe_km} km` : "N/A");
-            const cost = routeId === "taxi" ? ((routeData.ucret || routeData.toplam_ucret) ? `${(routeData.ucret || routeData.toplam_ucret).toFixed(2)} TL` : "N/A") : (routeData.toplam_ucret ? `${routeData.toplam_ucret} TL` : "N/A");
-            const duration = routeId === "taxi" ? (routeData.tahmini_sure_dk ? `${Math.round(routeData.tahmini_sure_dk)} dk` : "N/A") : (routeData.toplam_sure_dk ? `${routeData.toplam_sure_dk} dk` : "N/A");
-            const balanceStatus = isBalanceSufficient ? `Kalan Bakiye: ${routeData.kalan_bakiye || 'Sıfır'} TL` : "Bakiye Yetersiz";
-            statusMessage = `${routeId === "taxi" ? "Taksi" : "Rota " + routeId}: Mesafe: ${distance}, Ücret: ${cost}, Süre: ${duration}, ${balanceStatus}`;
+            const distance = routeData.toplam_mesafe_km + " km";
+            const duration = routeData.toplam_sure_dk + " dk";
+            const balanceStatus = isBalanceSufficient ? `Kalan Bakiye: ${(routeData.kalan_bakiye || 0).toFixed(2)} TL` : "Bakiye Yetersiz";
+            const cost = typeof routeData.toplam_ucret === 'number'
+                ? `${routeData.toplam_ucret} TL`
+                : "N/A";
+            statusMessage = `${routeId === "taxi" ? "Taksi" : transportType + " (" + (routeId.split('-')[1] || 'Genel') + ")"}: Mesafe: ${distance}, Ücret: ${cost}, Süre: ${duration}, ${balanceStatus}`;
         } else {
-            statusMessage = `Durum: ${routeId === "taxi" ? "Taksi" : "Rota " + routeId} gösteriliyor (Detaylar mevcut değil)`;
+            statusMessage = `Durum: ${routeId === "taxi" ? "Taksi" : routeId} gösteriliyor (Detaylar mevcut değil)`;
         }
     }
 
@@ -818,8 +827,8 @@ function showFilteredRoutes(transportType, criteria = null) {
 
     const routeColors = {
         "bus": "#4285F4",
-        "tram": "#34C759",
         "bus_tram": "#000080",
+        "tram": "#34C759",
         "taxi": "#fb9403"
     };
 
@@ -871,7 +880,7 @@ function showFilteredRoutes(transportType, criteria = null) {
         const routeData = window.routeDataResult[routeKey];
         if (routeData && routeData.coordinates) {
             routeCount++;
-            const isBalanceSufficient = routeData.bakiye_yeterli !== false; // Taksi için bakiye kontrolü yoksa true
+            const isBalanceSufficient = routeData.bakiye_yeterli !== false;
             const defaultColor = isBalanceSufficient ? routeColors[transportType] : '#808080';
             const startType = routeData.start_type || 'unknown';
             const endType = routeData.end_type || 'unknown';
@@ -888,12 +897,13 @@ function showFilteredRoutes(transportType, criteria = null) {
                 return;
             }
 
-            if (isBalanceSufficient && (startType === 'walking' || endType === 'walking' || startType === 'taxi')) {
+            if (isBalanceSufficient && (startType === 'walking' || endType === 'walking' || startType === 'taxi' || endType === 'taxi')) {
                 for (let i = 0; i < coordinates.length - 1; i++) {
                     let segmentColor = defaultColor;
                     if (i === 0 && startType === 'walking') segmentColor = '#000000';
                     else if (i === 0 && startType === 'taxi') segmentColor = '#FFA500';
                     else if (i === coordinates.length - 2 && endType === 'walking') segmentColor = '#000000';
+                    else if (i === coordinates.length - 2 && endType === 'taxi') segmentColor = '#FFA500';
                     else segmentColor = defaultColor;
 
                     const segmentPath = [coordinates[i], coordinates[i + 1]];
@@ -911,10 +921,12 @@ function showFilteredRoutes(transportType, criteria = null) {
 
             coordinates.forEach(point => bounds.extend(point));
 
-            const distance = routeData.toplam_mesafe_km ? `${routeData.toplam_mesafe_km} km` : (routeData.mesafe_km ? `${routeData.mesafe_km.toFixed(2)} km` : "N/A");
-            const cost = routeData.toplam_ucret ? `${routeData.toplam_ucret} TL` : (routeData.ucret ? `${routeData.ucret.toFixed(2)} TL` : "N/A");
-            const duration = routeData.toplam_sure_dk ? `${routeData.toplam_sure_dk} dk` : (routeData.tahmini_sure_dk ? `${Math.round(routeData.tahmini_sure_dk)} dk` : "N/A");
-            const balanceStatus = isBalanceSufficient ? `Kalan Bakiye: ${routeData.kalan_bakiye || 'N/A'} TL` : "Bakiye Yetersiz";
+            const distance = routeData.toplam_mesafe_km + " km";
+            const duration = routeData.toplam_sure_dk + " dk";
+            const balanceStatus = isBalanceSufficient ? `Kalan Bakiye: ${(routeData.kalan_bakiye || 0).toFixed(2)} TL` : "Bakiye Yetersiz";
+            const cost = typeof routeData.toplam_ucret === 'number'
+                ? `${routeData.toplam_ucret} TL`
+                : "N/A";
             statusMessage += `${routeKey}: Mesafe: ${distance}, Ücret: ${cost}, Süre: ${duration}, ${balanceStatus}\n`;
         } else {
             console.log(`No data found for route: ${routeKey}`);

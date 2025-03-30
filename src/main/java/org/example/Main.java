@@ -28,38 +28,6 @@ public class Main {
         SpringApplication.run(Main.class, args);
     }
 
-    public Rota rota() throws IOException {
-        ObjectMapper objectMapper = new ObjectMapper();
-        JsonNodeData jsonNodeData = new JsonNodeData(objectMapper);
-        GraphDurakData graphDurakData = new GraphDurakData(objectMapper,jsonNodeData);
-
-//        StopData stopData = new StopData();
-//        stopData.set_stops(jsonNodeData);
-        DistanceCalculator distanceCalculator = new HaversineDistanceCalculator();
-        Durak durak = new Durak(graphDurakData, distanceCalculator,"");
-
-        IGraphBuilder busGraphBuilder = new BusGraphBuilder();
-        IGraphBuilder tramGraphBuilder = new TramGraphBuilder();
-        ITransferGraphBuilder busTramGraphBuilder = new BusTramGraphBuilder();
-
-        //IGraphBuilder graphBuilder = new GraphBuilder();
-        //Graph graph = graphBuilder.buildGraph(jsonNodeData.get_node_data());
-        //PathFinder pathFinder = new DijkstraPathFinder(graph);
-
-        StopData bus_stop_data = new BusStopData(jsonNodeData);
-        StopData tram_stop_data = new TramStopData(jsonNodeData);
-
-        PathFinder pathFinder1 = new DijkstraPathFinder(busGraphBuilder.buildGraph(bus_stop_data));
-        PathFinder pathFinder2 = new DijkstraPathFinder(tramGraphBuilder.buildGraph(tram_stop_data));
-        PathFinder pathFinder3 = new DijkstraPathFinder(busTramGraphBuilder.buildGraph(new BusTramTransferData(jsonNodeData,bus_stop_data.getStops(),tram_stop_data.getStops())));
-
-        VehicleManager vehicleManager = new VehicleManager();
-        TaxiData taxiData = new TaxiData(objectMapper);
-
-        return new Rota(pathFinder3, vehicleManager, taxiData, durak);
-    }
-
-
 
     @Bean
     public PassengerManager passengerManager(){
