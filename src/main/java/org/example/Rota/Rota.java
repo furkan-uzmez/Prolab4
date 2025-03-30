@@ -4,6 +4,7 @@ import org.example.Data.TaxiData;
 import org.example.DijkstraAlghorithm.Coordinate;
 import org.example.DijkstraAlghorithm.PathFinder;
 import org.example.Durak;
+import org.example.Konum;
 
 import java.io.IOException;
 import java.util.*;
@@ -26,11 +27,14 @@ public class Rota {
         this.rotaInfoManager = rotaInfoManager;
     }
 
-    public RotaInfo findRouteWithCoordinates(double startLat, double startLon,
-                                                        double endLat, double endLon,
-                                                        String optimization) throws IOException {
+    public RotaInfo findRouteWithCoordinates(Konum konum, String optimization) throws IOException {
+        double startLat = konum.getBaslangicEnlem();
+        double startLon = konum.getBaslangicBoylam();
+        double endLat = konum.getHedefEnlem();
+        double endLon = konum.getHedefBoylam();
+
         Map.Entry<String, Double> startStop = durak.findNearestStop(startLat, startLon);
-        Map.Entry<String, Double> endStop = durak.findNearestStop(endLat, endLon);
+        Map.Entry<String, Double> endStop = durak.findNearestStop(endLat,endLon);
         String startId = startStop.getKey();
         double startDistance = startStop.getValue();
         String endId = endStop.getKey();

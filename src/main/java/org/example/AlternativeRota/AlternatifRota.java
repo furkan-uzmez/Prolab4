@@ -1,6 +1,7 @@
 package org.example.AlternativeRota;
 
 import org.example.DijkstraAlghorithm.Coordinate;
+import org.example.Konum;
 import org.example.Rota.RotaInfo;
 
 import java.util.ArrayList;
@@ -17,7 +18,6 @@ public abstract class AlternatifRota {
         return vertices;
     }
 
-    abstract RotaInfo createAlternative(double startLat, double startLon,
-                                        double endLat, double endLon,
+    abstract RotaInfo createAlternative(Konum konum,
                                         double distance);
 }

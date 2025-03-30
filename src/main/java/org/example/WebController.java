@@ -134,7 +134,7 @@ public class WebController {
         System.out.println("yolcuTuru:"+yolcuTuru);
         System.out.println("bakiye:"+bakiye);
 
-
+        Konum konum = new Konum(baslangicEnlem,baslangicBoylam,hedefEnlem,hedefBoylam);
         this.baslangicEnlem = baslangicEnlem;
         this.baslangicBoylam = baslangicBoylam;
         this.hedefEnlem = hedefEnlem;
@@ -143,10 +143,10 @@ public class WebController {
         this.yolcuTuru = yolcuTuru;
         this.bakiye = bakiye;
 
-        return rotaCiz();
+        return rotaCiz(konum);
     }
 
-    public Map rotaCiz() throws IOException {
+    public Map rotaCiz(Konum konum) throws IOException {
         passengerManager.setYolcu(yolcuTuru);
         paymentManager.setOdeme_turu(odemeYontemi);
         Yolcu yolcu = passengerManager.get_yolcu();
@@ -154,27 +154,22 @@ public class WebController {
         System.out.println("Yolcu nesnesi : " + yolcu);
         System.out.println("Odeme nesnesi : " + odeme);
 
-
-
-//        Map rotalar = new HashMap<>();
-
         RotaInfoManager rotaInfoManager = new RotaInfoManager();
 
-        double taxiDistance = distanceCalculator.calculateDistance(baslangicEnlem, baslangicBoylam, hedefEnlem, hedefBoylam);
-        RotaInfo taxiAlternative = taxi.createAlternative(baslangicEnlem, baslangicBoylam,
-                hedefEnlem, hedefBoylam, taxiDistance);
+        double taxiDistance = distanceCalculator.calculateDistance(konum.getBaslangicEnlem(), konum.getBaslangicBoylam(), konum.getHedefEnlem(), konum.getHedefBoylam());
+        RotaInfo taxiAlternative = taxi.createAlternative(konum, taxiDistance);
 
-        rotaInfoManager.add_path_info(rota1.findRouteWithCoordinates(baslangicEnlem, baslangicBoylam, hedefEnlem, hedefBoylam, "ucret"),"bus_ucret");
-        rotaInfoManager.add_path_info(rota1.findRouteWithCoordinates(baslangicEnlem, baslangicBoylam, hedefEnlem, hedefBoylam, "sure"),"bus-sure");
-        rotaInfoManager.add_path_info(rota1.findRouteWithCoordinates(baslangicEnlem, baslangicBoylam, hedefEnlem, hedefBoylam, "mesafe"),"bus_mesafe");
+        rotaInfoManager.add_path_info(rota1.findRouteWithCoordinates(konum, "ucret"),"bus_ucret");
+        rotaInfoManager.add_path_info(rota1.findRouteWithCoordinates(konum, "sure"),"bus-sure");
+        rotaInfoManager.add_path_info(rota1.findRouteWithCoordinates(konum, "mesafe"),"bus_mesafe");
 
-        rotaInfoManager.add_path_info(rota2.findRouteWithCoordinates(baslangicEnlem, baslangicBoylam, hedefEnlem, hedefBoylam, "ucret"),"tram-ucret");
-        rotaInfoManager.add_path_info(rota2.findRouteWithCoordinates(baslangicEnlem, baslangicBoylam, hedefEnlem, hedefBoylam, "sure"),"tram-sure");
-        rotaInfoManager.add_path_info(rota2.findRouteWithCoordinates(baslangicEnlem, baslangicBoylam, hedefEnlem, hedefBoylam, "mesafe"),"tram-mesafe");
+        rotaInfoManager.add_path_info(rota2.findRouteWithCoordinates(konum, "ucret"),"tram-ucret");
+        rotaInfoManager.add_path_info(rota2.findRouteWithCoordinates(konum, "sure"),"tram-sure");
+        rotaInfoManager.add_path_info(rota2.findRouteWithCoordinates(konum, "mesafe"),"tram-mesafe");
 
-        rotaInfoManager.add_path_info(rota3.findRouteWithCoordinates(baslangicEnlem, baslangicBoylam, hedefEnlem, hedefBoylam, "ucret"),"bus_tram-ucret");
-        rotaInfoManager.add_path_info(rota3.findRouteWithCoordinates(baslangicEnlem, baslangicBoylam, hedefEnlem, hedefBoylam, "sure"),"bus_tram-sure");
-        rotaInfoManager.add_path_info(rota3.findRouteWithCoordinates(baslangicEnlem, baslangicBoylam, hedefEnlem, hedefBoylam, "mesafe"),"bus_tram-mesafe");
+        rotaInfoManager.add_path_info(rota3.findRouteWithCoordinates(konum, "ucret"),"bus_tram-ucret");
+        rotaInfoManager.add_path_info(rota3.findRouteWithCoordinates(konum, "sure"),"bus_tram-sure");
+        rotaInfoManager.add_path_info(rota3.findRouteWithCoordinates(konum, "mesafe"),"bus_tram-mesafe");
 
         rotaInfoManager.add_path_info(taxiAlternative,"taxi");
 

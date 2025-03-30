@@ -2,6 +2,7 @@ package org.example.AlternativeRota;
 
 import org.example.Data.TaxiData;
 import org.example.DijkstraAlghorithm.Coordinate;
+import org.example.Konum;
 import org.example.Rota.RotaInfo;
 
 import java.util.ArrayList;
@@ -23,8 +24,7 @@ public class Taxi extends AlternatifRota {
     }
 
     @Override
-    public RotaInfo createAlternative(double startLat, double startLon,
-                                      double endLat, double endLon,
+    public RotaInfo createAlternative(Konum konum,
                                       double distanceKm) {
 
         RotaInfo rotaInfo = new RotaInfo();
@@ -36,7 +36,7 @@ public class Taxi extends AlternatifRota {
         rotaInfo.setToplam_ucret(taxiFare);
         rotaInfo.setToplam_sure(taxiTime);
 
-        List<Coordinate> taxiWaypoints = createWaypoints(startLat, startLon, endLat, endLon);
+        List<Coordinate> taxiWaypoints = createWaypoints(konum.getBaslangicEnlem(), konum.getBaslangicBoylam(), konum.getHedefEnlem(), konum.getHedefBoylam());
 
         for (Coordinate coordinate:taxiWaypoints){
             rotaInfo.getCoordinates().add(coordinate);
