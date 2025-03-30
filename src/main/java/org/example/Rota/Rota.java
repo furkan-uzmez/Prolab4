@@ -4,7 +4,7 @@ import org.example.Data.TaxiData;
 import org.example.DijkstraAlghorithm.Coordinate;
 import org.example.DijkstraAlghorithm.PathFinder;
 import org.example.Durak;
-import org.example.Konum;
+import org.example.FrontEnd.Konum;
 
 import java.io.IOException;
 import java.util.*;

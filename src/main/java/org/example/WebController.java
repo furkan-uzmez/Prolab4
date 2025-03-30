@@ -6,6 +6,8 @@ import org.example.Data.*;
 import org.example.Data.DurakVerileri.*;
 import org.example.DijkstraAlghorithm.DijkstraPathFinder;
 import org.example.DijkstraAlghorithm.PathFinder;
+import org.example.FrontEnd.FrontEndInfo;
+import org.example.FrontEnd.Konum;
 import org.example.Graph.*;
 import org.example.Mesafe.DistanceCalculator;
 import org.example.Passenger.PassengerManager;
@@ -25,7 +27,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -134,23 +135,21 @@ public class WebController {
         System.out.println("yolcuTuru:"+yolcuTuru);
         System.out.println("bakiye:"+bakiye);
 
-        Konum konum = new Konum(baslangicEnlem,baslangicBoylam,hedefEnlem,hedefBoylam);
-        this.baslangicEnlem = baslangicEnlem;
-        this.baslangicBoylam = baslangicBoylam;
-        this.hedefEnlem = hedefEnlem;
-        this.hedefBoylam = hedefBoylam;
-        this.odemeYontemi = odemeYontemi;
-        this.yolcuTuru = yolcuTuru;
-        this.bakiye = bakiye;
-
-        return rotaCiz(konum);
-    }
-
-    public Map rotaCiz(Konum konum) throws IOException {
         passengerManager.setYolcu(yolcuTuru);
         paymentManager.setOdeme_turu(odemeYontemi);
         Yolcu yolcu = passengerManager.get_yolcu();
         Odeme odeme = paymentManager.getOdeme_turu();
+
+        Konum konum = new Konum(baslangicEnlem,baslangicBoylam,hedefEnlem,hedefBoylam);
+        FrontEndInfo frontEndInfo = new FrontEndInfo(bakiye,yolcu,odeme);
+
+        return rotaCiz(konum,frontEndInfo);
+    }
+
+    public Map rotaCiz(Konum konum,FrontEndInfo frontEndInfo) throws IOException {
+        Double bakiye = frontEndInfo.getBakiye();
+        Yolcu yolcu = frontEndInfo.getYolcu_turu();
+        Odeme odeme = frontEndInfo.getOdeme_turu();
         System.out.println("Yolcu nesnesi : " + yolcu);
         System.out.println("Odeme nesnesi : " + odeme);
 
@@ -177,6 +176,7 @@ public class WebController {
 
         System.out.println(rotaInfoManager.getAllPath_info().keySet());
         System.out.println(rotaInfoManager.getAllPath_info());
+
         return rotaInfoManager.getAllPath_info();
     }
 

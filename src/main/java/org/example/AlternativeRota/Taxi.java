@@ -2,13 +2,10 @@ package org.example.AlternativeRota;
 
 import org.example.Data.TaxiData;
 import org.example.DijkstraAlghorithm.Coordinate;
-import org.example.Konum;
+import org.example.FrontEnd.Konum;
 import org.example.Rota.RotaInfo;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class Taxi extends AlternatifRota {
     private final double openingFee;
