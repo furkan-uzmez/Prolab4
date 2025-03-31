@@ -5,7 +5,7 @@ import org.example.DijkstraAlghorithm.Coordinate;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class RotaInfo implements IRotaInfo{
+public class RotaInfo{
     private String start_type;
     private String end_type;
     private ArrayList<Coordinate> coordinates;
@@ -29,10 +29,6 @@ public class RotaInfo implements IRotaInfo{
     public void setEnd_type(String end_type) {
         this.end_type = end_type;
     }
-
-//    public void setCoordinates(ArrayList<Coordinate> coordinates) {
-//        this.coordinates = coordinates;
-//    }
 
     public ArrayList<Coordinate> getCoordinates(){return this.coordinates;}
 

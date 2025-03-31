@@ -11,10 +11,6 @@ public class OdemeKontrol {
         for (String key:rotalar.keySet()){
             index.add(key);
         }
-//        index.add("1");
-//        index.add("2");
-//        index.add("3");
-//        index.add("taxi");
 
         for(int i = 0; i<rotalar.size() ;i++){
             Map<String,Object> rota = (Map<String, Object>) rotalar.get(index.get(i));

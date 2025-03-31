@@ -1,8 +1,5 @@
 package org.example.Rota;
 
-import org.example.DijkstraAlghorithm.Coordinate;
-
-import java.util.ArrayList;
 import java.util.HashMap;
 
 public class RotaInfoManager {
@@ -22,11 +19,6 @@ public class RotaInfoManager {
 
     public RotaInfo initializePathInfo() {
         RotaInfo rotaInfo = new RotaInfo();
-//        rotaInfo.setStart_type(null);
-//        rotaInfo.setEnd_type(null);
-//        rotaInfo.setCoordinates(new ArrayList<Coordinate>());
-//        rotaInfo.setToplam_mesafe(0.0);
-//        rotaInfo.setToplam_ucret(0.0);
         return rotaInfo;
     }
 

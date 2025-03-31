@@ -5,6 +5,8 @@ import org.example.DijkstraAlghorithm.Coordinate;
 import org.example.DijkstraAlghorithm.PathFinder;
 import org.example.Durak;
 import org.example.FrontEnd.Konum;
+import org.example.Graph.Edge;
+import org.example.Graph.Node;
 
 import java.io.IOException;
 import java.util.*;
@@ -51,7 +53,9 @@ public class Rota {
 
         start_vehicle.create_way(rotaInfo,new Coordinate(String.valueOf(startLat),String.valueOf(startLon)),startDistance,"start_type");
 
-        pathFinder.findBestPath(rotaInfo,startId, endId, optimization);
+        ArrayList<Node> shorhtest_path = pathFinder.findBestPath(startId, endId, optimization);
+
+        add_info(rotaInfo,shorhtest_path);
 
         this.vehicleManager.setVehicle_type(endDistance);
         Vehicle end_vehicle = this.vehicleManager.getVehicle_type();
@@ -61,6 +65,32 @@ public class Rota {
         return rotaInfo;
     }
 
+    private void add_info(RotaInfo path_info,ArrayList<Node> path) {
+        double totalDistance = path_info.getToplam_mesafe();
+        double totalTime = path_info.getToplam_sure();
+        double totalCost = path_info.getToplam_ucret();
+
+        List<Coordinate> coordinates = path_info.getCoordinates();
+
+        for (int i=0; i < path.size()-1;i++) {
+            Node node = path.get(i);
+            for(Edge edge : node.get_edges()){
+                if(edge.getEnd().equals(path.get(i+1))){
+                    totalDistance += edge.getMesafe();
+                    totalTime += edge.getSure();
+                    totalCost += edge.getUcret();
+                }
+            }
+            coordinates.add(node.getCoordinates());
+        }
+        coordinates.add(path.get(path.size()-1).getCoordinates());
+
+        path_info.setToplam_mesafe(totalDistance);
+        path_info.setToplam_ucret(totalCost);
+        path_info.setToplam_sure(totalTime);
+
+        path_info.addPath_info();
+    }
 
 
 }

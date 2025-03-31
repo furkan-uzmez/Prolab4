@@ -25,7 +25,6 @@ public class Edge {
         return end;
     }
 
-
     public void setWeight_strategy(double weight_strategy){
         this.weight_strategy = weight_strategy;
     }
