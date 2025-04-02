@@ -92,7 +92,7 @@ function initMap() {
         });
         marker.addListener('mouseover', () => infoWindow.open(map, marker));
         marker.addListener('mouseout', () => infoWindow.close());
-        markers.push(marker);
+        Ascendants.push(marker);
         infoWindows.push(infoWindow);
         bounds.extend(marker.getPosition());
     });
@@ -588,14 +588,13 @@ function initializeRoute(sonuc) {
     }
 
     window.routeDataResult = sonuc;
-
     clearAllRoutes();
 
     const routeColors = {
-        "bus": "#4285F4",      // Blue for bus
-        "bus_tram": "#000080", // Navy Blue for bus+tram
-        "tram": "#34C759",     // Green for tram
-        "taxi": "#fb9403"      // Orange for taxi
+        "bus": "#4285F4",
+        "bus_tram": "#000080",
+        "tram": "#34C759",
+        "taxi": "#fb9403"
     };
 
     let bounds = new google.maps.LatLngBounds();
@@ -614,7 +613,7 @@ function initializeRoute(sonuc) {
             if (routePath.length >= 2) {
                 routeCount++;
                 const isBalanceSufficient = sonuc[routeId].bakiye_yeterli;
-                const transportType = routeId.split('-')[0]; // Extract base type (bus, bus_tram, tram, taxi)
+                const transportType = routeId.split('-')[0];
                 const defaultColor = isBalanceSufficient ? (routeColors[transportType] || '#4285F4') : '#808080';
                 const startType = sonuc[routeId].start_type || 'unknown';
                 const endType = sonuc[routeId].end_type || 'unknown';
@@ -641,7 +640,7 @@ function initializeRoute(sonuc) {
                     }
                 }
 
-                if (routeId === "bus-ucret" && routePath.length > 0) { // Use first bus route for markers
+                if (routeId === "bus-ucret" && routePath.length > 0) {
                     baslangicMarker.setPosition(routePath[0]);
                     if (routePath.length > 1) {
                         if (!hedefMarker) {
@@ -663,20 +662,31 @@ function initializeRoute(sonuc) {
                 const distance = routeData.toplam_mesafe_km + " km";
                 const duration = routeData.toplam_sure_dk + " dk";
                 const balanceStatus = isBalanceSufficient ? `Kalan Bakiye: ${(routeData.kalan_bakiye || 0).toFixed(2)} TL` : "Bakiye Yetersiz";
-                const routeName = routeId === "taxi" ? "Taksi Rotası" : `Rota  ${routeId} `;
+                const routeName = routeId === "taxi" ? "Taksi Rotası" : `Rota ${routeId}`;
+                const cost = typeof routeData.toplam_ucret === 'number' ? `${routeData.toplam_ucret} TL` : "N/A";
+                const discountedCost = typeof routeData.indirimli_ucret === 'number' ? `${routeData.indirimli_ucret} TL` : (typeof routeData.toplam_ucret === 'number' ? `${routeData.toplam_ucret} TL` : "N/A");
 
-                // Ücret için açık bir kontrol ekliyoruz
-                const cost = typeof routeData.toplam_ucret === 'number'
-                    ? `${routeData.toplam_ucret} TL`
-                    : "N/A";
+                // Daha fazla hata ayıklama
+                console.log(`Route ${routeId} - Full Data:`, JSON.stringify(routeData, null, 2));
+                console.log(`Route ${routeId} - Cost Values:`, {
+                    toplam_ucret: routeData.toplam_ucret,
+                    indirimli_ucret: routeData.indirimli_ucret,
+                    computed_cost: cost,
+                    computed_discountedCost: discountedCost
+                });
 
-                routeInfoHtml += `
+
+                const routeHtml = `
                     <h4>${routeName}</h4>
                     <p><span>Mesafe:</span> ${distance}</p>
                     <p><span>Ücret:</span> ${cost}</p>
                     <p><span>Süre:</span> ${duration}</p>
                     <p><span>Durum:</span> ${balanceStatus}</p>
+                    <p><span>İndirimli Ücret:</span> ${discountedCost}</p>
                 `;
+
+                console.log(`Route ${routeId} - Generated HTML:`, routeHtml);
+                routeInfoHtml += routeHtml;
             } else {
                 console.warn(`Route ${routeId} has insufficient coordinates: ${routePath.length}`);
             }
@@ -690,7 +700,9 @@ function initializeRoute(sonuc) {
 
         const infoPanel = document.getElementById('infoPanel');
         const routeInfoContent = document.getElementById('routeInfoContent');
+        console.log("Final routeInfoHtml before setting:", routeInfoHtml);
         routeInfoContent.innerHTML = routeInfoHtml;
+        console.log("DOM after setting innerHTML:", routeInfoContent.innerHTML);
         infoPanel.style.display = 'block';
     } else {
         document.getElementById('status-bar').textContent = 'Durum: Geçerli rota bulunamadı';
@@ -741,6 +753,8 @@ function toggleRoute(routeId) {
     clearAllRoutes();
 
     let statusMessage = "";
+    let bounds = new google.maps.LatLngBounds();
+
     if (routeId === "all") {
         for (const id in window.routeDataResult) {
             if (window.routeDataResult[id] && Array.isArray(window.routeDataResult[id].coordinates)) {
@@ -772,9 +786,19 @@ function toggleRoute(routeId) {
                         else if (transportType === "taxi") taxiPolylines.push(polyline);
                     }
                 }
+
+                coordinates.forEach(point => bounds.extend(point));
+
+                const routeData = window.routeDataResult[id];
+                const distance = routeData.toplam_mesafe_km + " km";
+                const duration = routeData.toplam_sure_dk + " dk";
+                const balanceStatus = isBalanceSufficient ? `Kalan Bakiye: ${(routeData.kalan_bakiye || 0).toFixed(2)} TL` : "Bakiye Yetersiz";
+                const cost = typeof routeData.toplam_ucret === 'number' ? `${routeData.toplam_ucret} TL` : "N/A";
+                const discountedCost = typeof routeData.indirimli_ucret === 'number' ? `${routeData.indirimli_ucret} TL` : (typeof routeData.toplam_ucret === 'number' ? `${routeData.toplam_ucret} TL` : "N/A");
+                statusMessage += `${id}: Mesafe: ${distance}, Ücret: ${cost}, İndirimli Ücret: ${discountedCost}, Süre: ${duration}, ${balanceStatus}\n`;
             }
         }
-        statusMessage = 'Durum: Tüm rotalar gösteriliyor';
+        statusMessage = `Durum: Tüm rotalar gösteriliyor\n${statusMessage}`;
     } else {
         const routeData = window.routeDataResult[routeId];
         if (routeData && Array.isArray(routeData.coordinates)) {
@@ -807,16 +831,21 @@ function toggleRoute(routeId) {
                 }
             }
 
+            coordinates.forEach(point => bounds.extend(point));
+
             const distance = routeData.toplam_mesafe_km + " km";
             const duration = routeData.toplam_sure_dk + " dk";
             const balanceStatus = isBalanceSufficient ? `Kalan Bakiye: ${(routeData.kalan_bakiye || 0).toFixed(2)} TL` : "Bakiye Yetersiz";
-            const cost = typeof routeData.toplam_ucret === 'number'
-                ? `${routeData.toplam_ucret} TL`
-                : "N/A";
-            statusMessage = `${routeId === "taxi" ? "Taksi" : transportType + " (" + (routeId.split('-')[1] || 'Genel') + ")"}: Mesafe: ${distance}, Ücret: ${cost}, Süre: ${duration}, ${balanceStatus}`;
+            const cost = typeof routeData.toplam_ucret === 'number' ? `${routeData.toplam_ucret} TL` : "N/A";
+            const discountedCost = typeof routeData.indirimli_ucret === 'number' ? `${routeData.indirimli_ucret} TL` : (typeof routeData.toplam_ucret === 'number' ? `${routeData.toplam_ucret} TL` : "N/A");
+            statusMessage = `Durum: ${routeId === "taxi" ? "Taksi" : transportType + " (" + (routeId.split('-')[1] || 'Genel') + ")"}: Mesafe: ${distance}, Ücret: ${cost}, İndirimli Ücret: ${discountedCost}, Süre: ${duration}, ${balanceStatus}`;
         } else {
             statusMessage = `Durum: ${routeId === "taxi" ? "Taksi" : routeId} gösteriliyor (Detaylar mevcut değil)`;
         }
+    }
+
+    if (routeId === "all" || window.routeDataResult[routeId]) {
+        map.fitBounds(bounds);
     }
 
     document.getElementById('status-bar').textContent = statusMessage;
@@ -924,10 +953,9 @@ function showFilteredRoutes(transportType, criteria = null) {
             const distance = routeData.toplam_mesafe_km + " km";
             const duration = routeData.toplam_sure_dk + " dk";
             const balanceStatus = isBalanceSufficient ? `Kalan Bakiye: ${(routeData.kalan_bakiye || 0).toFixed(2)} TL` : "Bakiye Yetersiz";
-            const cost = typeof routeData.toplam_ucret === 'number'
-                ? `${routeData.toplam_ucret} TL`
-                : "N/A";
-            statusMessage += `${routeKey}: Mesafe: ${distance}, Ücret: ${cost}, Süre: ${duration}, ${balanceStatus}\n`;
+            const cost = typeof routeData.toplam_ucret === 'number' ? `${routeData.toplam_ucret} TL` : "N/A";
+            const discountedCost = typeof routeData.indirimli_ucret === 'number' ? `${routeData.indirimli_ucret} TL` : (typeof routeData.toplam_ucret === 'number' ? `${routeData.toplam_ucret} TL` : "N/A");
+            statusMessage += `${routeKey}: Mesafe: ${distance}, Ücret: ${cost}, İndirimli Ücret: ${discountedCost}, Süre: ${duration}, ${balanceStatus}\n`;
         } else {
             console.log(`No data found for route: ${routeKey}`);
         }

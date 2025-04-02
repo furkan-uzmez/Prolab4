@@ -9,7 +9,6 @@ public abstract class AbstractData {
 
     public AbstractData() throws IOException {
         this.veri = set_data("veriseti.json");
-        System.out.println("String adres : " + System.identityHashCode(veri));
     }
 
     public String get_data() {

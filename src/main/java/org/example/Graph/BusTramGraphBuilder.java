@@ -33,16 +33,12 @@ public class BusTramGraphBuilder implements ITransferGraphBuilder{
             }
         }
 
-//        System.out.println(transferData.getTransfers());
-
         for(Transfer transfer : transferData.getTransfers()){
             Node transfer_start_node = graph.getNode(transfer.getStation1().getId());
             Node transfer_end_node = graph.getNode(transfer.getStation2().getId());
-//            System.out.println(transfer_start_node + " ------ " +transfer_end_node);
             Double mesafe = 0.0;
             Double sure = transfer.getTransfer_sure();
             Double ucret = transfer.getTransfer_ucret();;
-            //String type =;
             graph.addEdge(transfer_start_node,transfer_end_node,mesafe,sure,ucret,"transfer");
         }
 

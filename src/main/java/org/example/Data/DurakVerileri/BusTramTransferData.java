@@ -39,7 +39,6 @@ public class BusTramTransferData extends TransferData {
                 transfer.setTransfer_ucret(transfer_stop.get("transferUcret").asDouble());
             }
         }
-        System.out.println("BusTramTransferData set_transfer" + transfers);
 
     }
 

@@ -28,7 +28,6 @@ public class Durak {
             JsonNode stop = entry.getValue();
 
             if(!type.equals("") && !stop.get("type").asText().equals(type)) {
-                System.out.println(stop.get("id").asText());
                 continue;
             }
             double distance = distanceCalculator.calculateDistance(lat, lon,

@@ -31,7 +31,6 @@ public class BusStopData extends StopData{
             }
         }
 
-        System.out.println("Bus_stop:" + stops);
         super.addNextStop(stops);
     }
 

@@ -1,24 +1,29 @@
 package org.example.Passenger;
 
 public enum PassengerType {
-    Genel(new Genel()),
-    Ogrenci(new Ogrenci()),
-    Yasli(new Yasli());
+    Genel,
+    Ogrenci,
+    Yasli;
 
-    Yolcu passenger_type;
-
-    PassengerType(Yolcu passenger_type){
-        this.passenger_type = passenger_type;
+    public Yolcu createPassenger() {
+        switch (this) {
+            case Genel:
+                return new Genel();
+            case Ogrenci:
+                return new Ogrenci();
+            case Yasli:
+                return new Yasli();
+            default:
+                throw new IllegalStateException("Bilinmeyen yolcu türü");
+        }
     }
 
-    // String türündeki girişleri daha güvenli çevirmek için bir yardımcı metot
     public static Yolcu fromString(String text) {
         for (PassengerType pt : PassengerType.values()) {
             if (pt.name().equalsIgnoreCase(text)) {
-                return pt.passenger_type;
+                return pt.createPassenger();
             }
         }
         throw new IllegalArgumentException("Geçersiz yolcu türü: " + text);
     }
-
 }

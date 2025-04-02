@@ -27,6 +27,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,6 +59,7 @@ public class WebController {
     private final JsonNodeData jsonNodeData;
     private final GraphDurakData graphDurakData;
     private final Durak durak;
+    private HashMap<String,Yolcu>  yolcuHashMap;
 
     @Autowired
     public WebController(DurakData durak_data, PassengerManager passengerManager,
@@ -101,6 +103,8 @@ public class WebController {
 
         RotaInfoManager rotaInfoManager = new RotaInfoManager();
 
+        this.yolcuHashMap = new HashMap<>();
+
         this.rota1 = new Rota(pathFinder1,vehicleManager,taxiData,new Durak(graphDurakData,distanceCalculator,busGraphBuilder.get_name()),rotaInfoManager);
         this.rota2 = new Rota(pathFinder2,vehicleManager,taxiData,new Durak(graphDurakData,distanceCalculator,tramGraphBuilder.get_name()),rotaInfoManager);
         this.rota3 = new Rota(pathFinder3,vehicleManager,taxiData,new Durak(graphDurakData,distanceCalculator,busTramGraphBuilder.get_name()),rotaInfoManager);
@@ -127,21 +131,39 @@ public class WebController {
             @RequestParam("baslangic_boylam") double baslangicBoylam,
             @RequestParam("hedef_enlem") double hedefEnlem,
             @RequestParam("hedef_boylam") double hedefBoylam,
+            @RequestParam("isim") String isim,
             @RequestParam("odeme_yontemi") String odemeYontemi,
             @RequestParam("yolcu_turu") String yolcuTuru,
             @RequestParam("bakiye") double bakiye
             ) throws IOException {
+
+        System.out.println("isim"+isim);
         System.out.println("odemeYontemi:"+odemeYontemi);
         System.out.println("yolcuTuru:"+yolcuTuru);
         System.out.println("bakiye:"+bakiye);
-
         passengerManager.setYolcu(yolcuTuru);
         paymentManager.setOdeme_turu(odemeYontemi);
         Yolcu yolcu = passengerManager.get_yolcu();
         Odeme odeme = paymentManager.getOdeme_turu();
 
         Konum konum = new Konum(baslangicEnlem,baslangicBoylam,hedefEnlem,hedefBoylam);
-        FrontEndInfo frontEndInfo = new FrontEndInfo(bakiye,yolcu,odeme);
+        FrontEndInfo frontEndInfo = new FrontEndInfo(isim,bakiye,yolcu,odeme);
+
+        yolcu.setName(frontEndInfo.getIsim());
+
+        if(!yolcuHashMap.containsKey(yolcu.getName())){
+            yolcuHashMap.put(yolcu.getName(),yolcu);
+        }else{
+            yolcu = yolcuHashMap.get(yolcu.getName());
+        }
+
+        yolcu.setKullanim_sayisi(yolcu.getKullanim_sayisi()+1);
+
+        System.out.println("YolcuHashMap :  ");
+        for(Yolcu yolcu_: yolcuHashMap.values()){
+            System.out.println(yolcu_.getKullanim_sayisi());
+        }
+        System.out.println(yolcu.getKullanim_sayisi());
 
         return rotaCiz(konum,frontEndInfo);
     }

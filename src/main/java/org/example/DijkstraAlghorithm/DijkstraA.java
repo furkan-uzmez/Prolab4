@@ -41,9 +41,6 @@ public class DijkstraA {
             }
         }
 
-        System.out.println(distances);
-        System.out.println(previous);
-
         return new Dictionary[]{distances,previous};
     }
 
