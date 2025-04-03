@@ -1,6 +1,7 @@
 // src/main/resources/static/js/script.js
 let map, markers = [], infoWindows = [], baslangicMarker, hedefMarker, clickMarker, nearestMarker;
 let currentRouteMarkers = [];
+let Ascendants = [];
 let currentRoutePolylines = [];
 let animationInterval;
 

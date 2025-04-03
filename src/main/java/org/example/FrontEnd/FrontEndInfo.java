@@ -4,19 +4,19 @@ import org.example.Passenger.Yolcu;
 import org.example.Payment.Odeme;
 
 public class FrontEndInfo {
-    String isim;
+    //String isim;
     double bakiye;
     Yolcu yolcu_turu;
     Odeme odeme_turu;
 
-    public FrontEndInfo(String isim,Double bakiye,Yolcu yolcu_turu,Odeme odeme_turu){
-        this.isim = isim;
+    public FrontEndInfo(Double bakiye,Yolcu yolcu_turu,Odeme odeme_turu){
+       // this.isim = isim;
         this.bakiye=bakiye;
         this.yolcu_turu=yolcu_turu;
         this.odeme_turu=odeme_turu;
     }
 
-    public String getIsim() { return isim; }
+    //public String getIsim() { return isim; }
 
     public double getBakiye() {
         return bakiye;

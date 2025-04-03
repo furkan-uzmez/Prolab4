@@ -43,13 +43,6 @@ public class WebController {
     private final Rota rota3;
     private PassengerManager passengerManager;
     private PaymentManager paymentManager;
-    private double baslangicEnlem;
-    private double baslangicBoylam;
-    private double hedefEnlem;
-    private double hedefBoylam;
-    private String odemeYontemi;
-    private String yolcuTuru;
-    private double bakiye;
     private DistanceCalculator distanceCalculator;
     private DefaultData data;
     private OdemeKontrol odemeKontrol;
@@ -75,7 +68,6 @@ public class WebController {
         StopData busStopData = new BusStopData(jsonNodeData);
         StopData tramStopData = new TramStopData(jsonNodeData);
         TransferData busTramTransferData = new BusTramTransferData(jsonNodeData,busStopData.getStops(),tramStopData.getStops());
-
 
         this.distanceCalculator = distanceCalculator;
         this.durak = durak;
@@ -141,23 +133,24 @@ public class WebController {
         System.out.println("odemeYontemi:"+odemeYontemi);
         System.out.println("yolcuTuru:"+yolcuTuru);
         System.out.println("bakiye:"+bakiye);
-        passengerManager.setYolcu(yolcuTuru);
+
         paymentManager.setOdeme_turu(odemeYontemi);
-        Yolcu yolcu = passengerManager.get_yolcu();
         Odeme odeme = paymentManager.getOdeme_turu();
 
-        Konum konum = new Konum(baslangicEnlem,baslangicBoylam,hedefEnlem,hedefBoylam);
-        FrontEndInfo frontEndInfo = new FrontEndInfo(isim,bakiye,yolcu,odeme);
-
-        yolcu.setName(frontEndInfo.getIsim());
-
-        if(!yolcuHashMap.containsKey(yolcu.getName())){
-            yolcuHashMap.put(yolcu.getName(),yolcu);
+        Yolcu yolcu;
+        if(!yolcuHashMap.containsKey(isim)){
+            passengerManager.setYolcu(yolcuTuru);
+            yolcu = passengerManager.get_yolcu();
+            yolcu.setName(isim);
+            yolcuHashMap.put(isim,yolcu);
         }else{
-            yolcu = yolcuHashMap.get(yolcu.getName());
+            yolcu = yolcuHashMap.get(isim);
         }
 
         yolcu.setKullanim_sayisi(yolcu.getKullanim_sayisi()+1);
+
+        Konum konum = new Konum(baslangicEnlem,baslangicBoylam,hedefEnlem,hedefBoylam);
+        FrontEndInfo frontEndInfo = new FrontEndInfo(bakiye,yolcu,odeme);
 
         System.out.println("YolcuHashMap :  ");
         for(Yolcu yolcu_: yolcuHashMap.values()){

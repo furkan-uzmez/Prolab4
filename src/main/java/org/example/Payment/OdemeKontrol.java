@@ -16,7 +16,7 @@ public class OdemeKontrol {
             Map<String,Object> rota = (Map<String, Object>) rotalar.get(index.get(i));
             double toplam_ucret = (Double) rota.get("toplam_ucret");
             double kalan = odeme.ode(bakiye, toplam_ucret ,yolcu.get_indirim_orani());
-            rota.put("toplam_ucret",toplam_ucret - (toplam_ucret* yolcu.get_indirim_orani()));
+            rota.put("indirimli_ucret",toplam_ucret - (toplam_ucret* yolcu.get_indirim_orani()));
 
             if(kalan<0){
                 rota.put("bakiye_yeterli",false);
